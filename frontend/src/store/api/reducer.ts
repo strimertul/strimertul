@@ -80,7 +80,8 @@ export interface LoyaltyGoal {
 }
 
 export interface LoyaltyRedeem {
-  user: string;
+  username: string;
+  display_name: string;
   when: Date;
   reward: LoyaltyReward;
 }

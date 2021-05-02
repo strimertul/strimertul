@@ -41,15 +41,16 @@ export default function LoyaltyRedeemQueuePage(
   };
 
   const filtered =
-    redemptions?.filter(({ user }) => user.includes(usernameFilter)) ?? [];
+    redemptions?.filter(({ username }) => username.includes(usernameFilter)) ??
+    [];
 
   const sortedEntries = filtered;
   switch (sorting.key) {
     case 'user':
       if (sorting.order === 'asc') {
-        sortedEntries.sort((a, b) => (a.user > b.user ? 1 : -1));
+        sortedEntries.sort((a, b) => (a.username > b.username ? 1 : -1));
       } else {
-        sortedEntries.sort((a, b) => (a.user < b.user ? 1 : -1));
+        sortedEntries.sort((a, b) => (a.username < b.username ? 1 : -1));
       }
       break;
     case 'when':
@@ -87,7 +88,7 @@ export default function LoyaltyRedeemQueuePage(
     dispatch(
       setPoints({
         ...points,
-        [redeem.user]: (points[redeem.user] ?? 0) + redeem.reward.price,
+        [redeem.username]: (points[redeem.username] ?? 0) + redeem.reward.price,
       }),
     );
     // Take the redeem off the list
@@ -147,10 +148,12 @@ export default function LoyaltyRedeemQueuePage(
             <tbody>
               {paged.map((redemption) => (
                 <tr
-                  key={`${redemption.when}-${redemption.user}-${redemption.reward.id}`}
+                  key={`${redemption.when}-${redemption.username}-${redemption.reward.id}`}
                 >
                   <td>{new Date(redemption.when).toLocaleString()}</td>
-                  <td>{redemption.user}</td>
+                  <td>
+                    {redemption.display_name} ({redemption.username})
+                  </td>
                   <td>{redemption.reward.name}</td>
                   <td style={{ textAlign: 'right' }}>
                     <a onClick={() => acceptRedeem(redemption)}>Accept</a>

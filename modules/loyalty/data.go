@@ -53,7 +53,8 @@ const QueueKey = "loyalty/redeem-queue"
 type RedeemQueueStorage []Redeem
 
 type Redeem struct {
-	User   string    `json:"user"`
-	Reward Reward    `json:"reward"`
-	When   time.Time `json:"when"`
+	Username    string    `json:"username"`
+	DisplayName string    `json:"display_name"`
+	Reward      Reward    `json:"reward"`
+	When        time.Time `json:"when"`
 }

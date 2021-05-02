@@ -61,7 +61,7 @@ func cmdRedeem(bot *TwitchBot, message irc.PrivateMessage) {
 		}
 
 		// Perform redeem
-		if err := bot.Loyalty.AddRedeem(message.User.Name, reward); err != nil {
+		if err := bot.Loyalty.AddRedeem(message.User.Name, message.User.DisplayName, reward); err != nil {
 			bot.logger(logger.MTError, "error while adding redeem: %s", err.Error())
 			return
 		}

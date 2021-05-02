@@ -122,11 +122,12 @@ func (m *Manager) SaveQueue() error {
 	return m.hub.WriteKey(QueueKey, string(data))
 }
 
-func (m *Manager) AddRedeem(user string, reward Reward) error {
+func (m *Manager) AddRedeem(username string, displayName string, reward Reward) error {
 	m.RedeemQueue = append(m.RedeemQueue, Redeem{
-		When:   time.Now(),
-		User:   user,
-		Reward: reward,
+		When:        time.Now(),
+		Username:    username,
+		DisplayName: displayName,
+		Reward:      reward,
 	})
 
 	// Save points
