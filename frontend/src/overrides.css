@@ -1,0 +1,171 @@
+/* Dark theme fixes */
+body .button.is-static {
+  background-color: #5d6b6b;
+}
+body .input, body .select select, body .textarea {
+  background-color: #222727;
+  color: white;
+}
+
+body .input::placeholder {
+  color:  #7e9292;
+}
+
+body .input[disabled],body .select select[disabled], body .textarea[disabled], body .input[disabled]::placeholder {
+  border-color: #5e6d6f;
+  color: #464e4e;
+  background-color: #6d7979;
+}
+
+body .button.is-success {
+  background-color: #388859;
+}
+
+.tabContent {
+  padding: 1rem;
+  border: 2px solid #5e6d6f;
+  border-top: 0;
+  border-radius: 0 0 .4em .4em;
+}
+
+/* Custom padding for content */
+.content-pad {
+  padding: 1rem 1.5rem;
+}
+
+/* Custom reward/goal classes */
+.reward-disabled, .goal-disabled {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.goal-reached {
+  font-weight: bold;
+  color:#1fdb5e;
+}
+.goal-point-percent {
+  color:#879799;
+}
+
+/* Nice expand/contract icon without FontAwesome! */
+.icon.expand-on, .icon.expand-off {
+  transition: all 50ms;
+  user-select: none;
+}
+
+.icon.expand-on {
+  transform: rotate(90deg);
+}
+
+.icon.expand-off {
+  transform: rotate(-90deg) translateY(-2px);
+}
+
+/* Side menu tweaks */
+aside.menu {
+  padding: 1rem 0.25rem 0;
+  background-color: #272e2e;
+  position: fixed;
+  top: 0; bottom: 0;
+  overflow: auto;
+}
+
+div.app-content {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  overflow: auto;
+}
+
+p.menu-label {
+  text-align: center;
+}
+
+@media screen and (max-width: 768px) {
+  aside.menu {
+    position: inherit;
+    overflow: inherit;
+    flex: 0;
+    padding-bottom: 1rem;
+  }
+  div.app-content {
+    position: inherit;
+    flex: 1;
+    top: inherit; bottom: inherit; right: inherit;
+    width: 100%;
+  }
+  .main-content {
+    flex-direction: column;
+  }
+}
+
+/* Fullheight fixes */
+html, body {
+  height: 100vh;
+  display: flex;
+  flex: 1;
+  margin: 0; padding: 0;
+}
+
+html {
+  /* fuck you minireset */
+  overflow-y: auto !important;
+}
+
+#main, section.main-content {
+  display: flex;
+  flex: 1;
+  margin: 0 !important; padding: 0;
+}
+
+/* Labels should be non-selectable */
+label {
+  user-select: none;
+}
+
+/* Swap order of "is-active" to work with <Link> */
+.tabs.is-boxed li a.is-active {
+  background-color: #1f2424;
+}
+.tabs.is-boxed li a.is-active {
+  border-color: #5e6d6f;
+      border-bottom-color: rgb(94, 109, 111);
+  border-bottom-color: transparent !important;
+}
+.tabs li a.is-active {
+  border-bottom-color: #1abc9c;
+  color: #1abc9c;
+}
+
+.field {
+  padding-bottom: 0.5rem;
+}
+
+.modal-card .field {
+  padding-bottom: 0;
+}
+
+.subroute {
+  display: none;
+}
+
+.is-active + .subroute {
+  display: inherit;
+}
+
+/* Sorting for tables */
+.sort-icon {
+  margin-left: 0.5rem;
+}
+
+span.sortable {
+  color:#6bc8b4;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Custom sidebar */
+.sidebar .menu-list a.is-active {
+  background-color: #5e6d6f;
+}

@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react",
+    "lib": ["es2017", "dom"]
+  }
+}

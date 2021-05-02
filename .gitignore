@@ -1,0 +1,5 @@
+*.exe
+*.db
+*.db.lock
+rice-box.go
+data/
