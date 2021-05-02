@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { RouteComponentProps } from '@reach/router';
 import { useModule } from '../../../lib/react-utils';
-import { modules } from '../../../store/api/reducer';
+import { LoyaltyRedeem, modules } from '../../../store/api/reducer';
 import PageList from '../../components/PageList';
 
 interface SortingOrder {
@@ -14,6 +15,7 @@ export default function LoyaltyRedeemQueuePage(
   props: RouteComponentProps<unknown>,
 ): React.ReactElement {
   const [redemptions, setRedeemQueue] = useModule(modules.loyaltyRedeemQueue);
+  const [points, setPoints] = useModule(modules.loyaltyStorage);
 
   const [sorting, setSorting] = useState<SortingOrder>({
     key: 'when',
@@ -23,6 +25,7 @@ export default function LoyaltyRedeemQueuePage(
   const [entriesPerPage, setEntriesPerPage] = useState(15);
   const [page, setPage] = useState(0);
   const [usernameFilter, setUsernameFilter] = useState('');
+  const dispatch = useDispatch();
 
   const changeSort = (key: 'user' | 'when') => {
     if (sorting.key === key) {
@@ -73,6 +76,23 @@ export default function LoyaltyRedeemQueuePage(
     (page + 1) * entriesPerPage,
   );
   const totalPages = Math.floor(sortedEntries.length / entriesPerPage);
+
+  const acceptRedeem = (redeem: LoyaltyRedeem) => {
+    // Just take the redeem off the list
+    dispatch(setRedeemQueue(redemptions.filter((r) => r !== redeem)));
+  };
+
+  const refundRedeem = (redeem: LoyaltyRedeem) => {
+    // Give points back to the viewer
+    dispatch(
+      setPoints({
+        ...points,
+        [redeem.user]: (points[redeem.user] ?? 0) + redeem.reward.price,
+      }),
+    );
+    // Take the redeem off the list
+    dispatch(setRedeemQueue(redemptions.filter((r) => r !== redeem)));
+  };
 
   return (
     <>
@@ -132,7 +152,11 @@ export default function LoyaltyRedeemQueuePage(
                   <td>{new Date(redemption.when).toLocaleString()}</td>
                   <td>{redemption.user}</td>
                   <td>{redemption.reward.name}</td>
-                  <td></td>
+                  <td style={{ textAlign: 'right' }}>
+                    <a onClick={() => acceptRedeem(redemption)}>Accept</a>
+                    {' 🞄 '}
+                    <a onClick={() => refundRedeem(redemption)}>Refund</a>
+                  </td>
                 </tr>
               ))}
             </tbody>
