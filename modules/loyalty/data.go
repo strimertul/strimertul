@@ -30,7 +30,7 @@ type Reward struct {
 	Description   string `json:"description"`
 	Image         string `json:"image"`
 	Price         int64  `json:"price"`
-	CustomRequest string `json:"required_info,omit_empty"`
+	CustomRequest string `json:"required_info,omitempty"`
 }
 
 type Goal struct {
