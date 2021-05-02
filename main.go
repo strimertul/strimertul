@@ -5,12 +5,12 @@ import (
 	"flag"
 	"fmt"
 	"io/fs"
-	"log"
 	"net/http"
+	"runtime"
 	"time"
 
-	"github.com/strimertul/strimertul/kv"
-	"github.com/strimertul/strimertul/logger"
+	kv "github.com/strimertul/kilovolt"
+
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/loyalty"
 	"github.com/strimertul/strimertul/stulbe"
@@ -21,6 +21,9 @@ import (
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/pkg/browser"
+
+	"github.com/mattn/go-colorable"
+	"github.com/sirupsen/logrus"
 )
 
 const AppTitle = "strimertül"
@@ -36,23 +39,52 @@ const DefaultBind = "localhost:4337"
 //go:embed frontend/dist/*
 var frontend embed.FS
 
-func wrapLogger(module string) logger.LogFn {
-	return func(level logger.MessageType, format string, args ...interface{}) {
-		args = append([]interface{}{module, level}, args...)
-		log.Printf("[%s/%s] "+format, args...)
+var log = logrus.New()
+
+func wrapLogger(module string) logrus.FieldLogger {
+	return log.WithField("module", module)
+}
+
+func parseLogLevel(level string) logrus.Level {
+	switch level {
+	case "error":
+		return logrus.ErrorLevel
+	case "warn", "warning":
+		return logrus.WarnLevel
+	case "info", "notice":
+		return logrus.InfoLevel
+	case "debug":
+		return logrus.DebugLevel
+	case "trace":
+		return logrus.TraceLevel
+	default:
+		return logrus.InfoLevel
 	}
 }
 
 func main() {
+	// Get cmd line parameters
 	dbfile := flag.String("dbdir", "data", "Path to strimertul database dir")
+	loglevel := flag.String("loglevel", "info", "Logging level (debug, info, warn, error)")
 	flag.Parse()
 
+	log.SetLevel(parseLogLevel(*loglevel))
+
+	// Ok this is dumb but listen, I like colors.
+	if runtime.GOOS == "windows" {
+		log.SetFormatter(&logrus.TextFormatter{ForceColors: true})
+		log.SetOutput(colorable.NewColorableStdout())
+	}
+
+	// Print the app header :D
 	fmt.Println(AppHeader)
 
 	var json = jsoniter.ConfigDefault
 
 	// Loading routine
-	db, err := badger.Open(badger.DefaultOptions(*dbfile))
+	options := badger.DefaultOptions(*dbfile)
+	options.Logger = wrapLogger("db")
+	db, err := badger.Open(options)
 	failOnError(err, "Could not open DB")
 	defer db.Close()
 
@@ -144,7 +176,7 @@ func main() {
 			bot.Client.OnConnect(func() {
 				if loyaltyManager.Config.Points.Interval > 0 {
 					go func() {
-						twitchLogger(logger.MTNotice, "Loyalty poll started")
+						twitchLogger.Info("loyalty poll started")
 						for {
 							// Wait for next poll
 							time.Sleep(time.Duration(loyaltyManager.Config.Points.Interval) * time.Second)
@@ -154,7 +186,7 @@ func main() {
 							if loyaltyManager.Config.LiveCheck && moduleConfig.EnableStulbe {
 								status, err := stulbeClient.StreamStatus(twitchConfig.Channel)
 								if err != nil {
-									twitchLogger(logger.MTError, "Error checking stream status: %s", err.Error())
+									twitchLogger.WithField("error", err.Error()).Error("Error checking stream status")
 								} else {
 									streamOnline = status != nil
 								}
@@ -162,14 +194,14 @@ func main() {
 
 							// If stream is confirmed offline, don't give points away!
 							if !streamOnline {
-								twitchLogger(logger.MTNotice, "Loyalty poll active but stream is offline!")
+								twitchLogger.Info("loyalty poll active but stream is offline!")
 								continue
 							}
 
 							// Get user list
 							users, err := bot.Client.Userlist(twitchConfig.Channel)
 							if err != nil {
-								twitchLogger(logger.MTError, "Error listing users: %s", err.Error())
+								twitchLogger.WithField("error", err.Error()).Error("error listing users")
 								continue
 							}
 
@@ -218,7 +250,7 @@ func main() {
 	})
 	if moduleConfig.EnableStaticServer {
 		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(httpConfig.Path))))
-		httpLogger(logger.MTNotice, "serving %s", httpConfig.Path)
+		httpLogger.WithField("path", httpConfig.Path).Info("serving %s")
 	}
 
 	go func() {

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	irc "github.com/gempir/go-twitch-irc/v2"
-	"github.com/strimertul/strimertul/logger"
+	"github.com/sirupsen/logrus"
 	"github.com/strimertul/strimertul/modules/loyalty"
 )
 
@@ -13,7 +13,7 @@ type TwitchBot struct {
 	Client *irc.Client
 
 	username    string
-	logger      logger.LogFn
+	logger      logrus.FieldLogger
 	lastMessage time.Time
 	activeUsers map[string]bool
 	banlist     map[string]bool
@@ -22,7 +22,11 @@ type TwitchBot struct {
 	Loyalty *loyalty.Manager
 }
 
-func NewBot(username string, token string, log logger.LogFn) *TwitchBot {
+func NewBot(username string, token string, log logrus.FieldLogger) *TwitchBot {
+	if log == nil {
+		log = logrus.New()
+	}
+
 	// Create client
 	client := irc.NewClient(username, token)
 
@@ -36,10 +40,10 @@ func NewBot(username string, token string, log logger.LogFn) *TwitchBot {
 	}
 
 	client.OnPrivateMessage(func(message irc.PrivateMessage) {
-		bot.logger(logger.MTDebug, "MSG: <%s> %s", message.User.Name, message.Message)
+		bot.logger.Debugf("MSG: <%s> %s", message.User.Name, message.Message)
 		// Ignore messages for a while or twitch will get mad!
 		if message.Time.Before(bot.lastMessage.Add(time.Second * 2)) {
-			bot.logger(logger.MTDebug, "message received too soon, ignoring")
+			bot.logger.Debug("message received too soon, ignoring")
 			return
 		}
 		bot.activeUsers[message.User.Name] = true
@@ -57,16 +61,22 @@ func NewBot(username string, token string, log logger.LogFn) *TwitchBot {
 
 	client.OnUserJoinMessage(func(message irc.UserJoinMessage) {
 		if strings.ToLower(message.User) == bot.username {
-			bot.logger(logger.MTNotice, "Joined %s", message.Channel)
+			bot.logger.WithField("channel", message.Channel).Info("joined channel")
 		} else {
-			bot.logger(logger.MTDebug, "%s joined %s", message.User, message.Channel)
+			bot.logger.WithFields(logrus.Fields{
+				"username": message.User,
+				"channel":  message.Channel,
+			}).Debug("user joined channel")
 		}
 	})
 	client.OnUserPartMessage(func(message irc.UserPartMessage) {
 		if strings.ToLower(message.User) == bot.username {
-			bot.logger(logger.MTNotice, "Left %s", message.Channel)
+			bot.logger.WithField("channel", message.Channel).Info("left channel")
 		} else {
-			bot.logger(logger.MTDebug, "%s left %s", message.User, message.Channel)
+			bot.logger.WithFields(logrus.Fields{
+				"username": message.User,
+				"channel":  message.Channel,
+			}).Debug("user left channel")
 		}
 	})
 

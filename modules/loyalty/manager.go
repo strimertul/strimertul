@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/strimertul/strimertul/kv"
-	"github.com/strimertul/strimertul/logger"
+	"github.com/sirupsen/logrus"
+	kv "github.com/strimertul/kilovolt"
 	"github.com/strimertul/strimertul/utils"
 
 	"github.com/dgraph-io/badger/v3"
@@ -21,10 +21,14 @@ type Manager struct {
 	RedeemQueue RedeemQueueStorage
 
 	hub    *kv.Hub
-	logger logger.LogFn
+	logger logrus.FieldLogger
 }
 
-func NewManager(db *badger.DB, hub *kv.Hub, log logger.LogFn) (*Manager, error) {
+func NewManager(db *badger.DB, hub *kv.Hub, log logrus.FieldLogger) (*Manager, error) {
+	if log == nil {
+		log = logrus.New()
+	}
+
 	manager := &Manager{
 		logger: log,
 		hub:    hub,
@@ -32,7 +36,7 @@ func NewManager(db *badger.DB, hub *kv.Hub, log logger.LogFn) (*Manager, error) 
 	// Ger data from DB
 	if err := utils.DBGetJSON(db, ConfigKey, &manager.Config); err != nil {
 		if err == badger.ErrKeyNotFound {
-			log(logger.MTWarning, "Missing configuration for loyalty (but it's enabled). Please make sure to set it up properly!")
+			log.Warn("missing configuration for loyalty (but it's enabled). Please make sure to set it up properly!")
 		} else {
 			return nil, err
 		}
@@ -96,9 +100,12 @@ func (m *Manager) update(kvs *pb.KVList) error {
 			}
 		}
 		if err != nil {
-			m.logger(logger.MTError, "Subscribe error: invalid JSON received on key %s: %s", kv.Key, err.Error())
+			m.logger.WithFields(logrus.Fields{
+				"key":   string(kv.Key),
+				"error": err.Error(),
+			}).Error("subscribe error: invalid JSON received on key")
 		} else {
-			m.logger(logger.MTNotice, "Updated key %s", kv.Key)
+			m.logger.WithField("key", string(kv.Key)).Debug("updated key")
 		}
 	}
 	return nil
