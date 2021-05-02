@@ -245,6 +245,39 @@ export const modules = {
   ),
 };
 
+export const setUserPoints = createAsyncThunk(
+  'api/setUserPoints',
+  async (
+    {
+      user,
+      points,
+      relative,
+    }: { user: string; points: number; relative: boolean },
+    { getState, dispatch },
+  ) => {
+    const { api } = getState() as { api: APIState };
+    const newAmount = relative
+      ? (api.loyalty.users[user] ?? 0) + points
+      : points;
+    return dispatch(
+      modules.loyaltyStorage.setter({
+        ...api.loyalty.users,
+        [user]: newAmount,
+      }),
+    );
+  },
+);
+
+export const createRedeem = createAsyncThunk(
+  'api/createRedeem',
+  async (redeem: LoyaltyRedeem, { getState, dispatch }) => {
+    const { api } = getState() as { api: APIState };
+    return dispatch(
+      modules.loyaltyRedeemQueue.setter([...api.loyalty.redeemQueue, redeem]),
+    );
+  },
+);
+
 const apiReducer = createSlice({
   name: 'api',
   initialState,

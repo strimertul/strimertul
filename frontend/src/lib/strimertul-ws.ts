@@ -1,7 +1,5 @@
 export type SubscriptionHandler = (newValue: string) => void;
 
-export type wsMessage = wsError | wsPush | wsResponse;
-
 interface wsError {
   ok: false;
   error: string;
@@ -20,6 +18,8 @@ interface wsResponse {
   cmd: string;
   data?: string;
 }
+
+export type wsMessage = wsError | wsPush | wsResponse;
 
 export default class StrimertulWS {
   socket: WebSocket;

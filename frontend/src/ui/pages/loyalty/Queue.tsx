@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { RouteComponentProps } from '@reach/router';
 import { useModule } from '../../../lib/react-utils';
-import { LoyaltyRedeem, modules } from '../../../store/api/reducer';
+import {
+  LoyaltyRedeem,
+  modules,
+  setUserPoints,
+} from '../../../store/api/reducer';
 import PageList from '../../components/PageList';
 
 interface SortingOrder {
@@ -15,7 +19,6 @@ export default function LoyaltyRedeemQueuePage(
   props: RouteComponentProps<unknown>,
 ): React.ReactElement {
   const [redemptions, setRedeemQueue] = useModule(modules.loyaltyRedeemQueue);
-  const [points, setPoints] = useModule(modules.loyaltyStorage);
 
   const [sorting, setSorting] = useState<SortingOrder>({
     key: 'when',
@@ -86,9 +89,10 @@ export default function LoyaltyRedeemQueuePage(
   const refundRedeem = (redeem: LoyaltyRedeem) => {
     // Give points back to the viewer
     dispatch(
-      setPoints({
-        ...points,
-        [redeem.username]: (points[redeem.username] ?? 0) + redeem.reward.price,
+      setUserPoints({
+        user: redeem.username,
+        points: redeem.reward.price,
+        relative: true,
       }),
     );
     // Take the redeem off the list
@@ -157,8 +161,12 @@ export default function LoyaltyRedeemQueuePage(
                   <td>{redemption.reward.name}</td>
                   <td style={{ textAlign: 'right' }}>
                     <a onClick={() => acceptRedeem(redemption)}>Accept</a>
-                    {' 🞄 '}
-                    <a onClick={() => refundRedeem(redemption)}>Refund</a>
+                    {redemption.username !== '@PLATFORM' ? (
+                      <>
+                        {' 🞄 '}
+                        <a onClick={() => refundRedeem(redemption)}>Refund</a>
+                      </>
+                    ) : null}
                   </td>
                 </tr>
               ))}

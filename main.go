@@ -218,6 +218,7 @@ func main() {
 	})
 	if moduleConfig.EnableStaticServer {
 		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(httpConfig.Path))))
+		httpLogger(logger.MTNotice, "serving %s", httpConfig.Path)
 	}
 
 	go func() {
@@ -226,7 +227,6 @@ func main() {
 	}()
 
 	// Start HTTP server
-	httpLogger(logger.MTNotice, "serving %s", httpConfig.Path)
 	fatalError(http.ListenAndServe(httpConfig.Bind, nil), "HTTP server died unexepectedly")
 }
 

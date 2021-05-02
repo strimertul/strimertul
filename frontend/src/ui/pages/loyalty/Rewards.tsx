@@ -3,7 +3,11 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useModule } from '../../../lib/react-utils';
 import { RootState } from '../../../store';
-import { LoyaltyReward, modules } from '../../../store/api/reducer';
+import {
+  createRedeem,
+  LoyaltyReward,
+  modules,
+} from '../../../store/api/reducer';
 import Modal from '../../components/Modal';
 
 interface RewardItemProps {
@@ -11,12 +15,14 @@ interface RewardItemProps {
   onToggleState: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onTest: () => void;
 }
 function RewardItem({
   item,
   onToggleState,
   onEdit,
   onDelete,
+  onTest,
 }: RewardItemProps) {
   const currency = useSelector(
     (state: RootState) =>
@@ -71,6 +77,9 @@ function RewardItem({
             </>
           ) : null}
           <div style={{ marginTop: '1rem' }}>
+            <a className="button is-small" onClick={onTest}>
+              Test
+            </a>{' '}
             <a className="button is-small" onClick={onToggleState}>
               {item.enabled ? 'Disable' : 'Enable'}
             </a>{' '}
@@ -358,6 +367,17 @@ export default function LoyaltyRewardsPage(
     dispatch(setRewards(rewards.filter((entry) => entry.id !== rewardID)));
   };
 
+  const testRedeem = (reward: LoyaltyReward) => {
+    dispatch(
+      createRedeem({
+        username: '@PLATFORM',
+        display_name: 'me :3',
+        when: new Date(),
+        reward,
+      }),
+    );
+  };
+
   return (
     <>
       <h1 className="title is-4">Loyalty rewards</h1>
@@ -413,6 +433,7 @@ export default function LoyaltyRewardsPage(
               onDelete={() => deleteReward(reward.id)}
               onEdit={() => setShowModifyReward(reward)}
               onToggleState={() => toggleReward(reward.id)}
+              onTest={() => testRedeem(reward)}
             />
           ))}
       </div>
