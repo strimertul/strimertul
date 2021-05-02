@@ -2,7 +2,7 @@
 
 Smol broadcasting suite, includes:
 
-- Extremely simple/fast disk-backed KV over websocket for interacting with web-based overlays
+- Extremely simple/fast disk-backed KV over websocket (Kilovolt) for interacting with web-based overlays
   - oh and it has pub/sub
 - Static file server for said overlays
 - Loyalty system that tracks viewers and allows them to redeem rewards and contribute to community goals
@@ -29,5 +29,7 @@ go build
 ```
 
 ## License
+
+Kilovolt's code is based on Gorilla Websocket's server example, licensed under [BSD-2-Clause](https://github.com/gorilla/websocket/blob/master/LICENSE)
 
 The entire project is licensed under [AGPL-3.0-only](LICENSE) (see `LICENSE`). For ISC exceptions, see [LICENSING.md](LICENSING.md).

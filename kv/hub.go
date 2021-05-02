@@ -1,9 +1,11 @@
 package kv
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/dgraph-io/badger/v3"
+	"github.com/dgraph-io/badger/v3/pb"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/strimertul/strimertul/logger"
 )
@@ -15,23 +17,13 @@ type rawMessage struct {
 
 type clientList map[*Client]bool
 
-// Hub maintains the set of active clients and broadcasts messages to the
-// clients.
 type Hub struct {
-	// Registered clients.
-	clients clientList
-
-	// Inbound messages from the clients.
-	incoming chan rawMessage
-
-	// Register requests from the clients.
-	register chan *Client
-
-	// Unregister requests from clients.
+	clients    clientList
+	incoming   chan rawMessage
+	register   chan *Client
 	unregister chan *Client
 
 	subscribers map[string]clientList
-	listeners   map[string][]chan<- string
 
 	db *badger.DB
 
@@ -41,16 +33,37 @@ type Hub struct {
 var json = jsoniter.ConfigDefault
 
 func NewHub(db *badger.DB, logger logger.LogFn) *Hub {
-	return &Hub{
+	hub := &Hub{
 		incoming:    make(chan rawMessage, 10),
 		register:    make(chan *Client),
 		unregister:  make(chan *Client),
 		clients:     make(clientList),
 		subscribers: make(map[string]clientList),
-		listeners:   make(map[string][]chan<- string),
 		db:          db,
 		logger:      logger,
 	}
+
+	go func() {
+		db.Subscribe(context.Background(), hub.update, []byte{})
+	}()
+
+	return hub
+}
+
+func (h *Hub) update(kvs *pb.KVList) error {
+	for _, kv := range kvs.Kv {
+		key := string(kv.Key)
+
+		// Check for subscribers
+		if subscribers, ok := h.subscribers[key]; ok {
+			// Notify subscribers
+			submsg, _ := json.Marshal(wsPush{"push", key, string(kv.Value)})
+			for client := range subscribers {
+				client.send <- submsg
+			}
+		}
+	}
+	return nil
 }
 
 func sendErr(client *Client, err string) {
@@ -78,33 +91,7 @@ func (h *Hub) WriteKey(key string, data string) error {
 	if err != nil {
 		return err
 	}
-	err = tx.Commit()
-	if err != nil {
-		return err
-	}
-
-	h.logger(logger.MTDebug, "(internal) modified key %s: %s", key, data)
-
-	// Notify subscribers
-	if sublist, ok := h.subscribers[key]; ok {
-		submsg, _ := json.Marshal(wsPush{"push", key, data})
-		for client := range sublist {
-			client.send <- submsg
-		}
-	}
-
-	// Notify listener
-	if sublist, ok := h.listeners[key]; ok {
-		for _, listener := range sublist {
-			listener <- data
-		}
-	}
-
-	return nil
-}
-
-func (h *Hub) SubscribeKey(key string, ch chan<- string) {
-	h.listeners[key] = append(h.listeners[key], ch)
+	return tx.Commit()
 }
 
 func (h *Hub) handleCmd(client *Client, message rawMessage) {
@@ -168,21 +155,6 @@ func (h *Hub) handleCmd(client *Client, message rawMessage) {
 		client.send <- msg
 
 		h.logger(logger.MTDebug, "modified key %s: %s", key, data)
-
-		// Notify subscribers
-		if sublist, ok := h.subscribers[key]; ok {
-			submsg, _ := json.Marshal(wsPush{"push", key, data})
-			for client := range sublist {
-				client.send <- submsg
-			}
-		}
-
-		// Notify listener
-		if sublist, ok := h.listeners[key]; ok {
-			for _, listener := range sublist {
-				listener <- data
-			}
-		}
 	case CmdSubscribeKey:
 		// Check params
 		key, ok := msg.Data["key"].(string)
@@ -236,11 +208,9 @@ func (h *Hub) Run() {
 			if _, ok := h.clients[client]; !ok {
 				continue
 			}
-			// Check for subscriptions
+			// Unsubscribe from all keys
 			for key := range h.subscribers {
-				if _, ok := h.subscribers[key][client]; ok {
-					delete(h.subscribers[key], client)
-				}
+				delete(h.subscribers[key], client)
 			}
 			// Delete entry and close channel
 			delete(h.clients, client)
