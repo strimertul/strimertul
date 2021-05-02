@@ -10,6 +10,7 @@ import {
 } from '@reduxjs/toolkit';
 import StrimertulWS from '../../lib/strimertul-ws';
 
+// Storage
 const moduleConfigKey = 'stul-meta/modules';
 const httpConfigKey = 'http/config';
 const twitchBotConfigKey = 'twitchbot/config';
@@ -19,6 +20,10 @@ const loyaltyStorageKey = 'loyalty/users';
 const loyaltyRewardsKey = 'loyalty/rewards';
 const loyaltyGoalsKey = 'loyalty/goals';
 const loyaltyRedeemQueueKey = 'loyalty/redeem-queue';
+
+// RPCs
+const loyaltyCreateRedeemKey = 'loyalty/@create-redeem';
+const loyaltyRemoveRedeemKey = 'loyalty/@remove-redeem';
 
 interface ModuleConfig {
   configured: boolean;
@@ -270,11 +275,17 @@ export const setUserPoints = createAsyncThunk(
 
 export const createRedeem = createAsyncThunk(
   'api/createRedeem',
-  async (redeem: LoyaltyRedeem, { getState, dispatch }) => {
+  async (redeem: LoyaltyRedeem, { getState }) => {
     const { api } = getState() as { api: APIState };
-    return dispatch(
-      modules.loyaltyRedeemQueue.setter([...api.loyalty.redeemQueue, redeem]),
-    );
+    return api.client.putJSON(loyaltyCreateRedeemKey, redeem);
+  },
+);
+
+export const removeRedeem = createAsyncThunk(
+  'api/createRedeem',
+  async (redeem: LoyaltyRedeem, { getState }) => {
+    const { api } = getState() as { api: APIState };
+    return api.client.putJSON(loyaltyRemoveRedeemKey, redeem);
   },
 );
 

@@ -25,9 +25,7 @@ export function useModule<T>({
   const data = useSelector((state: RootState) => selector(state.api));
   const dispatch = useDispatch();
   useEffect(() => {
-    if (!data) {
-      dispatch(getter());
-    }
+    dispatch(getter());
     const subscriber = (newValue) => {
       dispatch(asyncSetter(JSON.parse(newValue) as T));
     };

@@ -58,3 +58,7 @@ type Redeem struct {
 	Reward      Reward    `json:"reward"`
 	When        time.Time `json:"when"`
 }
+
+const CreateRedeemRPC = "loyalty/@create-redeem"
+const RemoveRedeemRPC = "loyalty/@remove-redeem"
+const RedeemEvent = "loyalty/ev/new-redeem"

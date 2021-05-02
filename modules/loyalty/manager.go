@@ -2,7 +2,7 @@ package loyalty
 
 import (
 	"context"
-	"time"
+	"errors"
 
 	"github.com/strimertul/strimertul/kv"
 	"github.com/strimertul/strimertul/logger"
@@ -82,6 +82,18 @@ func (m *Manager) update(kvs *pb.KVList) error {
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Value, &m.Rewards)
 		case QueueKey:
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Value, &m.RedeemQueue)
+		case CreateRedeemRPC:
+			var redeem Redeem
+			err = jsoniter.ConfigFastest.Unmarshal(kv.Value, &redeem)
+			if err == nil {
+				err = m.AddRedeem(redeem)
+			}
+		case RemoveRedeemRPC:
+			var redeem Redeem
+			err = jsoniter.ConfigFastest.Unmarshal(kv.Value, &redeem)
+			if err == nil {
+				err = m.RemoveRedeem(redeem)
+			}
 		}
 		if err != nil {
 			m.logger(logger.MTError, "Subscribe error: invalid JSON received on key %s: %s", kv.Key, err.Error())
@@ -122,14 +134,28 @@ func (m *Manager) SaveQueue() error {
 	return m.hub.WriteKey(QueueKey, string(data))
 }
 
-func (m *Manager) AddRedeem(username string, displayName string, reward Reward) error {
-	m.RedeemQueue = append(m.RedeemQueue, Redeem{
-		When:        time.Now(),
-		Username:    username,
-		DisplayName: displayName,
-		Reward:      reward,
-	})
+func (m *Manager) AddRedeem(redeem Redeem) error {
+	// Add to local list
+	m.RedeemQueue = append(m.RedeemQueue, redeem)
+
+	// Send redeem event
+	data, _ := jsoniter.ConfigFastest.Marshal(redeem)
+	m.hub.WriteKey(RedeemEvent, string(data))
 
 	// Save points
 	return m.SaveQueue()
+}
+
+func (m *Manager) RemoveRedeem(redeem Redeem) error {
+	for index, queued := range m.RedeemQueue {
+		if queued.When == redeem.When && queued.Username == redeem.Username && queued.Reward.ID == redeem.Reward.ID {
+			// Remove redemption from list
+			m.RedeemQueue = append(m.RedeemQueue[:index], m.RedeemQueue[index+1:]...)
+
+			// Save points
+			return m.SaveQueue()
+		}
+	}
+
+	return errors.New("redeem not found")
 }

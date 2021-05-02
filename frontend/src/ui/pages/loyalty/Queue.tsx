@@ -5,6 +5,7 @@ import { useModule } from '../../../lib/react-utils';
 import {
   LoyaltyRedeem,
   modules,
+  removeRedeem,
   setUserPoints,
 } from '../../../store/api/reducer';
 import PageList from '../../components/PageList';
@@ -18,7 +19,7 @@ export default function LoyaltyRedeemQueuePage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: RouteComponentProps<unknown>,
 ): React.ReactElement {
-  const [redemptions, setRedeemQueue] = useModule(modules.loyaltyRedeemQueue);
+  const [redemptions] = useModule(modules.loyaltyRedeemQueue);
 
   const [sorting, setSorting] = useState<SortingOrder>({
     key: 'when',
@@ -83,7 +84,7 @@ export default function LoyaltyRedeemQueuePage(
 
   const acceptRedeem = (redeem: LoyaltyRedeem) => {
     // Just take the redeem off the list
-    dispatch(setRedeemQueue(redemptions.filter((r) => r !== redeem)));
+    dispatch(removeRedeem(redeem));
   };
 
   const refundRedeem = (redeem: LoyaltyRedeem) => {
@@ -96,7 +97,7 @@ export default function LoyaltyRedeemQueuePage(
       }),
     );
     // Take the redeem off the list
-    dispatch(setRedeemQueue(redemptions.filter((r) => r !== redeem)));
+    dispatch(removeRedeem(redeem));
   };
 
   return (

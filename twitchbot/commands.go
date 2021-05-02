@@ -3,9 +3,11 @@ package twitchbot
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	irc "github.com/gempir/go-twitch-irc/v2"
 	"github.com/strimertul/strimertul/logger"
+	"github.com/strimertul/strimertul/modules/loyalty"
 )
 
 type AccessLevelType string
@@ -61,7 +63,12 @@ func cmdRedeem(bot *TwitchBot, message irc.PrivateMessage) {
 		}
 
 		// Perform redeem
-		if err := bot.Loyalty.AddRedeem(message.User.Name, message.User.DisplayName, reward); err != nil {
+		if err := bot.Loyalty.AddRedeem(loyalty.Redeem{
+			Username:    message.User.Name,
+			DisplayName: message.User.DisplayName,
+			When:        time.Now(),
+			Reward:      reward,
+		}); err != nil {
 			bot.logger(logger.MTError, "error while adding redeem: %s", err.Error())
 			return
 		}
