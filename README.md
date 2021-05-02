@@ -1,6 +1,6 @@
-# strimertul
+# Strimertül
 
-Streaming helpers, includes:
+Smol broadcasting suite, includes:
 
 - Extremely simple/fast disk-backed KV over websocket for interacting with web-based overlays
   - oh and it has pub/sub
@@ -12,7 +12,7 @@ Streaming helpers, includes:
 
 Platform support is limited to Twitch only for the time being (sorry!)
 
-# Building
+## Building
 
 You need to build the frontend first!
 
@@ -28,6 +28,6 @@ Once that's done, just build the app like any other Go project
 go build
 ```
 
-# License
+## License
 
 The entire project is licensed under [AGPL-3.0-only](LICENSE) (see `LICENSE`). For ISC exceptions, see [LICENSING.md](LICENSING.md).
