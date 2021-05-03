@@ -34,6 +34,22 @@ var commands = map[string]BotCommand{
 		AccessLevel: ALTEveryone,
 		Handler:     cmdRedeem,
 	},
+	"!balance": {
+		Description: "See your current point balance",
+		Usage:       "!balance",
+		AccessLevel: ALTEveryone,
+		Handler:     cmdBalance,
+	},
+}
+
+func cmdBalance(bot *TwitchBot, message irc.PrivateMessage) {
+	// Get user balance
+	balance, ok := bot.Loyalty.Points[message.User.Name]
+	if !ok {
+		balance = 0
+	}
+
+	bot.Client.Say(message.Channel, fmt.Sprintf("%s: You have %d %s!", message.User.DisplayName, balance, bot.Loyalty.Config.Currency))
 }
 
 func cmdRedeem(bot *TwitchBot, message irc.PrivateMessage) {

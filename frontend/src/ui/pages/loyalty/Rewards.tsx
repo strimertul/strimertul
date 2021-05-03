@@ -72,9 +72,9 @@ function RewardItem({
         <div className="content">
           {item.description}
           {item.required_info ? (
-            <>
+            <div style={{ marginTop: '1rem' }}>
               <b>Required info:</b> {item.required_info}
-            </>
+            </div>
           ) : null}
           <div style={{ marginTop: '1rem' }}>
             <a className="button is-small" onClick={onTest}>

@@ -54,6 +54,7 @@ func NewBot(username string, token string, log logrus.FieldLogger) *TwitchBot {
 			for cmd, data := range commands {
 				if strings.HasPrefix(message.Message, cmd) {
 					data.Handler(bot, message)
+					bot.lastMessage = time.Now()
 				}
 			}
 		}
