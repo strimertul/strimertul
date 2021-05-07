@@ -1,3 +1,5 @@
+import { EventEmitter } from '@billjs/event-emitter';
+
 export type SubscriptionHandler = (newValue: string) => void;
 
 interface wsError {
@@ -21,37 +23,54 @@ interface wsResponse {
 
 export type wsMessage = wsError | wsPush | wsResponse;
 
-export default class StrimertulWS {
+export default class StrimertulWS extends EventEmitter {
   socket: WebSocket;
 
-  pending: Record<string, (...args) => void>;
+  address: string;
 
-  onOpen: (() => void)[];
+  pending: Record<string, (...args) => void>;
 
   subscriptions: Record<string, SubscriptionHandler[]>;
 
   constructor(address = 'ws://localhost:4337/ws') {
+    super();
+    this.address = address;
     this.pending = {};
     this.subscriptions = {};
-    this.onOpen = [];
+    this.connect(address);
+  }
+
+  reconnect(): void {
+    this.connect(this.address);
+  }
+
+  private connect(address: string): void {
     this.socket = new WebSocket(address);
     this.socket.addEventListener('open', this.open.bind(this));
     this.socket.addEventListener('message', this.received.bind(this));
+    this.socket.addEventListener('close', this.closed.bind(this));
   }
 
   async wait(): Promise<void> {
     return new Promise((resolve) => {
-      this.onOpen.push(resolve);
       if (this.socket.readyState === this.socket.OPEN) {
         resolve();
+        return;
       }
+      this.once('open', () => resolve());
     });
   }
 
   private open() {
     console.info('connected to server');
-    this.onOpen.forEach((res) => res());
-    this.onOpen = [];
+    this.fire('open');
+    this.fire('stateChange', this.socket.readyState);
+  }
+
+  private closed() {
+    console.warn('lost connection to server');
+    this.fire('close');
+    this.fire('stateChange', this.socket.readyState);
   }
 
   private received(event: MessageEvent) {

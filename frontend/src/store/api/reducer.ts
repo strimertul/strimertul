@@ -47,7 +47,8 @@ interface TwitchBotConfig {
 
 interface StulbeConfig {
   endpoint: string;
-  token: string;
+  username: string;
+  auth_key: string;
 }
 
 interface LoyaltyConfig {
@@ -93,6 +94,7 @@ export interface LoyaltyRedeem {
 
 export interface APIState {
   client: StrimertulWS;
+  connected: boolean;
   initialLoadComplete: boolean;
   loyalty: {
     users: LoyaltyStorage;
@@ -111,6 +113,7 @@ export interface APIState {
 
 const initialState: APIState = {
   client: null,
+  connected: false,
   initialLoadComplete: false,
   loyalty: {
     users: null,
@@ -175,11 +178,15 @@ function makeModule<T>(
   };
 }
 
+// eslint-disable-next-line import/no-mutable-exports, @typescript-eslint/ban-types
+export let setupClientReconnect: AsyncThunk<void, StrimertulWS, {}>;
+
 export const createWSClient = createAsyncThunk(
   'api/createClient',
-  async (address: string) => {
+  async (address: string, { dispatch }) => {
     const client = new StrimertulWS(address);
     await client.wait();
+    dispatch(setupClientReconnect(client));
     return client;
   },
 );
@@ -296,6 +303,9 @@ const apiReducer = createSlice({
     initialLoadCompleted(state) {
       state.initialLoadComplete = true;
     },
+    connectionStatusChanged(state, { payload }: PayloadAction<boolean>) {
+      state.connected = payload;
+    },
     moduleConfigChanged(state, { payload }: PayloadAction<ModuleConfig>) {
       state.moduleConfigs.moduleConfig = payload;
     },
@@ -324,6 +334,7 @@ const apiReducer = createSlice({
   extraReducers: (builder) => {
     builder.addCase(createWSClient.fulfilled, (state, { payload }) => {
       state.client = payload;
+      state.connected = true;
     });
     Object.values(modules).forEach((mod) => {
       builder.addCase(mod.getter.fulfilled, mod.stateSetter);
@@ -331,5 +342,21 @@ const apiReducer = createSlice({
     });
   },
 });
+
+setupClientReconnect = createAsyncThunk(
+  'api/setupClientReconnect',
+  async (client: StrimertulWS, { dispatch }) => {
+    client.on('close', () => {
+      setTimeout(async () => {
+        console.info('Attempting reconnection');
+        client.reconnect();
+      }, 5000);
+      dispatch(apiReducer.actions.connectionStatusChanged(false));
+    });
+    client.on('open', () => {
+      dispatch(apiReducer.actions.connectionStatusChanged(true));
+    });
+  },
+);
 
 export default apiReducer;

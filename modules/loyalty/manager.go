@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 
-	"github.com/sirupsen/logrus"
-	kv "github.com/strimertul/kilovolt"
-	"github.com/strimertul/strimertul/utils"
-
 	"github.com/dgraph-io/badger/v3"
 	"github.com/dgraph-io/badger/v3/pb"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/sirupsen/logrus"
+
+	kv "github.com/strimertul/kilovolt"
+	"github.com/strimertul/strimertul/utils"
 )
 
 type Manager struct {

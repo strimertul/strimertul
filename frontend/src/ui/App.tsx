@@ -87,6 +87,7 @@ export default function App(): React.ReactElement {
   const loc = useLocation();
 
   const client = useSelector((state: RootState) => state.api.client);
+  const connected = useSelector((state: RootState) => state.api.connected);
   const dispatch = useDispatch();
 
   // Create WS client
@@ -129,6 +130,13 @@ export default function App(): React.ReactElement {
 
   return (
     <section className="main-content columns is-fullheight">
+      <section className="notifications">
+        {!connected ? (
+          <div className="notification is-danger">
+            Connection to server was lost, retrying...
+          </div>
+        ) : null}
+      </section>
       <aside className="menu sidebar column is-3 is-fullheight section">
         <p className="menu-label is-hidden-touch">Navigation</p>
         <ul className="menu-list">{menu.map(routeItem)}</ul>

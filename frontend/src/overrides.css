@@ -169,3 +169,9 @@ span.sortable {
 .sidebar .menu-list a.is-active {
   background-color: #5e6d6f;
 }
+
+/* Notifications */
+.notifications {
+  position: fixed;
+  bottom: 0; right: 0;
+}

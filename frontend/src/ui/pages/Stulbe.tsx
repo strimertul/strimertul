@@ -56,6 +56,46 @@ export default function StulbePage(
           />
         </p>
       </div>
+      <div className="field">
+        <label className="label">User name</label>
+        <p className="control">
+          <input
+            className="input"
+            type="text"
+            placeholder="myUserName"
+            disabled={busy || !active}
+            value={stulbeConfig?.username ?? ''}
+            onChange={(ev) =>
+              dispatch(
+                apiReducer.actions.stulbeConfigChanged({
+                  ...stulbeConfig,
+                  username: ev.target.value,
+                }),
+              )
+            }
+          />
+        </p>
+      </div>
+      <div className="field">
+        <label className="label">Authorization key</label>
+        <p className="control">
+          <input
+            className="input"
+            type="password"
+            placeholder="key goes here"
+            disabled={busy || !active}
+            value={stulbeConfig?.auth_key ?? ''}
+            onChange={(ev) =>
+              dispatch(
+                apiReducer.actions.stulbeConfigChanged({
+                  ...stulbeConfig,
+                  auth_key: ev.target.value,
+                }),
+              )
+            }
+          />
+        </p>
+      </div>
       <button
         className="button"
         onClick={() => {

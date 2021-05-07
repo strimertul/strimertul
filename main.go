@@ -13,7 +13,7 @@ import (
 
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/loyalty"
-	"github.com/strimertul/strimertul/stulbe"
+	"github.com/strimertul/strimertul/modules/stulbe"
 	"github.com/strimertul/strimertul/twitchbot"
 	"github.com/strimertul/strimertul/utils"
 
@@ -138,11 +138,13 @@ func main() {
 	failOnError(utils.DBGetJSON(db, modules.HTTPServerConfigKey, &httpConfig), "Could not retrieve HTTP server config")
 
 	// Get Stulbe config, if enabled
-	var stulbeClient *stulbe.StulbeClient = nil
+	var stulbeClient *stulbe.Client = nil
 	if moduleConfig.EnableStulbe {
-		var stulbeConfig modules.StulbeConfig
-		failOnError(utils.DBGetJSON(db, modules.StulbeConfigKey, &stulbeConfig), "Could not retrieve Stulbe config")
-		stulbeClient = stulbe.NewClient(stulbeConfig.Endpoint)
+		stulbeClient, err = stulbe.NewClient(db, hub, wrapLogger("stulbe"))
+		if err != nil {
+			log.WithError(err).Error("Stulbe initialization failed! Module was temporarely disabled")
+			moduleConfig.EnableStulbe = false
+		}
 	}
 
 	var loyaltyManager *loyalty.Manager
@@ -150,7 +152,8 @@ func main() {
 	if moduleConfig.EnableLoyalty {
 		loyaltyManager, err = loyalty.NewManager(db, hub, loyaltyLogger)
 		if err != nil {
-			fatalError(err, "Could not initialize loyalty system")
+			log.WithError(err).Error("Loyalty initialization failed! Module was temporarely disabled")
+			moduleConfig.EnableLoyalty = false
 		}
 	}
 
@@ -186,7 +189,7 @@ func main() {
 							if loyaltyManager.Config.LiveCheck && moduleConfig.EnableStulbe {
 								status, err := stulbeClient.StreamStatus(twitchConfig.Channel)
 								if err != nil {
-									twitchLogger.WithField("error", err.Error()).Error("Error checking stream status")
+									twitchLogger.WithError(err).Error("Error checking stream status")
 								} else {
 									streamOnline = status != nil
 								}
@@ -201,7 +204,7 @@ func main() {
 							// Get user list
 							users, err := bot.Client.Userlist(twitchConfig.Channel)
 							if err != nil {
-								twitchLogger.WithField("error", err.Error()).Error("error listing users")
+								twitchLogger.WithError(err).Error("error listing users")
 								continue
 							}
 

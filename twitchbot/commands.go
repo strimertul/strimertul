@@ -84,13 +84,13 @@ func cmdRedeem(bot *TwitchBot, message irc.PrivateMessage) {
 			When:        time.Now(),
 			Reward:      reward,
 		}); err != nil {
-			bot.logger.WithField("error", err.Error()).Error("error while adding redeem")
+			bot.logger.WithError(err).Error("error while adding redeem")
 			return
 		}
 
 		// Remove points from user
 		if err := bot.Loyalty.TakePoints(map[string]int64{message.User.Name: reward.Price}); err != nil {
-			bot.logger.WithField("error", err.Error()).Error("error while taking points for redeem")
+			bot.logger.WithError(err).Error("error while taking points for redeem")
 		}
 
 		bot.Client.Say(message.Channel, fmt.Sprintf("%s has redeemed %s! (new balance: %d %s)", message.User.DisplayName, reward.Name, bot.Loyalty.Points[message.User.Name], bot.Loyalty.Config.Currency))
