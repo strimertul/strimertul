@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"time"
 
-	kv "github.com/strimertul/kilovolt"
+	kv "github.com/strimertul/kilovolt/v2"
 
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/loyalty"
@@ -145,6 +145,7 @@ func main() {
 			log.WithError(err).Error("Stulbe initialization failed! Module was temporarely disabled")
 			moduleConfig.EnableStulbe = false
 		}
+		defer stulbeClient.Close()
 	}
 
 	var loyaltyManager *loyalty.Manager

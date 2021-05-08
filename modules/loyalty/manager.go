@@ -9,7 +9,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 
-	kv "github.com/strimertul/kilovolt"
+	kv "github.com/strimertul/kilovolt/v2"
 	"github.com/strimertul/strimertul/utils"
 )
 
