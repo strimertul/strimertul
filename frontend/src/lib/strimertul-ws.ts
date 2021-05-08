@@ -2,36 +2,78 @@ import { EventEmitter } from '@billjs/event-emitter';
 
 export type SubscriptionHandler = (newValue: string) => void;
 
-interface wsError {
+interface kvError {
   ok: false;
   error: string;
 }
 
-interface wsPush {
+interface kvPush {
   type: 'push';
   key: string;
   // eslint-disable-next-line camelcase
   new_value: string;
 }
 
-interface wsResponse {
+interface kvGenericResponse {
   ok: true;
   type: 'response';
   cmd: string;
-  data?: string;
+  data: string;
 }
 
-export type wsMessage = wsError | wsPush | wsResponse;
+interface kvEmptyResponse {
+  ok: true;
+  type: 'response';
+  cmd: string;
+}
 
-export default class StrimertulWS extends EventEmitter {
-  socket: WebSocket;
+interface kvGet {
+  command: 'kget';
+  data: { key: string };
+}
+
+interface kvSet {
+  command: 'kset';
+  data: { key: string; data: string };
+}
+interface kvSubscribe {
+  command: 'ksub';
+  data: { key: string };
+}
+
+interface kvUnsubscribe {
+  command: 'kunsub';
+  data: { key: string };
+}
+
+interface kvVersion {
+  command: 'kversion';
+}
+
+export type KilovoltRequest =
+  | kvGet
+  | kvSet
+  | kvSubscribe
+  | kvUnsubscribe
+  | kvVersion;
+
+type KilovoltResponse = kvGenericResponse | kvEmptyResponse;
+
+export type KilovoltMessage = kvError | kvPush | KilovoltResponse;
+
+export default class KilovoltWS extends EventEmitter {
+  socket!: WebSocket;
 
   address: string;
 
-  pending: Record<string, (...args) => void>;
+  pending: Record<string, (response: KilovoltMessage) => void>;
 
   subscriptions: Record<string, SubscriptionHandler[]>;
 
+  /**
+   * Create a new Kilovolt client instance and connect to it
+   * @param address Kilovolt server endpoint (including path)
+   */
   constructor(address = 'ws://localhost:4337/ws') {
     super();
     this.address = address;
@@ -40,6 +82,9 @@ export default class StrimertulWS extends EventEmitter {
     this.connect(address);
   }
 
+  /**
+   * Re-connect to kilovolt server
+   */
   reconnect(): void {
     this.connect(this.address);
   }
@@ -51,6 +96,9 @@ export default class StrimertulWS extends EventEmitter {
     this.socket.addEventListener('close', this.closed.bind(this));
   }
 
+  /**
+   * Wait for websocket connection to be established
+   */
   async wait(): Promise<void> {
     return new Promise((resolve) => {
       if (this.socket.readyState === this.socket.OPEN) {
@@ -79,7 +127,7 @@ export default class StrimertulWS extends EventEmitter {
       .map((ev) => ev.trim())
       .filter((ev) => ev.length > 0);
     events.forEach((ev) => {
-      const response: wsMessage = JSON.parse(ev ?? '""');
+      const response: KilovoltMessage = JSON.parse(ev ?? '""');
       if ('error' in response) {
         console.error('Received error from ws: ', response.error);
         // TODO show in UI somehow
@@ -116,7 +164,12 @@ export default class StrimertulWS extends EventEmitter {
     });
   }
 
-  async send<R, T>(msg: T): Promise<R> {
+  /**
+   * Send a request to the server
+   * @param msg Request to send
+   * @returns Response from server
+   */
+  async send(msg: KilovoltRequest): Promise<KilovoltMessage> {
     return new Promise((resolve) => {
       const payload = JSON.stringify(msg);
       this.socket.send(payload);
@@ -124,7 +177,13 @@ export default class StrimertulWS extends EventEmitter {
     });
   }
 
-  async putKey(key: string, data: string): Promise<wsMessage> {
+  /**
+   * Set a key to a specified value
+   * @param key Key to set
+   * @param data Value to set
+   * @returns Reply from server
+   */
+  async putKey(key: string, data: string): Promise<KilovoltMessage> {
     return this.send({
       command: 'kset',
       data: {
@@ -134,7 +193,13 @@ export default class StrimertulWS extends EventEmitter {
     });
   }
 
-  async putJSON<T>(key: string, data: T): Promise<wsMessage> {
+  /**
+   * Set a key to the JSON representation of an object
+   * @param key Key to set
+   * @param data Object to save
+   * @returns Reply from server
+   */
+  async putJSON<T>(key: string, data: T): Promise<KilovoltMessage> {
     return this.send({
       command: 'kset',
       data: {
@@ -144,33 +209,53 @@ export default class StrimertulWS extends EventEmitter {
     });
   }
 
+  /**
+   * Retrieve value for key
+   * @param key Key to retrieve
+   * @returns Reply from server
+   */
   async getKey(key: string): Promise<string> {
-    const response: wsError | wsResponse = await this.send({
+    const response = (await this.send({
       command: 'kget',
       data: {
         key,
       },
-    });
+    })) as kvError | kvGenericResponse;
     if ('error' in response) {
       throw new Error(response.error);
     }
     return response.data;
   }
 
+  /**
+   * Retrieve object from key, deserialized from JSON.
+   * It's your responsibility to make sure the object is actually what you expect
+   * @param key Key to retrieve
+   * @returns Reply from server
+   */
   async getJSON<T>(key: string): Promise<T> {
-    const response: wsError | wsResponse = await this.send({
+    const response = (await this.send({
       command: 'kget',
       data: {
         key,
       },
-    });
+    })) as kvError | kvGenericResponse;
     if ('error' in response) {
       throw new Error(response.error);
     }
     return JSON.parse(response.data);
   }
 
-  async subscribe(key: string, fn: SubscriptionHandler): Promise<wsMessage> {
+  /**
+   * Subscribe to key changes
+   * @param key Key to subscribe to
+   * @param fn Callback to call when key changes
+   * @returns Reply from server
+   */
+  async subscribe(
+    key: string,
+    fn: SubscriptionHandler,
+  ): Promise<KilovoltMessage> {
     if (key in this.subscriptions) {
       this.subscriptions[key].push(fn);
     } else {
@@ -185,6 +270,13 @@ export default class StrimertulWS extends EventEmitter {
     });
   }
 
+  /**
+   * Stop calling a callback when its related key changes
+   * This only
+   * @param key Key to unsubscribe from
+   * @param fn Callback to stop calling
+   * @returns true if a subscription was removed, false otherwise
+   */
   async unsubscribe(key: string, fn: SubscriptionHandler): Promise<boolean> {
     if (!(key in this.subscriptions)) {
       // No subscriptions, just warn and return
@@ -210,12 +302,12 @@ export default class StrimertulWS extends EventEmitter {
     // Check if array is empty
     if (this.subscriptions[key].length < 1) {
       // Send unsubscribe
-      const res: wsResponse | wsError = await this.send({
+      const res = (await this.send({
         command: 'kunsub',
         data: {
           key,
         },
-      });
+      })) as kvError | kvGenericResponse;
       if ('error' in res) {
         console.warn(`unsubscribe failed: ${res.error}`);
       }
