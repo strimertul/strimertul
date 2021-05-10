@@ -8,7 +8,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 
-	kv "github.com/strimertul/kilovolt/v2"
+	kv "github.com/strimertul/kilovolt/v3"
 	"github.com/strimertul/strimertul/database"
 )
 

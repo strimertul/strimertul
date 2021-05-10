@@ -15,7 +15,7 @@ import (
 	"github.com/nicklaw5/helix"
 	"github.com/sirupsen/logrus"
 
-	kv "github.com/strimertul/kilovolt/v2"
+	kv "github.com/strimertul/kilovolt/v3"
 	"github.com/strimertul/stulbe/api"
 
 	"github.com/strimertul/strimertul/database"

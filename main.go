@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"time"
 
-	kv "github.com/strimertul/kilovolt/v2"
+	kv "github.com/strimertul/kilovolt/v3"
 
 	"github.com/strimertul/strimertul/database"
 	"github.com/strimertul/strimertul/modules"
