@@ -5,12 +5,11 @@ import (
 	"errors"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/dgraph-io/badger/v3/pb"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 
 	kv "github.com/strimertul/kilovolt/v2"
-	"github.com/strimertul/strimertul/utils"
+	"github.com/strimertul/strimertul/database"
 )
 
 type Manager struct {
@@ -24,7 +23,7 @@ type Manager struct {
 	logger logrus.FieldLogger
 }
 
-func NewManager(db *badger.DB, hub *kv.Hub, log logrus.FieldLogger) (*Manager, error) {
+func NewManager(db *database.DB, hub *kv.Hub, log logrus.FieldLogger) (*Manager, error) {
 	if log == nil {
 		log = logrus.New()
 	}
@@ -34,31 +33,31 @@ func NewManager(db *badger.DB, hub *kv.Hub, log logrus.FieldLogger) (*Manager, e
 		hub:    hub,
 	}
 	// Ger data from DB
-	if err := utils.DBGetJSON(db, ConfigKey, &manager.Config); err != nil {
+	if err := db.GetJSON(ConfigKey, &manager.Config); err != nil {
 		if err == badger.ErrKeyNotFound {
 			log.Warn("missing configuration for loyalty (but it's enabled). Please make sure to set it up properly!")
 		} else {
 			return nil, err
 		}
 	}
-	if err := utils.DBGetJSON(db, PointsKey, &manager.Points); err != nil {
+	if err := db.GetJSON(PointsKey, &manager.Points); err != nil {
 		if err == badger.ErrKeyNotFound {
 			manager.Points = make(PointStorage)
 		} else {
 			return nil, err
 		}
 	}
-	if err := utils.DBGetJSON(db, RewardsKey, &manager.Rewards); err != nil {
+	if err := db.GetJSON(RewardsKey, &manager.Rewards); err != nil {
 		if err != badger.ErrKeyNotFound {
 			return nil, err
 		}
 	}
-	if err := utils.DBGetJSON(db, GoalsKey, &manager.Goals); err != nil {
+	if err := db.GetJSON(GoalsKey, &manager.Goals); err != nil {
 		if err != badger.ErrKeyNotFound {
 			return nil, err
 		}
 	}
-	if err := utils.DBGetJSON(db, QueueKey, &manager.RedeemQueue); err != nil {
+	if err := db.GetJSON(QueueKey, &manager.RedeemQueue); err != nil {
 		if err != badger.ErrKeyNotFound {
 			return nil, err
 		}
@@ -66,35 +65,35 @@ func NewManager(db *badger.DB, hub *kv.Hub, log logrus.FieldLogger) (*Manager, e
 
 	// Subscribe for changes
 	go func() {
-		db.Subscribe(context.Background(), manager.update, []byte("loyalty/"))
+		db.Subscribe(context.Background(), manager.update, "loyalty/")
 	}()
 
 	return manager, nil
 }
 
-func (m *Manager) update(kvs *pb.KVList) error {
-	for _, kv := range kvs.Kv {
+func (m *Manager) update(kvs []database.ModifiedKV) error {
+	for _, kv := range kvs {
 		var err error
 		switch string(kv.Key) {
 		case ConfigKey:
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Value, &m.Config)
+			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.Config)
 		case PointsKey:
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Value, &m.Points)
+			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.Points)
 		case GoalsKey:
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Value, &m.Goals)
+			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.Goals)
 		case RewardsKey:
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Value, &m.Rewards)
+			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.Rewards)
 		case QueueKey:
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Value, &m.RedeemQueue)
+			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.RedeemQueue)
 		case CreateRedeemRPC:
 			var redeem Redeem
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Value, &redeem)
+			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &redeem)
 			if err == nil {
 				err = m.AddRedeem(redeem)
 			}
 		case RemoveRedeemRPC:
 			var redeem Redeem
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Value, &redeem)
+			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &redeem)
 			if err == nil {
 				err = m.RemoveRedeem(redeem)
 			}

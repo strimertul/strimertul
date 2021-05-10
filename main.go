@@ -11,14 +11,13 @@ import (
 
 	kv "github.com/strimertul/kilovolt/v2"
 
+	"github.com/strimertul/strimertul/database"
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/loyalty"
 	"github.com/strimertul/strimertul/modules/stulbe"
 	"github.com/strimertul/strimertul/twitchbot"
-	"github.com/strimertul/strimertul/utils"
 
 	"github.com/dgraph-io/badger/v3"
-	jsoniter "github.com/json-iterator/go"
 
 	"github.com/pkg/browser"
 
@@ -64,7 +63,7 @@ func parseLogLevel(level string) logrus.Level {
 
 func main() {
 	// Get cmd line parameters
-	dbfile := flag.String("dbdir", "data", "Path to strimertul database dir")
+	dbdir := flag.String("dbdir", "data", "Path to strimertul database dir")
 	loglevel := flag.String("loglevel", "info", "Logging level (debug, info, warn, error)")
 	flag.Parse()
 
@@ -79,18 +78,14 @@ func main() {
 	// Print the app header :D
 	fmt.Println(AppHeader)
 
-	var json = jsoniter.ConfigDefault
-
 	// Loading routine
-	options := badger.DefaultOptions(*dbfile)
-	options.Logger = wrapLogger("db")
-	db, err := badger.Open(options)
+	db, err := database.Open(badger.DefaultOptions(*dbdir), wrapLogger("db"))
 	failOnError(err, "Could not open DB")
 	defer db.Close()
 
 	// Check if onboarding was completed
 	var moduleConfig modules.ModuleConfig
-	err = utils.DBGetJSON(db, modules.ModuleConfigKey, &moduleConfig)
+	err = db.GetJSON(modules.ModuleConfigKey, &moduleConfig)
 	if err != nil {
 		if err == badger.ErrKeyNotFound {
 			moduleConfig = modules.ModuleConfig{CompletedOnboarding: false}
@@ -101,46 +96,32 @@ func main() {
 
 	if !moduleConfig.CompletedOnboarding {
 		// Initialize DB as empty and default endpoint
-		err := db.Update(func(t *badger.Txn) error {
-			encoded, err := json.Marshal(modules.HTTPServerConfig{
-				Bind: DefaultBind,
-			})
-			if err != nil {
-				return err
-			}
-			err = t.Set([]byte(modules.HTTPServerConfigKey), encoded)
-			if err != nil {
-				return err
-			}
-			onboardingConf := modules.ModuleConfig{
-				EnableKV:            true,
-				EnableStaticServer:  false,
-				EnableTwitchbot:     false,
-				EnableStulbe:        false,
-				CompletedOnboarding: true,
-			}
-			encoded, err = json.Marshal(onboardingConf)
-			if err != nil {
-				return err
-			}
-			return t.Set([]byte(modules.ModuleConfigKey), encoded)
-		})
-		failOnError(err, "could not save webserver config")
+		failOnError(db.PutJSON(modules.HTTPServerConfigKey, modules.HTTPServerConfig{
+			Bind: DefaultBind,
+		}), "could not save http config")
+
+		failOnError(db.PutJSON(modules.ModuleConfigKey, modules.ModuleConfig{
+			EnableKV:            true,
+			EnableStaticServer:  false,
+			EnableTwitchbot:     false,
+			EnableStulbe:        false,
+			CompletedOnboarding: true,
+		}), "could not save onboarding config")
 		fmt.Printf("It appears this is your first time running %s! Please go to http://%s and make sure to configure anything you want!\n\n", AppTitle, DefaultBind)
 	}
 
 	// Initialize KV (required)
-	hub := kv.NewHub(db, wrapLogger("kv"))
+	hub := kv.NewHub(db.Client(), wrapLogger("kv"))
 	go hub.Run()
 
 	// Get HTTP config
 	var httpConfig modules.HTTPServerConfig
-	failOnError(utils.DBGetJSON(db, modules.HTTPServerConfigKey, &httpConfig), "Could not retrieve HTTP server config")
+	failOnError(db.GetJSON(modules.HTTPServerConfigKey, &httpConfig), "Could not retrieve HTTP server config")
 
 	// Get Stulbe config, if enabled
 	var stulbeClient *stulbe.Client = nil
 	if moduleConfig.EnableStulbe {
-		stulbeClient, err = stulbe.NewClient(db, hub, wrapLogger("stulbe"))
+		stulbeClient, err = stulbe.NewClient(db, wrapLogger("stulbe"))
 		if err != nil {
 			log.WithError(err).Error("Stulbe initialization failed! Module was temporarely disabled")
 			moduleConfig.EnableStulbe = false
@@ -156,6 +137,13 @@ func main() {
 			log.WithError(err).Error("Loyalty initialization failed! Module was temporarely disabled")
 			moduleConfig.EnableLoyalty = false
 		}
+
+		if stulbeClient != nil {
+			go stulbeClient.ReplicateKey(loyalty.ConfigKey)
+			go stulbeClient.ReplicateKey(loyalty.GoalsKey)
+			go stulbeClient.ReplicateKey(loyalty.RewardsKey)
+			go stulbeClient.ReplicateKey(loyalty.PointsKey)
+		}
 	}
 
 	//TODO Refactor this to something sane
@@ -165,7 +153,7 @@ func main() {
 
 		// Get Twitchbot config
 		var twitchConfig modules.TwitchBotConfig
-		failOnError(utils.DBGetJSON(db, modules.TwitchBotConfigKey, &twitchConfig), "Could not retrieve twitch bot config")
+		failOnError(db.GetJSON(modules.TwitchBotConfigKey, &twitchConfig), "Could not retrieve twitch bot config")
 
 		bot := twitchbot.NewBot(twitchConfig.Username, twitchConfig.Token, twitchLogger)
 

@@ -2,13 +2,14 @@ package stulbe
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"sync"
 
-	"github.com/dgraph-io/badger/v3"
 	"github.com/gorilla/websocket"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix"
@@ -17,7 +18,7 @@ import (
 	kv "github.com/strimertul/kilovolt/v2"
 	"github.com/strimertul/stulbe/api"
 
-	"github.com/strimertul/strimertul/utils"
+	"github.com/strimertul/strimertul/database"
 )
 
 type Client struct {
@@ -27,11 +28,13 @@ type Client struct {
 	token  string
 	logger logrus.FieldLogger
 	ws     *websocket.Conn
+	db     *database.DB
+	mu     sync.Mutex // Used to avoid concurrent writes to socket
 }
 
-func NewClient(db *badger.DB, hub *kv.Hub, logger logrus.FieldLogger) (*Client, error) {
+func NewClient(db *database.DB, logger logrus.FieldLogger) (*Client, error) {
 	var config Config
-	err := utils.DBGetJSON(db, ConfigKey, &config)
+	err := db.GetJSON(ConfigKey, &config)
 	if err != nil {
 		return nil, err
 	}
@@ -42,6 +45,8 @@ func NewClient(db *badger.DB, hub *kv.Hub, logger logrus.FieldLogger) (*Client, 
 		logger:   logger,
 		client:   &http.Client{},
 		ws:       nil,
+		db:       db,
+		mu:       sync.Mutex{},
 	}
 
 	err = client.Authenticate(config.Username, config.AuthKey)
@@ -119,11 +124,50 @@ func (s *Client) ConnectToWebsocket() error {
 				s.logger.WithError(err).Error("websocket read error")
 				return
 			}
-			s.logger.WithField("message", string(message)).Info("recv ws")
+			s.logger.WithField("message", string(message)).Debug("recv ws")
 		}
 	}()
 
 	return nil
+}
+
+func (s *Client) ReplicateKey(key string) error {
+	// Set key to current value
+	val, err := s.db.GetKey(key)
+	if err != nil {
+		return err
+	}
+	s.send(kv.Request{
+		CmdName: kv.CmdWriteKey,
+		Data: map[string]interface{}{
+			"key":  key,
+			"data": string(val),
+		},
+	})
+
+	// Subscribe to local datastore and update remote on change
+	return s.db.Subscribe(context.Background(), func(pairs []database.ModifiedKV) error {
+		for _, changed := range pairs {
+			err := s.send(kv.Request{
+				CmdName: kv.CmdWriteKey,
+				Data: map[string]interface{}{
+					"key":  changed.Key,
+					"data": string(changed.Data),
+				},
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}, key)
+}
+
+func (s *Client) send(v interface{}) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.ws.WriteJSON(v)
 }
 
 func (s *Client) newAuthRequest(method string, url string, body io.Reader) (*http.Request, error) {
