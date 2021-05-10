@@ -65,6 +65,11 @@ func cmdRedeem(bot *TwitchBot, message irc.PrivateMessage) {
 			continue
 		}
 
+		// Reward not active, return early
+		if !reward.Enabled {
+			return
+		}
+
 		// Get user balance
 		balance, ok := bot.Loyalty.Points[message.User.Name]
 		if !ok {
