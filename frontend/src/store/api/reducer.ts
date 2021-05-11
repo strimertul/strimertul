@@ -8,7 +8,7 @@ import {
   createSlice,
   PayloadAction,
 } from '@reduxjs/toolkit';
-import StrimertulWS from '../../lib/strimertul-ws';
+import KilovoltWS from '@strimertul/kilovolt-client';
 
 // Storage
 const moduleConfigKey = 'stul-meta/modules';
@@ -93,7 +93,7 @@ export interface LoyaltyRedeem {
 }
 
 export interface APIState {
-  client: StrimertulWS;
+  client: KilovoltWS;
   connected: boolean;
   initialLoadComplete: boolean;
   loyalty: {
@@ -179,12 +179,12 @@ function makeModule<T>(
 }
 
 // eslint-disable-next-line import/no-mutable-exports, @typescript-eslint/ban-types
-export let setupClientReconnect: AsyncThunk<void, StrimertulWS, {}>;
+export let setupClientReconnect: AsyncThunk<void, KilovoltWS, {}>;
 
 export const createWSClient = createAsyncThunk(
   'api/createClient',
   async (address: string, { dispatch }) => {
-    const client = new StrimertulWS(address);
+    const client = new KilovoltWS(address);
     await client.wait();
     dispatch(setupClientReconnect(client));
     return client;
@@ -345,7 +345,7 @@ const apiReducer = createSlice({
 
 setupClientReconnect = createAsyncThunk(
   'api/setupClientReconnect',
-  async (client: StrimertulWS, { dispatch }) => {
+  async (client: KilovoltWS, { dispatch }) => {
     client.on('close', () => {
       setTimeout(async () => {
         console.info('Attempting reconnection');
