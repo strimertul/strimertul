@@ -119,14 +119,14 @@ func main() {
 	failOnError(db.GetJSON(modules.HTTPServerConfigKey, &httpConfig), "Could not retrieve HTTP server config")
 
 	// Get Stulbe config, if enabled
-	var stulbeClient *stulbe.Client = nil
+	var stulbeManager *stulbe.Manager = nil
 	if moduleConfig.EnableStulbe {
-		stulbeClient, err = stulbe.NewClient(db, wrapLogger("stulbe"))
+		stulbeManager, err = stulbe.Initialize(db, wrapLogger("stulbe"))
 		if err != nil {
 			log.WithError(err).Error("Stulbe initialization failed! Module was temporarely disabled")
 			moduleConfig.EnableStulbe = false
 		}
-		defer stulbeClient.Close()
+		defer stulbeManager.Close()
 	}
 
 	var loyaltyManager *loyalty.Manager
@@ -138,11 +138,11 @@ func main() {
 			moduleConfig.EnableLoyalty = false
 		}
 
-		if stulbeClient != nil {
-			go stulbeClient.ReplicateKey(loyalty.ConfigKey)
-			go stulbeClient.ReplicateKey(loyalty.GoalsKey)
-			go stulbeClient.ReplicateKey(loyalty.RewardsKey)
-			go stulbeClient.ReplicateKey(loyalty.PointsKey)
+		if stulbeManager != nil {
+			go stulbeManager.ReplicateKey(loyalty.ConfigKey)
+			go stulbeManager.ReplicateKey(loyalty.GoalsKey)
+			go stulbeManager.ReplicateKey(loyalty.RewardsKey)
+			go stulbeManager.ReplicateKey(loyalty.PointsKey)
 		}
 	}
 
@@ -175,8 +175,8 @@ func main() {
 
 							// Check if streamer is online, if possible
 							streamOnline := true
-							if loyaltyManager.Config.LiveCheck && moduleConfig.EnableStulbe {
-								status, err := stulbeClient.StreamStatus(twitchConfig.Channel)
+							if loyaltyManager.Config.LiveCheck && stulbeManager != nil {
+								status, err := stulbeManager.Client.StreamStatus(twitchConfig.Channel)
 								if err != nil {
 									twitchLogger.WithError(err).Error("Error checking stream status")
 								} else {
