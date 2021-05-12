@@ -5,7 +5,7 @@
     "@billjs/event-emitter": "^1.0.3",
     "@reach/router": "^1.3.4",
     "@reduxjs/toolkit": "^1.5.1",
-    "@strimertul/kilovolt-client": "^2.0.0",
+    "@strimertul/kilovolt-client": "^3.0.0",
     "@types/node": "^15.0.2",
     "@types/reach__router": "^1.3.7",
     "@types/react": "^17.0.5",
