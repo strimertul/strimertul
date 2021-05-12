@@ -11,5 +11,5 @@ require (
 	github.com/pkg/browser v0.0.0-20210115035449-ce105d075bb4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/strimertul/kilovolt/v3 v3.0.0
-	github.com/strimertul/stulbe v0.2.1
+	github.com/strimertul/stulbe v0.2.5
 )

@@ -73,6 +73,8 @@ github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742/go.mod h1:bx2lN
 github.com/nicklaw5/helix v1.13.1/go.mod h1:XeeXY7oY5W+MVMu6wF4qGm8uvjZ1/Nss0FqprVkXKrg=
 github.com/nicklaw5/helix v1.14.0 h1:yJI+dUDxFzmlSelNygWs/lhirvuzCqgIXIZy05JdHVk=
 github.com/nicklaw5/helix v1.14.0/go.mod h1:XeeXY7oY5W+MVMu6wF4qGm8uvjZ1/Nss0FqprVkXKrg=
+github.com/orcaman/concurrent-map v0.0.0-20210501183033-44dafcb38ecc h1:Ak86L+yDSOzKFa7WM5bf5itSOo1e3Xh8bm5YCMUXIjQ=
+github.com/orcaman/concurrent-map v0.0.0-20210501183033-44dafcb38ecc/go.mod h1:Lu3tH6HLW3feq74c2GC+jIMS/K2CFcDWnWD9XkenwhI=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
 github.com/peterh/liner v0.0.0-20170317030525-88609521dc4b/go.mod h1:xIteQHvHuaLYG9IFj6mSxM0fCKrs34IrEQUhOYuGPHc=
 github.com/pkg/browser v0.0.0-20210115035449-ce105d075bb4 h1:Qj1ukM4GlMWXNdMBuXcXfz/Kw9s1qm0CLY32QxuSImI=
@@ -101,12 +103,12 @@ github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXf
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJyk=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
-github.com/strimertul/kilovolt-client-go v1.0.1 h1:E9mLafNN8KkdDL9JJp6Mv/g3E59k4NpyMOIfqVMnG1I=
-github.com/strimertul/kilovolt-client-go v1.0.1/go.mod h1:Oy0E8+luQAGt5AH6o/Bq0M8taFkrJQOzs65zh+RiN70=
+github.com/strimertul/kilovolt-client-go v1.1.1 h1:uy6y/WKJyubAPHb+wPJz5We+fVwzWIplHiclSAhEY2E=
+github.com/strimertul/kilovolt-client-go v1.1.1/go.mod h1:jXbd37kXDdDeKnOWao/JSNMdSYmuhBBHG+LWIBzuXr8=
 github.com/strimertul/kilovolt/v3 v3.0.0 h1:3gE0FdH3fL5UgMocR6Z7lI9hk3jD8ds8yL47D4Z7758=
 github.com/strimertul/kilovolt/v3 v3.0.0/go.mod h1:AgfPYRp+kffN64tcqCcQUZdpL/Dm5DGHIYRDm9t3E0Y=
-github.com/strimertul/stulbe v0.2.1 h1:q0kxyLogXS53DlNdIut/5+vQqwk8jNl0/6XLKIQDVl4=
-github.com/strimertul/stulbe v0.2.1/go.mod h1:QNDvKA/Ul2lP8ALbG20DhG0FuBO37n1ku1sJua1N6Io=
+github.com/strimertul/stulbe v0.2.5 h1:qrJFwttrWfwSfHsvTgI3moZjhBwbYN8Xe8gicCeISpc=
+github.com/strimertul/stulbe v0.2.5/go.mod h1:0AsY4OVf1dNCwOn9s7KySuAxJ85w88pXeostu1n9E7w=
 github.com/twitchyliquid64/golang-asm v0.15.0/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
