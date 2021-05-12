@@ -13,16 +13,19 @@ import (
 	"github.com/strimertul/strimertul/database"
 )
 
-type Manager struct {
-	Config      Config
-	Rewards     RewardStorage
-	Goals       GoalStorage
-	RedeemQueue RedeemQueueStorage
+var (
+	ErrGoalNotFound = errors.New("goal not found")
+)
 
-	points   PointStorage
-	pointsmu sync.Mutex
-	hub      *kv.Hub
-	logger   logrus.FieldLogger
+type Manager struct {
+	points  PointStorage
+	config  Config
+	rewards RewardStorage
+	goals   GoalStorage
+	queue   RedeemQueueStorage
+	mu      sync.Mutex
+	hub     *kv.Hub
+	logger  logrus.FieldLogger
 }
 
 func NewManager(db *database.DB, hub *kv.Hub, log logrus.FieldLogger) (*Manager, error) {
@@ -31,12 +34,12 @@ func NewManager(db *database.DB, hub *kv.Hub, log logrus.FieldLogger) (*Manager,
 	}
 
 	manager := &Manager{
-		logger:   log,
-		hub:      hub,
-		pointsmu: sync.Mutex{},
+		logger: log,
+		hub:    hub,
+		mu:     sync.Mutex{},
 	}
 	// Ger data from DB
-	if err := db.GetJSON(ConfigKey, &manager.Config); err != nil {
+	if err := db.GetJSON(ConfigKey, &manager.config); err != nil {
 		if err == badger.ErrKeyNotFound {
 			log.Warn("missing configuration for loyalty (but it's enabled). Please make sure to set it up properly!")
 		} else {
@@ -50,17 +53,17 @@ func NewManager(db *database.DB, hub *kv.Hub, log logrus.FieldLogger) (*Manager,
 			return nil, err
 		}
 	}
-	if err := db.GetJSON(RewardsKey, &manager.Rewards); err != nil {
+	if err := db.GetJSON(RewardsKey, &manager.rewards); err != nil {
 		if err != badger.ErrKeyNotFound {
 			return nil, err
 		}
 	}
-	if err := db.GetJSON(GoalsKey, &manager.Goals); err != nil {
+	if err := db.GetJSON(GoalsKey, &manager.goals); err != nil {
 		if err != badger.ErrKeyNotFound {
 			return nil, err
 		}
 	}
-	if err := db.GetJSON(QueueKey, &manager.RedeemQueue); err != nil {
+	if err := db.GetJSON(QueueKey, &manager.queue); err != nil {
 		if err != badger.ErrKeyNotFound {
 			return nil, err
 		}
@@ -75,21 +78,21 @@ func NewManager(db *database.DB, hub *kv.Hub, log logrus.FieldLogger) (*Manager,
 }
 
 func (m *Manager) update(kvs []database.ModifiedKV) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	for _, kv := range kvs {
 		var err error
 		switch string(kv.Key) {
 		case ConfigKey:
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.Config)
+			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.config)
 		case PointsKey:
-			m.pointsmu.Lock()
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.points)
-			m.pointsmu.Unlock()
 		case GoalsKey:
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.Goals)
+			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.goals)
 		case RewardsKey:
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.Rewards)
+			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.rewards)
 		case QueueKey:
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.RedeemQueue)
+			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.queue)
 		case CreateRedeemRPC:
 			var redeem Redeem
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &redeem)
@@ -116,15 +119,15 @@ func (m *Manager) update(kvs []database.ModifiedKV) error {
 }
 
 func (m *Manager) SavePoints() error {
-	m.pointsmu.Lock()
-	defer m.pointsmu.Unlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	data, _ := jsoniter.ConfigFastest.Marshal(m.points)
 	return m.hub.WriteKey(PointsKey, string(data))
 }
 
 func (m *Manager) GetPoints(user string) int64 {
-	m.pointsmu.Lock()
-	defer m.pointsmu.Unlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	points, ok := m.points[user]
 	if ok {
 		return points
@@ -133,8 +136,8 @@ func (m *Manager) GetPoints(user string) int64 {
 }
 
 func (m *Manager) SetPoints(user string, points int64) {
-	m.pointsmu.Lock()
-	defer m.pointsmu.Unlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	m.points[user] = points
 }
 
@@ -160,31 +163,37 @@ func (m *Manager) TakePoints(pointsToTake map[string]int64) error {
 	return m.SavePoints()
 }
 
-func (m *Manager) SaveQueue() error {
-	data, _ := jsoniter.ConfigFastest.Marshal(m.RedeemQueue)
+func (m *Manager) saveQueue() error {
+	data, _ := jsoniter.ConfigFastest.Marshal(m.queue)
 	return m.hub.WriteKey(QueueKey, string(data))
 }
 
 func (m *Manager) AddRedeem(redeem Redeem) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	// Add to local list
-	m.RedeemQueue = append(m.RedeemQueue, redeem)
+	m.queue = append(m.queue, redeem)
 
 	// Send redeem event
 	data, _ := jsoniter.ConfigFastest.Marshal(redeem)
 	m.hub.WriteKey(RedeemEvent, string(data))
 
 	// Save points
-	return m.SaveQueue()
+	return m.saveQueue()
 }
 
 func (m *Manager) RemoveRedeem(redeem Redeem) error {
-	for index, queued := range m.RedeemQueue {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	for index, queued := range m.queue {
 		if queued.When == redeem.When && queued.Username == redeem.Username && queued.Reward.ID == redeem.Reward.ID {
 			// Remove redemption from list
-			m.RedeemQueue = append(m.RedeemQueue[:index], m.RedeemQueue[index+1:]...)
+			m.queue = append(m.queue[:index], m.queue[index+1:]...)
 
 			// Save points
-			return m.SaveQueue()
+			return m.saveQueue()
 		}
 	}
 
@@ -192,12 +201,39 @@ func (m *Manager) RemoveRedeem(redeem Redeem) error {
 }
 
 func (m *Manager) SaveGoals() error {
-	data, _ := jsoniter.ConfigFastest.Marshal(m.Goals)
+	data, _ := jsoniter.ConfigFastest.Marshal(m.goals)
 	return m.hub.WriteKey(GoalsKey, string(data))
 }
 
-func (m *Manager) ContributeGoal(goal *Goal, user string, points int64) error {
-	goal.Contributed += points
-	goal.Contributors[user] += points
-	return m.SaveGoals()
+func (m *Manager) Goals() []Goal {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.goals[:]
+}
+
+func (m *Manager) ContributeGoal(goal Goal, user string, points int64) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	for i, savedGoal := range m.goals {
+		if savedGoal.ID != goal.ID {
+			continue
+		}
+		m.goals[i].Contributed += points
+		m.goals[i].Contributors[user] += points
+		return m.SaveGoals()
+	}
+	return ErrGoalNotFound
+}
+
+func (m *Manager) Rewards() []Reward {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.rewards[:]
+}
+
+func (m *Manager) Config() Config {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.config
 }

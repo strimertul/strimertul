@@ -58,7 +58,7 @@ var commands = map[string]BotCommand{
 func cmdBalance(bot *TwitchBot, message irc.PrivateMessage) {
 	// Get user balance
 	balance := bot.Loyalty.GetPoints(message.User.Name)
-	bot.Client.Say(message.Channel, fmt.Sprintf("%s: You have %d %s!", message.User.DisplayName, balance, bot.Loyalty.Config.Currency))
+	bot.Client.Say(message.Channel, fmt.Sprintf("%s: You have %d %s!", message.User.DisplayName, balance, bot.Loyalty.Config().Currency))
 }
 
 func cmdRedeemReward(bot *TwitchBot, message irc.PrivateMessage) {
@@ -69,7 +69,7 @@ func cmdRedeemReward(bot *TwitchBot, message irc.PrivateMessage) {
 	redeemID := parts[1]
 
 	// Find reward
-	for _, reward := range bot.Loyalty.Rewards {
+	for _, reward := range bot.Loyalty.Rewards() {
 		if reward.ID != redeemID {
 			continue
 		}
@@ -81,10 +81,11 @@ func cmdRedeemReward(bot *TwitchBot, message irc.PrivateMessage) {
 
 		// Get user balance
 		balance := bot.Loyalty.GetPoints(message.User.Name)
+		config := bot.Loyalty.Config()
 
 		// Check if user can afford the reward
 		if balance-reward.Price < 0 {
-			bot.Client.Say(message.Channel, fmt.Sprintf("I'm sorry %s but you cannot afford this (have %d %s, need %d)", message.User.DisplayName, balance, bot.Loyalty.Config.Currency, reward.Price))
+			bot.Client.Say(message.Channel, fmt.Sprintf("I'm sorry %s but you cannot afford this (have %d %s, need %d)", message.User.DisplayName, balance, config.Currency, reward.Price))
 			return
 		}
 
@@ -105,36 +106,39 @@ func cmdRedeemReward(bot *TwitchBot, message irc.PrivateMessage) {
 			return
 		}
 
-		bot.Client.Say(message.Channel, fmt.Sprintf("HolidayPresent %s has redeemed %s! (new balance: %d %s)", message.User.DisplayName, reward.Name, bot.Loyalty.GetPoints(message.User.Name), bot.Loyalty.Config.Currency))
+		bot.Client.Say(message.Channel, fmt.Sprintf("HolidayPresent %s has redeemed %s! (new balance: %d %s)", message.User.DisplayName, reward.Name, bot.Loyalty.GetPoints(message.User.Name), config.Currency))
 
 		return
 	}
 }
 
 func cmdGoalList(bot *TwitchBot, message irc.PrivateMessage) {
-	if len(bot.Loyalty.Goals) < 1 {
+	goals := bot.Loyalty.Goals()
+	if len(goals) < 1 {
 		bot.Client.Say(message.Channel, fmt.Sprintf("%s: There are no active community goals right now :(!", message.User.DisplayName))
 		return
 	}
 	msg := "Current goals: "
-	for _, goal := range bot.Loyalty.Goals {
+	for _, goal := range goals {
 		if !goal.Enabled {
 			continue
 		}
-		msg += fmt.Sprintf("%s (%d/%d %s) [id: %s] | ", goal.Name, goal.Contributed, goal.TotalGoal, bot.Loyalty.Config.Currency, goal.ID)
+		msg += fmt.Sprintf("%s (%d/%d %s) [id: %s] | ", goal.Name, goal.Contributed, goal.TotalGoal, bot.Loyalty.Config().Currency, goal.ID)
 	}
 	msg += " Contribute with <!contribute POINTS GOALID>"
 	bot.Client.Say(message.Channel, msg)
 }
 
 func cmdContributeGoal(bot *TwitchBot, message irc.PrivateMessage) {
+	goals := bot.Loyalty.Goals()
+
 	// Set defaults if user doesn't provide them
 	points := int64(100)
 	goalIndex := -1
 	hasGoals := false
 
 	// Get first unreached goal for default
-	for index, goal := range bot.Loyalty.Goals {
+	for index, goal := range goals {
 		if !goal.Enabled {
 			continue
 		}
@@ -170,7 +174,7 @@ func cmdContributeGoal(bot *TwitchBot, message irc.PrivateMessage) {
 			found := false
 			goalID := parts[2]
 			// Find Goal index
-			for index, goal := range bot.Loyalty.Goals {
+			for index, goal := range goals {
 				if !goal.Enabled {
 					continue
 				}
@@ -197,7 +201,7 @@ func cmdContributeGoal(bot *TwitchBot, message irc.PrivateMessage) {
 	}
 
 	// Get goal
-	selectedGoal := &bot.Loyalty.Goals[goalIndex]
+	selectedGoal := goals[goalIndex]
 
 	// Check if goal was reached already
 	if selectedGoal.Contributed >= selectedGoal.TotalGoal {
@@ -223,8 +227,9 @@ func cmdContributeGoal(bot *TwitchBot, message irc.PrivateMessage) {
 		return
 	}
 
+	config := bot.Loyalty.Config()
 	newRemaining := selectedGoal.TotalGoal - selectedGoal.Contributed
-	bot.Client.Say(message.Channel, fmt.Sprintf("ShowOfHands %s contributed %d %s to \"%s\"!! Only %d %s left!", message.User.DisplayName, points, bot.Loyalty.Config.Currency, selectedGoal.Name, newRemaining, bot.Loyalty.Config.Currency))
+	bot.Client.Say(message.Channel, fmt.Sprintf("ShowOfHands %s contributed %d %s to \"%s\"!! Only %d %s left!", message.User.DisplayName, points, config.Currency, selectedGoal.Name, newRemaining, config.Currency))
 
 	// Check if goal was reached!
 	// TODO Replace this with sub from loyalty system or something?

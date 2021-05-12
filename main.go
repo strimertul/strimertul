@@ -156,26 +156,23 @@ func main() {
 		failOnError(db.GetJSON(modules.TwitchBotConfigKey, &twitchConfig), "Could not retrieve twitch bot config")
 
 		bot := twitchbot.NewBot(twitchConfig.Username, twitchConfig.Token, twitchLogger)
-
-		if moduleConfig.EnableLoyalty {
-			bot.Loyalty = loyaltyManager
-			bot.SetBanList(loyaltyManager.Config.BanList)
-		}
-
 		bot.Client.Join(twitchConfig.Channel)
 
 		if moduleConfig.EnableLoyalty {
+			config := loyaltyManager.Config()
+			bot.Loyalty = loyaltyManager
+			bot.SetBanList(config.BanList)
 			bot.Client.OnConnect(func() {
-				if loyaltyManager.Config.Points.Interval > 0 {
+				if config.Points.Interval > 0 {
 					go func() {
 						twitchLogger.Info("loyalty poll started")
 						for {
 							// Wait for next poll
-							time.Sleep(time.Duration(loyaltyManager.Config.Points.Interval) * time.Second)
+							time.Sleep(time.Duration(config.Points.Interval) * time.Second)
 
 							// Check if streamer is online, if possible
 							streamOnline := true
-							if loyaltyManager.Config.LiveCheck && stulbeManager != nil {
+							if config.LiveCheck && stulbeManager != nil {
 								status, err := stulbeManager.Client.StreamStatus(twitchConfig.Channel)
 								if err != nil {
 									twitchLogger.WithError(err).Error("Error checking stream status")
@@ -206,9 +203,9 @@ func main() {
 								}
 
 								// Check if user was active (chatting) for the bonus dingus
-								award := loyaltyManager.Config.Points.Amount
+								award := config.Points.Amount
 								if bot.IsActive(user) {
-									award += loyaltyManager.Config.Points.ActivityBonus
+									award += config.Points.ActivityBonus
 								}
 
 								// Add to point pool if already on it, otherwise initialize
