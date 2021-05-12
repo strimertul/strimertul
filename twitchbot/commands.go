@@ -224,7 +224,7 @@ func cmdContributeGoal(bot *TwitchBot, message irc.PrivateMessage) {
 	}
 
 	newRemaining := selectedGoal.TotalGoal - selectedGoal.Contributed
-	bot.Client.Say(message.Channel, fmt.Sprintf("ShowOfHands %s contributed %d %s to \"%s\"!! Only %d %s left ShowOfHands!", message.User.DisplayName, points, bot.Loyalty.Config.Currency, selectedGoal.Name, newRemaining, bot.Loyalty.Config.Currency))
+	bot.Client.Say(message.Channel, fmt.Sprintf("ShowOfHands %s contributed %d %s to \"%s\"!! Only %d %s left!", message.User.DisplayName, points, bot.Loyalty.Config.Currency, selectedGoal.Name, newRemaining, bot.Loyalty.Config.Currency))
 
 	// Check if goal was reached!
 	// TODO Replace this with sub from loyalty system or something?
