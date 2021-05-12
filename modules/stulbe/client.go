@@ -13,6 +13,7 @@ import (
 type Manager struct {
 	Client *stulbe.Client
 	db     *database.DB
+	logger logrus.FieldLogger
 }
 
 func Initialize(db *database.DB, logger logrus.FieldLogger) (*Manager, error) {
@@ -35,6 +36,7 @@ func Initialize(db *database.DB, logger logrus.FieldLogger) (*Manager, error) {
 	return &Manager{
 		Client: stulbeClient,
 		db:     db,
+		logger: logger,
 	}, err
 }
 
@@ -53,6 +55,9 @@ func (m *Manager) ReplicateKey(key string) error {
 	if err != nil {
 		return err
 	}
+	m.logger.WithFields(logrus.Fields{
+		"key": key,
+	}).Debug("set to remote")
 
 	// Subscribe to local datastore and update remote on change
 	return m.db.Subscribe(context.Background(), func(pairs []database.ModifiedKV) error {
@@ -61,6 +66,9 @@ func (m *Manager) ReplicateKey(key string) error {
 			if err != nil {
 				return err
 			}
+			m.logger.WithFields(logrus.Fields{
+				"key": changed.Key,
+			}).Debug("replicated to remote")
 		}
 
 		return nil

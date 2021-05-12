@@ -3,6 +3,7 @@ package loyalty
 import (
 	"context"
 	"errors"
+	"sync"
 
 	"github.com/dgraph-io/badger/v3"
 	jsoniter "github.com/json-iterator/go"
@@ -14,13 +15,14 @@ import (
 
 type Manager struct {
 	Config      Config
-	Points      PointStorage
 	Rewards     RewardStorage
 	Goals       GoalStorage
 	RedeemQueue RedeemQueueStorage
 
-	hub    *kv.Hub
-	logger logrus.FieldLogger
+	points   PointStorage
+	pointsmu sync.Mutex
+	hub      *kv.Hub
+	logger   logrus.FieldLogger
 }
 
 func NewManager(db *database.DB, hub *kv.Hub, log logrus.FieldLogger) (*Manager, error) {
@@ -29,8 +31,9 @@ func NewManager(db *database.DB, hub *kv.Hub, log logrus.FieldLogger) (*Manager,
 	}
 
 	manager := &Manager{
-		logger: log,
-		hub:    hub,
+		logger:   log,
+		hub:      hub,
+		pointsmu: sync.Mutex{},
 	}
 	// Ger data from DB
 	if err := db.GetJSON(ConfigKey, &manager.Config); err != nil {
@@ -40,9 +43,9 @@ func NewManager(db *database.DB, hub *kv.Hub, log logrus.FieldLogger) (*Manager,
 			return nil, err
 		}
 	}
-	if err := db.GetJSON(PointsKey, &manager.Points); err != nil {
+	if err := db.GetJSON(PointsKey, &manager.points); err != nil {
 		if err == badger.ErrKeyNotFound {
-			manager.Points = make(PointStorage)
+			manager.points = make(PointStorage)
 		} else {
 			return nil, err
 		}
@@ -78,7 +81,9 @@ func (m *Manager) update(kvs []database.ModifiedKV) error {
 		case ConfigKey:
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.Config)
 		case PointsKey:
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.Points)
+			m.pointsmu.Lock()
+			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.points)
+			m.pointsmu.Unlock()
 		case GoalsKey:
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.Goals)
 		case RewardsKey:
@@ -111,14 +116,33 @@ func (m *Manager) update(kvs []database.ModifiedKV) error {
 }
 
 func (m *Manager) SavePoints() error {
-	data, _ := jsoniter.ConfigFastest.Marshal(m.Points)
+	m.pointsmu.Lock()
+	defer m.pointsmu.Unlock()
+	data, _ := jsoniter.ConfigFastest.Marshal(m.points)
 	return m.hub.WriteKey(PointsKey, string(data))
+}
+
+func (m *Manager) GetPoints(user string) int64 {
+	m.pointsmu.Lock()
+	defer m.pointsmu.Unlock()
+	points, ok := m.points[user]
+	if ok {
+		return points
+	}
+	return 0
+}
+
+func (m *Manager) SetPoints(user string, points int64) {
+	m.pointsmu.Lock()
+	defer m.pointsmu.Unlock()
+	m.points[user] = points
 }
 
 func (m *Manager) GivePoints(pointsToGive map[string]int64) error {
 	// Add points to each user
 	for user, points := range pointsToGive {
-		m.Points[user] += points
+		balance := m.GetPoints(user)
+		m.SetPoints(user, balance+points)
 	}
 
 	// Save points
@@ -128,7 +152,8 @@ func (m *Manager) GivePoints(pointsToGive map[string]int64) error {
 func (m *Manager) TakePoints(pointsToTake map[string]int64) error {
 	// Add points to each user
 	for user, points := range pointsToTake {
-		m.Points[user] -= points
+		balance := m.GetPoints(user)
+		m.SetPoints(user, balance-points)
 	}
 
 	// Save points
@@ -164,4 +189,15 @@ func (m *Manager) RemoveRedeem(redeem Redeem) error {
 	}
 
 	return errors.New("redeem not found")
+}
+
+func (m *Manager) SaveGoals() error {
+	data, _ := jsoniter.ConfigFastest.Marshal(m.Goals)
+	return m.hub.WriteKey(GoalsKey, string(data))
+}
+
+func (m *Manager) ContributeGoal(goal *Goal, user string, points int64) error {
+	goal.Contributed += points
+	goal.Contributors[user] += points
+	return m.SaveGoals()
 }
