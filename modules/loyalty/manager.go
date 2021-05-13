@@ -78,20 +78,28 @@ func NewManager(db *database.DB, hub *kv.Hub, log logrus.FieldLogger) (*Manager,
 }
 
 func (m *Manager) update(kvs []database.ModifiedKV) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
 	for _, kv := range kvs {
 		var err error
 		switch string(kv.Key) {
 		case ConfigKey:
+			m.mu.Lock()
+			defer m.mu.Unlock()
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.config)
 		case PointsKey:
+			m.mu.Lock()
+			defer m.mu.Unlock()
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.points)
 		case GoalsKey:
+			m.mu.Lock()
+			defer m.mu.Unlock()
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.goals)
 		case RewardsKey:
+			m.mu.Lock()
+			defer m.mu.Unlock()
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.rewards)
 		case QueueKey:
+			m.mu.Lock()
+			defer m.mu.Unlock()
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.queue)
 		case CreateRedeemRPC:
 			var redeem Redeem
@@ -118,7 +126,7 @@ func (m *Manager) update(kvs []database.ModifiedKV) error {
 	return nil
 }
 
-func (m *Manager) SavePoints() error {
+func (m *Manager) savePoints() error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	data, _ := jsoniter.ConfigFastest.Marshal(m.points)
@@ -135,7 +143,7 @@ func (m *Manager) GetPoints(user string) int64 {
 	return 0
 }
 
-func (m *Manager) SetPoints(user string, points int64) {
+func (m *Manager) setPoints(user string, points int64) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.points[user] = points
@@ -145,22 +153,22 @@ func (m *Manager) GivePoints(pointsToGive map[string]int64) error {
 	// Add points to each user
 	for user, points := range pointsToGive {
 		balance := m.GetPoints(user)
-		m.SetPoints(user, balance+points)
+		m.setPoints(user, balance+points)
 	}
 
 	// Save points
-	return m.SavePoints()
+	return m.savePoints()
 }
 
 func (m *Manager) TakePoints(pointsToTake map[string]int64) error {
 	// Add points to each user
 	for user, points := range pointsToTake {
 		balance := m.GetPoints(user)
-		m.SetPoints(user, balance-points)
+		m.setPoints(user, balance-points)
 	}
 
 	// Save points
-	return m.SavePoints()
+	return m.savePoints()
 }
 
 func (m *Manager) saveQueue() error {
