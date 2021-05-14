@@ -14,6 +14,7 @@ import (
 	"github.com/strimertul/strimertul/database"
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/loyalty"
+	"github.com/strimertul/strimertul/modules/stulbe"
 	"github.com/strimertul/strimertul/modules/twitch"
 
 	"github.com/dgraph-io/badger/v3"
@@ -118,7 +119,6 @@ func main() {
 	failOnError(db.GetJSON(modules.HTTPServerConfigKey, &httpConfig), "Could not retrieve HTTP server config")
 
 	// Get Stulbe config, if enabled
-	/* Kinda deprecated, This will probably be removed/replaced in the future!
 	var stulbeManager *stulbe.Manager = nil
 	if moduleConfig.EnableStulbe {
 		stulbeManager, err = stulbe.Initialize(db, wrapLogger("stulbe"))
@@ -128,7 +128,6 @@ func main() {
 		}
 		defer stulbeManager.Close()
 	}
-	*/
 
 	var loyaltyManager *loyalty.Manager
 	loyaltyLogger := wrapLogger("loyalty")
@@ -137,6 +136,13 @@ func main() {
 		if err != nil {
 			log.WithError(err).Error("Loyalty initialization failed! Module was temporarily disabled")
 			moduleConfig.EnableLoyalty = false
+		}
+
+		if stulbeManager != nil {
+			go stulbeManager.ReplicateKey(loyalty.ConfigKey)
+			go stulbeManager.ReplicateKey(loyalty.RewardsKey)
+			go stulbeManager.ReplicateKey(loyalty.GoalsKey)
+			go stulbeManager.ReplicateKey(loyalty.PointsKey)
 		}
 	}
 

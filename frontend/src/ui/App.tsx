@@ -72,6 +72,10 @@ const menu: RouteItem[] = [
       },
     ],
   },
+  {
+    name: 'Back-end integration',
+    route: '/stulbe',
+  },
 ];
 
 export default function App(): React.ReactElement {
