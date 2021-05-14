@@ -324,9 +324,9 @@ export default function LoyaltyRewardsPage(
 
   const dispatch = useDispatch();
 
-  const twitchBotActive = moduleConfig?.twitchbot ?? false;
+  const twitchActive = moduleConfig?.twitch ?? false;
   const loyaltyEnabled = moduleConfig?.loyalty ?? false;
-  const active = twitchBotActive && loyaltyEnabled;
+  const active = twitchActive && loyaltyEnabled;
 
   const [rewardFilter, setRewardFilter] = useState('');
   const rewardFilterLC = rewardFilter.toLowerCase();

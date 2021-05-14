@@ -5,8 +5,7 @@ import { RootState } from '../store';
 import { createWSClient } from '../store/api/reducer';
 import Home from './pages/Home';
 import HTTPPage from './pages/HTTP';
-import TwitchBotPage from './pages/twitchbot/Main';
-import TwitchBotSettingsPage from './pages/twitchbot/Settings';
+import TwitchPage from './pages/twitch/Main';
 import StulbePage from './pages/Stulbe';
 import LoyaltyPage from './pages/loyalty/Main';
 import DebugPage from './pages/Debug';
@@ -14,9 +13,9 @@ import LoyaltySettingPage from './pages/loyalty/Settings';
 import LoyaltyRewardsPage from './pages/loyalty/Rewards';
 import LoyaltyUserListPage from './pages/loyalty/UserList';
 import LoyaltyGoalsPage from './pages/loyalty/Goals';
-import TwitchBotCommandsPage from './pages/twitchbot/Commands';
-import TwitchBotModulesPage from './pages/twitchbot/Modules';
 import LoyaltyRedeemQueuePage from './pages/loyalty/Queue';
+import TwitchSettingsPage from './pages/twitch/APISettings';
+import TwitchBotSettingsPage from './pages/twitch/BotSettings';
 
 interface RouteItem {
   name: string;
@@ -34,20 +33,16 @@ const menu: RouteItem[] = [
     route: '/http',
   },
   {
-    name: 'Twitch Bot',
-    route: '/twitchbot/',
+    name: 'Twitch integration',
+    route: '/twitch/',
     subroutes: [
       {
-        name: 'Configuration',
-        route: '/twitchbot/settings',
+        name: 'Module Configuration',
+        route: '/twitch/settings',
       },
       {
-        name: 'Modules',
-        route: '/twitchbot/modules',
-      },
-      {
-        name: 'Custom commands',
-        route: '/twitchbot/commands',
+        name: 'Bot Configuration',
+        route: '/twitch/bot/settings',
       },
     ],
   },
@@ -76,10 +71,6 @@ const menu: RouteItem[] = [
         route: '/loyalty/goals',
       },
     ],
-  },
-  {
-    name: 'Stulbe integration',
-    route: '/stulbe',
   },
 ];
 
@@ -147,12 +138,11 @@ export default function App(): React.ReactElement {
           <Router basepath={basepath}>
             <Home path="/" />
             <HTTPPage path="http" />
-            <TwitchBotPage path="twitchbot">
+            <TwitchPage path="twitch">
               <Redirect from="/" to="settings" noThrow />
-              <TwitchBotSettingsPage path="settings" />
-              <TwitchBotModulesPage path="modules" />
-              <TwitchBotCommandsPage path="commands" />
-            </TwitchBotPage>
+              <TwitchSettingsPage path="settings" />
+              <TwitchBotSettingsPage path="bot/settings" />
+            </TwitchPage>
             <LoyaltyPage path="loyalty">
               <Redirect from="/" to="settings" noThrow />
               <LoyaltySettingPage path="settings" />

@@ -33,6 +33,10 @@ body .button.is-success {
   padding: 1rem 1.5rem;
 }
 
+.copyblock {
+  padding-bottom: 1rem;
+}
+
 /* Custom reward/goal classes */
 .reward-disabled, .goal-disabled {
   opacity: 0.5;
@@ -174,4 +178,20 @@ span.sortable {
 .notifications {
   position: fixed;
   bottom: 0; right: 0;
+}
+
+/* Inline definition lists */
+.inline-dl {
+  display: grid;
+  grid-template-columns: min-content 1fr;
+  padding: 0.5rem;
+}
+.inline-dl dt {
+  white-space: nowrap;
+  font-weight: bold;
+  text-align: right;
+  padding-right: 0.5rem;
+}
+.inline-dl dt:after {
+  content: ":";
 }

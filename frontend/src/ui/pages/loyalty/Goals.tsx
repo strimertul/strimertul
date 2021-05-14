@@ -291,9 +291,9 @@ export default function LoyaltyGoalsPage(
 
   const dispatch = useDispatch();
 
-  const twitchBotActive = moduleConfig?.twitchbot ?? false;
+  const twitchActive = moduleConfig?.twitch ?? false;
   const loyaltyEnabled = moduleConfig?.loyalty ?? false;
-  const active = twitchBotActive && loyaltyEnabled;
+  const active = twitchActive && loyaltyEnabled;
 
   const [goalFilter, setGoalFilter] = useState('');
   const goalFilterLC = goalFilter.toLowerCase();

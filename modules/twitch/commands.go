@@ -1,4 +1,4 @@
-package twitchbot
+package twitch
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ const (
 	ALTStreamer   AccessLevelType = "streamer"
 )
 
-type BotCommandHandler func(bot *TwitchBot, message irc.PrivateMessage)
+type BotCommandHandler func(bot *Bot, message irc.PrivateMessage)
 
 type BotCommand struct {
 	Description string
@@ -55,13 +55,13 @@ var commands = map[string]BotCommand{
 	},
 }
 
-func cmdBalance(bot *TwitchBot, message irc.PrivateMessage) {
+func cmdBalance(bot *Bot, message irc.PrivateMessage) {
 	// Get user balance
 	balance := bot.Loyalty.GetPoints(message.User.Name)
 	bot.Client.Say(message.Channel, fmt.Sprintf("%s: You have %d %s!", message.User.DisplayName, balance, bot.Loyalty.Config().Currency))
 }
 
-func cmdRedeemReward(bot *TwitchBot, message irc.PrivateMessage) {
+func cmdRedeemReward(bot *Bot, message irc.PrivateMessage) {
 	parts := strings.Fields(message.Message)
 	if len(parts) < 2 {
 		return
@@ -112,7 +112,7 @@ func cmdRedeemReward(bot *TwitchBot, message irc.PrivateMessage) {
 	}
 }
 
-func cmdGoalList(bot *TwitchBot, message irc.PrivateMessage) {
+func cmdGoalList(bot *Bot, message irc.PrivateMessage) {
 	goals := bot.Loyalty.Goals()
 	if len(goals) < 1 {
 		bot.Client.Say(message.Channel, fmt.Sprintf("%s: There are no active community goals right now :(!", message.User.DisplayName))
@@ -129,7 +129,7 @@ func cmdGoalList(bot *TwitchBot, message irc.PrivateMessage) {
 	bot.Client.Say(message.Channel, msg)
 }
 
-func cmdContributeGoal(bot *TwitchBot, message irc.PrivateMessage) {
+func cmdContributeGoal(bot *Bot, message irc.PrivateMessage) {
 	goals := bot.Loyalty.Goals()
 
 	// Set defaults if user doesn't provide them

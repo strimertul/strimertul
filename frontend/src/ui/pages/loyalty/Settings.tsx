@@ -20,12 +20,14 @@ export default function LoyaltySettingPage(
 ): React.ReactElement {
   const [loyaltyConfig, setLoyaltyConfig] = useModule(modules.loyaltyConfig);
   const [moduleConfig, setModuleConfig] = useModule(modules.moduleConfig);
+  const [twitchConfig] = useModule(modules.twitchConfig);
 
   const dispatch = useDispatch();
 
-  const twitchBotActive = moduleConfig?.twitchbot ?? false;
+  const twitchActive = moduleConfig?.twitch ?? false;
+  const twitchBotActive = twitchConfig?.enable_bot ?? false;
   const loyaltyEnabled = moduleConfig?.loyalty ?? false;
-  const active = twitchBotActive && loyaltyEnabled;
+  const active = twitchActive && twitchBotActive && loyaltyEnabled;
 
   const [tempIntervalNum, setTempIntervalNum] = useState(null);
   const [tempIntervalMult, setTempIntervalMult] = useState(null);
@@ -33,9 +35,6 @@ export default function LoyaltySettingPage(
   const [intervalNum, intervalMultiplier] = getInterval(
     loyaltyConfig?.points?.interval ?? 0,
   );
-
-  const stulbeEnabled = moduleConfig?.stulbe ?? false;
-  const liveCheck = loyaltyConfig?.enable_live_check ?? false;
 
   useEffect(() => {
     if (loyaltyConfig?.points) {
@@ -67,7 +66,7 @@ export default function LoyaltySettingPage(
         <label className="checkbox">
           <input
             type="checkbox"
-            disabled={!twitchBotActive}
+            disabled={!twitchActive || !twitchBotActive}
             checked={active}
             onChange={(ev) =>
               dispatch(
@@ -79,7 +78,9 @@ export default function LoyaltySettingPage(
             }
           />{' '}
           Enable loyalty points{' '}
-          {twitchBotActive ? '' : '(TwitchBot must be enabled for this!)'}
+          {twitchActive && twitchBotActive
+            ? ''
+            : '(Twitch bot must be enabled for this!)'}
         </label>
       </div>
       <div className="field">
@@ -198,31 +199,6 @@ export default function LoyaltySettingPage(
             }}
           />
         </p>
-      </div>
-      <div className="field">
-        <label className="checkbox">
-          <input
-            type="checkbox"
-            disabled={!active || !stulbeEnabled}
-            checked={liveCheck}
-            onChange={(ev) =>
-              dispatch(
-                setLoyaltyConfig({
-                  ...loyaltyConfig,
-                  enable_live_check: ev.target.checked,
-                }),
-              )
-            }
-          />{' '}
-          Enable check to only add points when live{' '}
-          {stulbeEnabled ? (
-            '(requires Stulbe)'
-          ) : (
-            <span className="has-text-danger">
-              (Stulbe must be enabled for this!)
-            </span>
-          )}
-        </label>
       </div>
       <button
         className="button"

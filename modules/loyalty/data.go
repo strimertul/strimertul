@@ -5,9 +5,8 @@ import "time"
 const ConfigKey = "loyalty/config"
 
 type Config struct {
-	Currency  string `json:"currency"`
-	LiveCheck bool   `json:"enable_live_check"`
-	Points    struct {
+	Currency string `json:"currency"`
+	Points   struct {
 		Interval      int64 `json:"interval"` // in seconds!
 		Amount        int64 `json:"amount"`
 		ActivityBonus int64 `json:"activity_bonus"`

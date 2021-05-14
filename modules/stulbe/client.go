@@ -5,9 +5,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/strimertul/strimertul/database"
+	"github.com/strimertul/stulbe-client-go"
 
-	stulbe "github.com/strimertul/stulbe/client"
+	"github.com/strimertul/strimertul/database"
 )
 
 type Manager struct {

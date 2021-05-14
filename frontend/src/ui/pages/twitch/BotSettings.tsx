@@ -9,33 +9,37 @@ export default function TwitchBotSettingsPage(
   params: RouteComponentProps<unknown>,
 ): React.ReactElement {
   const [moduleConfig, setModuleConfig] = useModule(modules.moduleConfig);
+  const [twitchConfig, setTwitchConfig] = useModule(modules.twitchConfig);
   const [twitchBotConfig, setTwitchBotConfig] = useModule(
     modules.twitchBotConfig,
   );
   const dispatch = useDispatch();
 
   const busy = moduleConfig === null;
-  const active = moduleConfig?.twitchbot ?? false;
+  const twitchActive = moduleConfig?.twitch ?? false;
+  const botActive = twitchConfig?.enable_bot ?? false;
+  const active = twitchActive && botActive;
 
   return (
     <>
-      <h1 className="title is-4">Twitch bot configuration</h1>
+      <h1 className="title is-4">Twitch module configuration</h1>
       <div className="field">
         <label className="checkbox">
           <input
             type="checkbox"
-            checked={active}
-            disabled={busy}
+            checked={botActive}
+            disabled={!twitchActive || busy}
             onChange={(ev) =>
               dispatch(
-                apiReducer.actions.moduleConfigChanged({
-                  ...moduleConfig,
-                  twitchbot: ev.target.checked,
+                apiReducer.actions.twitchConfigChanged({
+                  ...twitchConfig,
+                  enable_bot: ev.target.checked,
                 }),
               )
             }
           />{' '}
           Enable twitch bot
+          {twitchActive ? '' : '(Twitch integration must be enabled for this!)'}
         </label>
       </div>
       <div className="field">
@@ -108,6 +112,7 @@ export default function TwitchBotSettingsPage(
         className="button"
         onClick={() => {
           dispatch(setModuleConfig(moduleConfig));
+          dispatch(setTwitchConfig(twitchConfig));
           dispatch(setTwitchBotConfig(twitchBotConfig));
         }}
       >

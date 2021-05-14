@@ -14,8 +14,7 @@ import (
 	"github.com/strimertul/strimertul/database"
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/loyalty"
-	"github.com/strimertul/strimertul/modules/stulbe"
-	"github.com/strimertul/strimertul/twitchbot"
+	"github.com/strimertul/strimertul/modules/twitch"
 
 	"github.com/dgraph-io/badger/v3"
 
@@ -103,7 +102,7 @@ func main() {
 		failOnError(db.PutJSON(modules.ModuleConfigKey, modules.ModuleConfig{
 			EnableKV:            true,
 			EnableStaticServer:  false,
-			EnableTwitchbot:     false,
+			EnableTwitch:        false,
 			EnableStulbe:        false,
 			CompletedOnboarding: true,
 		}), "could not save onboarding config")
@@ -119,6 +118,7 @@ func main() {
 	failOnError(db.GetJSON(modules.HTTPServerConfigKey, &httpConfig), "Could not retrieve HTTP server config")
 
 	// Get Stulbe config, if enabled
+	/* Kinda deprecated, This will probably be removed/replaced in the future!
 	var stulbeManager *stulbe.Manager = nil
 	if moduleConfig.EnableStulbe {
 		stulbeManager, err = stulbe.Initialize(db, wrapLogger("stulbe"))
@@ -128,105 +128,47 @@ func main() {
 		}
 		defer stulbeManager.Close()
 	}
+	*/
 
 	var loyaltyManager *loyalty.Manager
 	loyaltyLogger := wrapLogger("loyalty")
 	if moduleConfig.EnableLoyalty {
 		loyaltyManager, err = loyalty.NewManager(db, hub, loyaltyLogger)
 		if err != nil {
-			log.WithError(err).Error("Loyalty initialization failed! Module was temporarely disabled")
+			log.WithError(err).Error("Loyalty initialization failed! Module was temporarily disabled")
 			moduleConfig.EnableLoyalty = false
-		}
-
-		if stulbeManager != nil {
-			go stulbeManager.ReplicateKey(loyalty.ConfigKey)
-			go stulbeManager.ReplicateKey(loyalty.GoalsKey)
-			go stulbeManager.ReplicateKey(loyalty.RewardsKey)
-			go stulbeManager.ReplicateKey(loyalty.PointsKey)
 		}
 	}
 
 	//TODO Refactor this to something sane
-	if moduleConfig.EnableTwitchbot {
+	if moduleConfig.EnableTwitch {
 		// Create logger
-		twitchLogger := wrapLogger("twitchbot")
+		twitchLogger := wrapLogger("twitch")
 
-		// Get Twitchbot config
-		var twitchConfig modules.TwitchBotConfig
-		failOnError(db.GetJSON(modules.TwitchBotConfigKey, &twitchConfig), "Could not retrieve twitch bot config")
+		// Get Twitch config
+		var twitchConfig twitch.Config
+		failOnError(db.GetJSON(twitch.ConfigKey, &twitchConfig), "Could not retrieve twitch config")
 
-		bot := twitchbot.NewBot(twitchConfig.Username, twitchConfig.Token, twitchLogger)
-		bot.Client.Join(twitchConfig.Channel)
+		// Create Twitch client
+		twitchClient, err := twitch.NewClient(twitchConfig, twitchLogger)
+		if err == nil {
 
-		if moduleConfig.EnableLoyalty {
-			config := loyaltyManager.Config()
-			bot.Loyalty = loyaltyManager
-			bot.SetBanList(config.BanList)
-			bot.Client.OnConnect(func() {
-				if config.Points.Interval > 0 {
-					go func() {
-						twitchLogger.Info("loyalty poll started")
-						for {
-							// Wait for next poll
-							time.Sleep(time.Duration(config.Points.Interval) * time.Second)
+			// Get Twitchbot config
+			var twitchBotConfig twitch.BotConfig
+			failOnError(db.GetJSON(twitch.BotConfigKey, &twitchBotConfig), "Could not retrieve twitch bot config")
 
-							// Check if streamer is online, if possible
-							streamOnline := true
-							if config.LiveCheck && stulbeManager != nil {
-								status, err := stulbeManager.Client.StreamStatus(twitchConfig.Channel)
-								if err != nil {
-									twitchLogger.WithError(err).Error("Error checking stream status")
-								} else {
-									streamOnline = status != nil
-								}
-							}
-
-							// If stream is confirmed offline, don't give points away!
-							if !streamOnline {
-								twitchLogger.Info("loyalty poll active but stream is offline!")
-								continue
-							}
-
-							// Get user list
-							users, err := bot.Client.Userlist(twitchConfig.Channel)
-							if err != nil {
-								twitchLogger.WithError(err).Error("error listing users")
-								continue
-							}
-
-							// Iterate for each user in the list
-							pointsToGive := make(map[string]int64)
-							for _, user := range users {
-								// Check if user is blocked
-								if bot.IsBanned(user) {
-									continue
-								}
-
-								// Check if user was active (chatting) for the bonus dingus
-								award := config.Points.Amount
-								if bot.IsActive(user) {
-									award += config.Points.ActivityBonus
-								}
-
-								// Add to point pool if already on it, otherwise initialize
-								pointsToGive[user] = award
-							}
-
-							bot.ResetActivity()
-
-							// If changes were made, save the pool!
-							if len(users) > 0 {
-								loyaltyManager.GivePoints(pointsToGive)
-							}
-						}
-					}()
-				}
-			})
+			// Create and run IRC bot
+			bot := twitch.NewBot(twitchClient, twitchBotConfig)
+			if moduleConfig.EnableLoyalty {
+				bot.SetupLoyalty(loyaltyManager)
+			}
+			go func() {
+				failOnError(bot.Connect(), "connection failed")
+			}()
+		} else {
+			log.WithError(err).Error("Twitch initialization failed! Module was temporarily disabled")
+			moduleConfig.EnableTwitch = false
 		}
-
-		go func() {
-			failOnError(bot.Connect(), "connection failed")
-		}()
 	}
 
 	// Create logger and endpoints

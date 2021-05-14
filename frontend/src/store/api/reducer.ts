@@ -13,7 +13,8 @@ import KilovoltWS from '@strimertul/kilovolt-client';
 // Storage
 const moduleConfigKey = 'stul-meta/modules';
 const httpConfigKey = 'http/config';
-const twitchBotConfigKey = 'twitchbot/config';
+const twitchConfigKey = 'twitch/config';
+const twitchBotConfigKey = 'twitch/bot-config';
 const stulbeConfigKey = 'stulbe/config';
 const loyaltyConfigKey = 'loyalty/config';
 const loyaltyStorageKey = 'loyalty/users';
@@ -29,7 +30,7 @@ interface ModuleConfig {
   configured: boolean;
   kv: boolean;
   static: boolean;
-  twitchbot: boolean;
+  twitch: boolean;
   stulbe: boolean;
   loyalty: boolean;
 }
@@ -37,6 +38,12 @@ interface ModuleConfig {
 interface HTTPConfig {
   bind: string;
   path: string;
+}
+
+interface TwitchConfig {
+  enable_bot: boolean;
+  api_client_id: string;
+  api_client_secret: string;
 }
 
 interface TwitchBotConfig {
@@ -53,7 +60,6 @@ interface StulbeConfig {
 
 interface LoyaltyConfig {
   currency: string;
-  enable_live_check: boolean;
   points: {
     interval: number;
     amount: number;
@@ -105,6 +111,7 @@ export interface APIState {
   moduleConfigs: {
     moduleConfig: ModuleConfig;
     httpConfig: HTTPConfig;
+    twitchConfig: TwitchConfig;
     twitchBotConfig: TwitchBotConfig;
     stulbeConfig: StulbeConfig;
     loyaltyConfig: LoyaltyConfig;
@@ -124,6 +131,7 @@ const initialState: APIState = {
   moduleConfigs: {
     moduleConfig: null,
     httpConfig: null,
+    twitchConfig: null,
     twitchBotConfig: null,
     stulbeConfig: null,
     loyaltyConfig: null,
@@ -204,6 +212,13 @@ export const modules = {
     (state) => state.moduleConfigs?.httpConfig,
     (state, { payload }) => {
       state.moduleConfigs.httpConfig = payload;
+    },
+  ),
+  twitchConfig: makeModule<TwitchConfig>(
+    twitchConfigKey,
+    (state) => state.moduleConfigs?.twitchConfig,
+    (state, { payload }) => {
+      state.moduleConfigs.twitchConfig = payload;
     },
   ),
   twitchBotConfig: makeModule<TwitchBotConfig>(
@@ -311,6 +326,9 @@ const apiReducer = createSlice({
     },
     httpConfigChanged(state, { payload }: PayloadAction<HTTPConfig>) {
       state.moduleConfigs.httpConfig = payload;
+    },
+    twitchConfigChanged(state, { payload }: PayloadAction<TwitchConfig>) {
+      state.moduleConfigs.twitchConfig = payload;
     },
     twitchBotConfigChanged(state, { payload }: PayloadAction<TwitchBotConfig>) {
       state.moduleConfigs.twitchBotConfig = payload;
