@@ -42,7 +42,7 @@ func (db *DB) Client() *badger.DB {
 }
 
 func (db *DB) Close() {
-	db.Close()
+	db.client.Close()
 }
 
 func (db *DB) GetKey(key string) ([]byte, error) {
@@ -98,6 +98,26 @@ func (db *DB) GetJSON(key string, dst interface{}) error {
 	})
 }
 
+func (db *DB) GetAll(prefix string) (map[string]string, error) {
+	out := make(map[string]string)
+	err := db.client.View(func(t *badger.Txn) error {
+		it := t.NewIterator(badger.IteratorOptions{
+			Prefix: []byte(prefix),
+		})
+		defer it.Close()
+		for it.Rewind(); it.Valid(); it.Next() {
+			item := it.Item()
+			byt, err := item.ValueCopy(nil)
+			if err != nil {
+				return err
+			}
+			out[string(item.Key())] = string(byt)
+		}
+		return nil
+	})
+	return out, err
+}
+
 func (db *DB) PutJSON(key string, data interface{}) error {
 	return db.client.Update(func(t *badger.Txn) error {
 		byt, err := json.Marshal(data)
@@ -105,5 +125,21 @@ func (db *DB) PutJSON(key string, data interface{}) error {
 			return err
 		}
 		return t.Set([]byte(key), byt)
+	})
+}
+
+func (db *DB) PutJSONBulk(kvs map[string]interface{}) error {
+	return db.client.Update(func(t *badger.Txn) error {
+		for k, v := range kvs {
+			byt, err := json.Marshal(v)
+			if err != nil {
+				return err
+			}
+			err = t.Set([]byte(k), byt)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
 	})
 }
