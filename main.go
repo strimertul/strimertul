@@ -79,7 +79,8 @@ func main() {
 	fmt.Println(AppHeader)
 
 	// Loading routine
-	db, err := database.Open(badger.DefaultOptions(*dbdir), wrapLogger("db"))
+	dblogger := wrapLogger("db")
+	db, err := database.Open(badger.DefaultOptions(*dbdir).WithLogger(dblogger), dblogger)
 	failOnError(err, "Could not open DB")
 	defer db.Close()
 

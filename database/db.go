@@ -28,7 +28,6 @@ type ModifiedKV struct {
 }
 
 func Open(options badger.Options, logger logrus.FieldLogger) (*DB, error) {
-	options.Logger = logger
 	client, err := badger.Open(options)
 
 	return &DB{
