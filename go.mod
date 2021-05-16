@@ -10,6 +10,6 @@ require (
 	github.com/nicklaw5/helix v1.15.0
 	github.com/pkg/browser v0.0.0-20210115035449-ce105d075bb4
 	github.com/sirupsen/logrus v1.8.1
-	github.com/strimertul/kilovolt/v3 v3.0.3
+	github.com/strimertul/kilovolt/v4 v4.0.1
 	github.com/strimertul/stulbe-client-go v0.1.0
 )

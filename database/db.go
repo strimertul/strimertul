@@ -101,9 +101,9 @@ func (db *DB) GetJSON(key string, dst interface{}) error {
 func (db *DB) GetAll(prefix string) (map[string]string, error) {
 	out := make(map[string]string)
 	err := db.client.View(func(t *badger.Txn) error {
-		it := t.NewIterator(badger.IteratorOptions{
-			Prefix: []byte(prefix),
-		})
+		opt := badger.DefaultIteratorOptions
+		opt.Prefix = []byte(prefix)
+		it := t.NewIterator(opt)
 		defer it.Close()
 		for it.Rewind(); it.Valid(); it.Next() {
 			item := it.Item()
@@ -111,7 +111,7 @@ func (db *DB) GetAll(prefix string) (map[string]string, error) {
 			if err != nil {
 				return err
 			}
-			out[string(item.Key())] = string(byt)
+			out[string(item.Key()[len(prefix):])] = string(byt)
 		}
 		return nil
 	})
@@ -141,5 +141,11 @@ func (db *DB) PutJSONBulk(kvs map[string]interface{}) error {
 			}
 		}
 		return nil
+	})
+}
+
+func (db *DB) RemoveKey(key string) error {
+	return db.client.Update(func(t *badger.Txn) error {
+		return t.Delete([]byte(key))
 	})
 }

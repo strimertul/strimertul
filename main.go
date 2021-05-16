@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"time"
 
-	kv "github.com/strimertul/kilovolt/v3"
+	kv "github.com/strimertul/kilovolt/v4"
 
 	"github.com/strimertul/strimertul/database"
 	"github.com/strimertul/strimertul/modules"
@@ -111,7 +111,8 @@ func main() {
 	}
 
 	// Initialize KV (required)
-	hub := kv.NewHub(db.Client(), wrapLogger("kv"))
+	hub, err := kv.NewHub(db.Client(), wrapLogger("kv"))
+	failOnError(err, "Could not initialize kilovolt hub")
 	go hub.Run()
 
 	// Get HTTP config
@@ -132,7 +133,7 @@ func main() {
 	var loyaltyManager *loyalty.Manager
 	loyaltyLogger := wrapLogger("loyalty")
 	if moduleConfig.EnableLoyalty {
-		loyaltyManager, err = loyalty.NewManager(db, hub, loyaltyLogger)
+		loyaltyManager, err = loyalty.NewManager(db, loyaltyLogger)
 		if err != nil {
 			log.WithError(err).Error("Loyalty initialization failed! Module was temporarily disabled")
 			moduleConfig.EnableLoyalty = false
@@ -142,7 +143,7 @@ func main() {
 			go stulbeManager.ReplicateKey(loyalty.ConfigKey)
 			go stulbeManager.ReplicateKey(loyalty.RewardsKey)
 			go stulbeManager.ReplicateKey(loyalty.GoalsKey)
-			go stulbeManager.ReplicateKey(loyalty.PointsKey)
+			go stulbeManager.ReplicateKey(loyalty.PointsPrefix)
 		}
 	}
 

@@ -43,9 +43,11 @@ type Goal struct {
 	Contributors map[string]int64 `json:"contributors"`
 }
 
-const PointsKey = "loyalty/users"
+const PointsPrefix = "loyalty/points/"
 
-type PointStorage map[string]int64
+type PointsEntry struct {
+	Points int64 `json:"points"`
+}
 
 const QueueKey = "loyalty/redeem-queue"
 

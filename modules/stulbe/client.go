@@ -44,20 +44,23 @@ func (m *Manager) Close() {
 	m.Client.Close()
 }
 
-func (m *Manager) ReplicateKey(key string) error {
+func (m *Manager) ReplicateKey(prefix string) error {
 	// Set key to current value
-	val, err := m.db.GetKey(key)
+	vals, err := m.db.GetAll(prefix)
 	if err != nil {
 		return err
 	}
 
-	err = m.Client.KV.SetKey(key, string(val))
-	if err != nil {
-		return err
+	for k, v := range vals {
+		err = m.Client.KV.SetKey(k, v)
+		if err != nil {
+			return err
+		}
 	}
+
 	m.logger.WithFields(logrus.Fields{
-		"key": key,
-	}).Debug("set to remote")
+		"prefix": prefix,
+	}).Debug("synched to remote")
 
 	// Subscribe to local datastore and update remote on change
 	return m.db.Subscribe(context.Background(), func(pairs []database.ModifiedKV) error {
@@ -72,5 +75,5 @@ func (m *Manager) ReplicateKey(key string) error {
 		}
 
 		return nil
-	}, key)
+	}, prefix)
 }
