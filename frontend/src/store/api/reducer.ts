@@ -17,7 +17,7 @@ const twitchConfigKey = 'twitch/config';
 const twitchBotConfigKey = 'twitch/bot-config';
 const stulbeConfigKey = 'stulbe/config';
 const loyaltyConfigKey = 'loyalty/config';
-const loyaltyStorageKey = 'loyalty/users';
+const loyaltyPointsPrefix = 'loyalty/points/';
 const loyaltyRewardsKey = 'loyalty/rewards';
 const loyaltyGoalsKey = 'loyalty/goals';
 const loyaltyRedeemQueueKey = 'loyalty/redeem-queue';
@@ -68,7 +68,11 @@ interface LoyaltyConfig {
   banlist: string[];
 }
 
-export type LoyaltyStorage = Record<string, number>;
+interface LoyaltyPointsEntry {
+  points: number;
+}
+
+export type LoyaltyStorage = Record<string, LoyaltyPointsEntry>;
 
 export interface LoyaltyReward {
   enabled: boolean;
@@ -199,6 +203,20 @@ export const createWSClient = createAsyncThunk(
   },
 );
 
+export const getUserPoints = createAsyncThunk(
+  'api/getUserPoints',
+  async (_: void, { getState }) => {
+    const { api } = getState() as { api: APIState };
+    const keys = await api.client.getKeysByPrefix(loyaltyPointsPrefix);
+    console.log(keys);
+    const userpoints: LoyaltyStorage = {};
+    Object.entries(keys).forEach(([k, v]) => {
+      userpoints[k.substr(loyaltyPointsPrefix.length)] = JSON.parse(v);
+    });
+    return userpoints;
+  },
+);
+
 export const modules = {
   moduleConfig: makeModule<ModuleConfig>(
     moduleConfigKey,
@@ -242,13 +260,6 @@ export const modules = {
       state.moduleConfigs.loyaltyConfig = payload;
     },
   ),
-  loyaltyStorage: makeModule<LoyaltyStorage>(
-    loyaltyStorageKey,
-    (state) => state.loyalty.users,
-    (state, { payload }) => {
-      state.loyalty.users = payload;
-    },
-  ),
   loyaltyRewards: makeModule<LoyaltyReward[]>(
     loyaltyRewardsKey,
     (state) => state.loyalty.rewards,
@@ -271,29 +282,6 @@ export const modules = {
     },
   ),
 };
-
-export const setUserPoints = createAsyncThunk(
-  'api/setUserPoints',
-  async (
-    {
-      user,
-      points,
-      relative,
-    }: { user: string; points: number; relative: boolean },
-    { getState, dispatch },
-  ) => {
-    const { api } = getState() as { api: APIState };
-    const newAmount = relative
-      ? (api.loyalty.users[user] ?? 0) + points
-      : points;
-    return dispatch(
-      modules.loyaltyStorage.setter({
-        ...api.loyalty.users,
-        [user]: newAmount,
-      }),
-    );
-  },
-);
 
 export const createRedeem = createAsyncThunk(
   'api/createRedeem',
@@ -339,9 +327,6 @@ const apiReducer = createSlice({
     loyaltyConfigChanged(state, { payload }: PayloadAction<LoyaltyConfig>) {
       state.moduleConfigs.loyaltyConfig = payload;
     },
-    loyaltyStorageChanged(state, { payload }: PayloadAction<LoyaltyStorage>) {
-      state.loyalty.users = payload;
-    },
     loyaltyRewardsChanged(state, { payload }: PayloadAction<LoyaltyReward[]>) {
       state.loyalty.rewards = payload;
     },
@@ -353,6 +338,9 @@ const apiReducer = createSlice({
     builder.addCase(createWSClient.fulfilled, (state, { payload }) => {
       state.client = payload;
       state.connected = true;
+    });
+    builder.addCase(getUserPoints.fulfilled, (state, { payload }) => {
+      state.loyalty.users = payload;
     });
     Object.values(modules).forEach((mod) => {
       builder.addCase(mod.getter.fulfilled, mod.stateSetter);

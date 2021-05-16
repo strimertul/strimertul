@@ -29,9 +29,9 @@ export function useModule<T>({
     const subscriber = (newValue) => {
       dispatch(asyncSetter(JSON.parse(newValue) as T));
     };
-    client.subscribe(key, subscriber);
+    client.subscribeKey(key, subscriber);
     return () => {
-      client.unsubscribe(key, subscriber);
+      client.unsubscribeKey(key, subscriber);
     };
   }, []);
   return [data, setter];

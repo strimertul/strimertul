@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { RouteComponentProps } from '@reach/router';
-import { useModule } from '../../../lib/react-utils';
-import { modules } from '../../../store/api/reducer';
 import PageList from '../../components/PageList';
+import { RootState } from '../../../store';
+import { getUserPoints } from '../../../store/api/reducer';
 
 interface SortingOrder {
   key: 'user' | 'points';
@@ -12,12 +13,16 @@ export default function LoyaltyUserListPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: RouteComponentProps<unknown>,
 ): React.ReactElement {
-  const [users] = useModule(modules.loyaltyStorage);
-
+  const users = useSelector((state: RootState) => state.api.loyalty.users);
+  const dispatch = useDispatch();
   const [sorting, setSorting] = useState<SortingOrder>({
     key: 'points',
     order: 'desc',
   });
+
+  useEffect(() => {
+    dispatch(getUserPoints());
+  }, []);
 
   const [entriesPerPage, setEntriesPerPage] = useState(15);
   const [page, setPage] = useState(0);
@@ -51,10 +56,10 @@ export default function LoyaltyUserListPage(
     case 'points':
       if (sorting.order === 'asc') {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        sortedEntries.sort(([_a, pointsA], [_b, pointsB]) => pointsA - pointsB);
+        sortedEntries.sort(([_a, a], [_b, b]) => a.points - b.points);
       } else {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        sortedEntries.sort(([_a, pointsA], [_b, pointsB]) => pointsB - pointsA);
+        sortedEntries.sort(([_a, a], [_b, b]) => b.points - a.points);
       }
       break;
     default:
@@ -120,10 +125,10 @@ export default function LoyaltyUserListPage(
             </thead>
 
             <tbody>
-              {paged.map(([user, points]) => (
+              {paged.map(([user, p]) => (
                 <tr key={user}>
                   <td>{user}</td>
-                  <td>{points}</td>
+                  <td>{p.points}</td>
                   <td></td>
                 </tr>
               ))}
