@@ -141,7 +141,7 @@ function GoalModal({
     setID(newID.toLowerCase().replace(/[^a-zA-Z0-9]/gi, '-'));
 
   const slug = id || name?.toLowerCase().replace(/[^a-zA-Z0-9]/gi, '-') || '';
-  const idExists = goals?.some((reward) => reward.id === slug) ?? false;
+  const idExists = goals?.some((goal) => goal.id === slug) ?? false;
   const idInvalid = slug !== initialData?.id && idExists;
 
   const validForm = idInvalid === false && name !== '' && total >= 0;
@@ -175,7 +175,7 @@ function GoalModal({
     >
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Reward ID</label>
+          <label className="label">Goal ID</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -183,20 +183,20 @@ function GoalModal({
               <input
                 className={idInvalid ? 'input is-danger' : 'input'}
                 type="text"
-                placeholder="reward_id_here"
+                placeholder="goal_id_here"
                 value={slug}
                 onChange={(ev) => setIDex(ev.target.value)}
               />
             </p>
             {idInvalid ? (
               <p className="help is-danger">
-                There is already a reward with this ID! Please choose a
-                different one.
+                There is already a goal with this ID! Please choose a different
+                one.
               </p>
             ) : (
               <p className="help">
                 Choose a simple name that can be referenced by other software.
-                It will be auto-generated from the reward name if you leave it
+                It will be auto-generated from the goal name if you leave it
                 blank.
               </p>
             )}

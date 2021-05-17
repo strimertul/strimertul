@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useState } from 'react';
 import { RouteComponentProps } from '@reach/router';
 import PageList from '../../components/PageList';
-import { RootState } from '../../../store';
-import { getUserPoints } from '../../../store/api/reducer';
+import { useUserPoints } from '../../../lib/react-utils';
 
 interface SortingOrder {
   key: 'user' | 'points';
@@ -13,16 +11,11 @@ export default function LoyaltyUserListPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: RouteComponentProps<unknown>,
 ): React.ReactElement {
-  const users = useSelector((state: RootState) => state.api.loyalty.users);
-  const dispatch = useDispatch();
+  const users = useUserPoints();
   const [sorting, setSorting] = useState<SortingOrder>({
     key: 'points',
     order: 'desc',
   });
-
-  useEffect(() => {
-    dispatch(getUserPoints());
-  }, []);
 
   const [entriesPerPage, setEntriesPerPage] = useState(15);
   const [page, setPage] = useState(0);

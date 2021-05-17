@@ -208,12 +208,30 @@ export const getUserPoints = createAsyncThunk(
   async (_: void, { getState }) => {
     const { api } = getState() as { api: APIState };
     const keys = await api.client.getKeysByPrefix(loyaltyPointsPrefix);
-    console.log(keys);
     const userpoints: LoyaltyStorage = {};
     Object.entries(keys).forEach(([k, v]) => {
       userpoints[k.substr(loyaltyPointsPrefix.length)] = JSON.parse(v);
     });
     return userpoints;
+  },
+);
+
+export const setUserPoints = createAsyncThunk(
+  'api/setUserPoints',
+  async (
+    {
+      user,
+      points,
+      relative,
+    }: { user: string; points: number; relative: boolean },
+    { getState },
+  ) => {
+    const { api } = getState() as { api: APIState };
+    const entry: LoyaltyPointsEntry = { points };
+    if (relative) {
+      entry.points += api.loyalty.users[user].points ?? 0;
+    }
+    return api.client.putJSON(loyaltyPointsPrefix + user, entry);
   },
 );
 
@@ -332,6 +350,14 @@ const apiReducer = createSlice({
     },
     loyaltyGoalsChanged(state, { payload }: PayloadAction<LoyaltyGoal[]>) {
       state.loyalty.goals = payload;
+    },
+    loyaltyUserPointsChanged(
+      state,
+      {
+        payload: { user, entry },
+      }: PayloadAction<{ user: string; entry: LoyaltyPointsEntry }>,
+    ) {
+      state.loyalty.users[user] = entry;
     },
   },
   extraReducers: (builder) => {

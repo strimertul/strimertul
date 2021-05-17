@@ -1,9 +1,16 @@
 import { ActionCreatorWithOptionalPayload, AsyncThunk } from '@reduxjs/toolkit';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { KilovoltMessage } from '@strimertul/kilovolt-client';
+import {
+  KilovoltMessage,
+  SubscriptionHandler,
+} from '@strimertul/kilovolt-client';
 import { RootState } from '../store';
-import { APIState } from '../store/api/reducer';
+import apiReducer, {
+  APIState,
+  getUserPoints,
+  LoyaltyStorage,
+} from '../store/api/reducer';
 
 export function useModule<T>({
   key,
@@ -37,6 +44,27 @@ export function useModule<T>({
   return [data, setter];
 }
 
+export function useUserPoints(): LoyaltyStorage {
+  const prefix = 'loyalty/points/';
+  const client = useSelector((state: RootState) => state.api.client);
+  const data = useSelector((state: RootState) => state.api.loyalty.users);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getUserPoints());
+    const subscriber: SubscriptionHandler = (newValue, key) => {
+      const user = key.substring(prefix.length);
+      const entry = JSON.parse(newValue);
+      dispatch(apiReducer.actions.loyaltyUserPointsChanged({ user, entry }));
+    };
+    client.subscribePrefix(prefix, subscriber);
+    return () => {
+      client.subscribePrefix(prefix, subscriber);
+    };
+  }, []);
+  return data;
+}
+
 export default {
   useModule,
+  useUserPoints,
 };
