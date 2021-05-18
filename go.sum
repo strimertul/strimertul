@@ -113,8 +113,8 @@ github.com/strimertul/kilovolt/v4 v4.0.1/go.mod h1:AO2ZFQtSB+AcjCw0RTkXjbM6XBAjh
 github.com/strimertul/strimertul v1.3.0/go.mod h1:1pSe9zVWF4BYt56ii1Hg+xTxvtfqfvT4FQ7bYffWsUA=
 github.com/strimertul/stulbe v0.2.5/go.mod h1:0AsY4OVf1dNCwOn9s7KySuAxJ85w88pXeostu1n9E7w=
 github.com/strimertul/stulbe v0.3.0/go.mod h1:Pb0UQCKdyES7UKSKm2i2g9parkgXSJAFeMH/LSOSbgQ=
-github.com/strimertul/stulbe v0.4.2 h1:dxxjGtLiUEyMu/V7Rc7kurcY6DHS7jXS8/GEfQPSFR4=
-github.com/strimertul/stulbe v0.4.2/go.mod h1:Pb0UQCKdyES7UKSKm2i2g9parkgXSJAFeMH/LSOSbgQ=
+github.com/strimertul/stulbe v0.4.3 h1:apDTvFaChCoMxUokc1Y51Wn43hWyf0qqMNkptnlIj/c=
+github.com/strimertul/stulbe v0.4.3/go.mod h1:Pb0UQCKdyES7UKSKm2i2g9parkgXSJAFeMH/LSOSbgQ=
 github.com/strimertul/stulbe-client-go v0.1.0/go.mod h1:KtfuDhxCHZ9DCFHnrBOHqb2Pu9zoj+EqA8ZRIUqLD/w=
 github.com/strimertul/stulbe-client-go v0.2.0 h1:zoUu+/ssOWz9VsoioJkQNMU88qJ/lQzAu6ak8GcTYxY=
 github.com/strimertul/stulbe-client-go v0.2.0/go.mod h1:5S+nDMyzkeoBHi9fq3s37A4mv3XUPJhwgW94UtGzp28=

@@ -11,6 +11,6 @@ require (
 	github.com/pkg/browser v0.0.0-20210115035449-ce105d075bb4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/strimertul/kilovolt/v4 v4.0.1
-	github.com/strimertul/stulbe v0.4.2
+	github.com/strimertul/stulbe v0.4.3
 	github.com/strimertul/stulbe-client-go v0.2.0
 )

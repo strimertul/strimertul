@@ -16,7 +16,8 @@ import (
 )
 
 var (
-	ErrGoalNotFound = errors.New("goal not found")
+	ErrGoalNotFound       = errors.New("goal not found")
+	ErrGoalAlreadyReached = errors.New("goal already reached")
 )
 
 type Manager struct {
@@ -171,7 +172,7 @@ func (m *Manager) handleRemote(kvs []database.ModifiedKV) error {
 				break
 			}
 			// Find reward
-			reward := m.getReward(redeemRequest.RewardID)
+			reward := m.GetReward(redeemRequest.RewardID)
 			if reward.ID == "" {
 				m.logger.WithField("reward-id", redeemRequest.RewardID).Warn("redeem request contains invalid reward id")
 				break
@@ -185,6 +186,24 @@ func (m *Manager) handleRemote(kvs []database.ModifiedKV) error {
 			})
 			if err != nil {
 				m.logger.WithError(err).Warn("error performing redeem request")
+			}
+		case api.KVExLoyaltyContribute:
+			// Parse request
+			var contributeRequest api.ExLoyaltyContribute
+			err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &contributeRequest)
+			if err != nil {
+				m.logger.WithError(err).Warn("error decoding contribution request")
+				break
+			}
+			// Find goal
+			goal := m.GetGoal(contributeRequest.GoalID)
+			if goal.ID == "" {
+				m.logger.WithField("goal-id", contributeRequest.GoalID).Warn("contribute request contains invalid goal id")
+				break
+			}
+			err = m.PerformContribution(goal, contributeRequest.Username, contributeRequest.Amount)
+			if err != nil {
+				m.logger.WithError(err).Warn("error performing contribution request")
 			}
 		}
 	}
@@ -305,13 +324,42 @@ func (m *Manager) ContributeGoal(goal Goal, user string, points int64) error {
 	return ErrGoalNotFound
 }
 
+func (m *Manager) PerformContribution(goal Goal, user string, points int64) error {
+	// Get user balance
+	balance := m.GetPoints(user)
+
+	// If user specified more points than they have, pick the maximum possible
+	if points > balance {
+		points = balance
+	}
+
+	// Check if goal was reached already
+	if goal.Contributed >= goal.TotalGoal {
+		return ErrGoalAlreadyReached
+	}
+
+	// If remaining points are lower than what user is contributing, only take what's needed
+	remaining := goal.TotalGoal - goal.Contributed
+	if points > remaining {
+		points = remaining
+	}
+
+	// Remove points from user
+	if err := m.TakePoints(map[string]int64{user: points}); err != nil {
+		return err
+	}
+
+	// Add points to goal
+	return m.ContributeGoal(goal, user, points)
+}
+
 func (m *Manager) Rewards() []Reward {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	return m.rewards[:]
 }
 
-func (m *Manager) getReward(id string) Reward {
+func (m *Manager) GetReward(id string) Reward {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for _, reward := range m.rewards {
@@ -320,6 +368,17 @@ func (m *Manager) getReward(id string) Reward {
 		}
 	}
 	return Reward{}
+}
+
+func (m *Manager) GetGoal(id string) Goal {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, goal := range m.goals {
+		if goal.ID == id {
+			return goal
+		}
+	}
+	return Goal{}
 }
 
 func (m *Manager) Config() Config {

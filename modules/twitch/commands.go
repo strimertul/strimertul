@@ -69,47 +69,44 @@ func cmdRedeemReward(bot *Bot, message irc.PrivateMessage) {
 	redeemID := parts[1]
 
 	// Find reward
-	for _, reward := range bot.Loyalty.Rewards() {
-		if reward.ID != redeemID {
-			continue
-		}
-
-		// Reward not active, return early
-		if !reward.Enabled {
-			return
-		}
-
-		// Get user balance
-		balance := bot.Loyalty.GetPoints(message.User.Name)
-		config := bot.Loyalty.Config()
-
-		// Check if user can afford the reward
-		if balance-reward.Price < 0 {
-			bot.Client.Say(message.Channel, fmt.Sprintf("I'm sorry %s but you cannot afford this (have %d %s, need %d)", message.User.DisplayName, balance, config.Currency, reward.Price))
-			return
-		}
-
-		text := ""
-		if len(parts) > 2 {
-			text = strings.Join(parts[2:], " ")
-		}
-
-		// Perform redeem
-		if err := bot.Loyalty.PerformRedeem(loyalty.Redeem{
-			Username:    message.User.Name,
-			DisplayName: message.User.DisplayName,
-			When:        time.Now(),
-			Reward:      reward,
-			RequestText: text,
-		}); err != nil {
-			bot.logger.WithError(err).Error("error while performing redeem")
-			return
-		}
-
-		bot.Client.Say(message.Channel, fmt.Sprintf("HolidayPresent %s has redeemed %s! (new balance: %d %s)", message.User.DisplayName, reward.Name, bot.Loyalty.GetPoints(message.User.Name), config.Currency))
-
+	reward := bot.Loyalty.GetReward(redeemID)
+	if reward.ID == "" {
 		return
 	}
+
+	// Reward not active, return early
+	if !reward.Enabled {
+		return
+	}
+
+	// Get user balance
+	balance := bot.Loyalty.GetPoints(message.User.Name)
+	config := bot.Loyalty.Config()
+
+	// Check if user can afford the reward
+	if balance-reward.Price < 0 {
+		bot.Client.Say(message.Channel, fmt.Sprintf("I'm sorry %s but you cannot afford this (have %d %s, need %d)", message.User.DisplayName, balance, config.Currency, reward.Price))
+		return
+	}
+
+	text := ""
+	if len(parts) > 2 {
+		text = strings.Join(parts[2:], " ")
+	}
+
+	// Perform redeem
+	if err := bot.Loyalty.PerformRedeem(loyalty.Redeem{
+		Username:    message.User.Name,
+		DisplayName: message.User.DisplayName,
+		When:        time.Now(),
+		Reward:      reward,
+		RequestText: text,
+	}); err != nil {
+		bot.logger.WithError(err).Error("error while performing redeem")
+		return
+	}
+
+	bot.Client.Say(message.Channel, fmt.Sprintf("HolidayPresent %s has redeemed %s! (new balance: %d %s)", message.User.DisplayName, reward.Name, bot.Loyalty.GetPoints(message.User.Name), config.Currency))
 }
 
 func cmdGoalList(bot *Bot, message irc.PrivateMessage) {
@@ -192,14 +189,6 @@ func cmdContributeGoal(bot *Bot, message irc.PrivateMessage) {
 		}
 	}
 
-	// Get user balance
-	balance := bot.Loyalty.GetPoints(message.User.Name)
-
-	// If user specified more points than they have, pick the maximum possible
-	if points > balance {
-		points = balance
-	}
-
 	// Get goal
 	selectedGoal := goals[goalIndex]
 
@@ -209,20 +198,8 @@ func cmdContributeGoal(bot *Bot, message irc.PrivateMessage) {
 		return
 	}
 
-	// If remaining points are lower than what user is contributing, only take what's needed
-	remaining := selectedGoal.TotalGoal - selectedGoal.Contributed
-	if points > remaining {
-		points = remaining
-	}
-
-	// Remove points from user
-	if err := bot.Loyalty.TakePoints(map[string]int64{message.User.Name: points}); err != nil {
-		bot.logger.WithError(err).Error("error while taking points for redeem")
-		return
-	}
-
 	// Add points to goal
-	if err := bot.Loyalty.ContributeGoal(selectedGoal, message.User.Name, points); err != nil {
+	if err := bot.Loyalty.PerformContribution(selectedGoal, message.User.Name, points); err != nil {
 		bot.logger.WithError(err).Error("error while contributing to goal")
 		return
 	}
