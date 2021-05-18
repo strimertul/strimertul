@@ -40,7 +40,7 @@ function UserModal({
 
   const [user, setUser] = useState(initialData.user);
   const [entry, setEntry] = useState(initialData.entry);
-  const userEditable = initialData.user !== '';
+  const userEditable = initialData.user === '';
 
   const nameValid = user !== '';
   const pointsValid = Number.isFinite(entry.points);
@@ -133,6 +133,7 @@ export default function LoyaltyUserListPage(
   const [page, setPage] = useState(0);
   const [usernameFilter, setUsernameFilter] = useState('');
   const [editModal, setEditModal] = useState<UserData>(null);
+  const [createModal, setCreateModal] = useState<boolean>(false);
 
   const changeSort = (key: 'user' | 'points') => {
     if (sorting.key === key) {
@@ -180,9 +181,22 @@ export default function LoyaltyUserListPage(
     dispatch(setUserPoints({ user, points: entry.points, relative: false }));
     setEditModal(null);
   };
+  const assignPoints = ({ entry, user }: UserData) => {
+    console.log(user, entry);
+    dispatch(setUserPoints({ user, points: entry.points, relative: true }));
+    setCreateModal(false);
+  };
 
   return (
     <>
+      <UserModal
+        title="Give points to user"
+        confirmText="Give"
+        active={createModal}
+        onConfirm={(entry) => assignPoints(entry)}
+        initialData={{ user: '', entry: { points: 0 } }}
+        onClose={() => setCreateModal(false)}
+      />
       {editModal ? (
         <UserModal
           title="Modify balance"
@@ -206,6 +220,11 @@ export default function LoyaltyUserListPage(
                 setUsernameFilter(ev.target.value.toLowerCase())
               }
             />
+          </div>
+          <div className="field">
+            <a className="button is-small" onClick={() => setCreateModal(true)}>
+              Give points to user
+            </a>
           </div>
           <PageList
             current={page + 1}

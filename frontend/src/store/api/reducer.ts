@@ -230,7 +230,7 @@ export const setUserPoints = createAsyncThunk(
     const { api } = getState() as { api: APIState };
     const entry: LoyaltyPointsEntry = { points };
     if (relative) {
-      entry.points += api.loyalty.users[user].points ?? 0;
+      entry.points += api.loyalty.users[user]?.points ?? 0;
     }
     return api.client.putJSON(loyaltyPointsPrefix + user, entry);
   },
