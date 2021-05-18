@@ -31,7 +31,7 @@ type BotCommand struct {
 var commands = map[string]BotCommand{
 	"!redeem": {
 		Description: "Redeem a reward with loyalty points",
-		Usage:       "!redeem reward-id",
+		Usage:       "!redeem <reward-id> [request text]",
 		AccessLevel: ALTEveryone,
 		Handler:     cmdRedeemReward,
 	},
@@ -89,12 +89,18 @@ func cmdRedeemReward(bot *Bot, message irc.PrivateMessage) {
 			return
 		}
 
+		text := ""
+		if len(parts) > 2 {
+			text = strings.Join(parts[2:], " ")
+		}
+
 		// Perform redeem
 		if err := bot.Loyalty.PerformRedeem(loyalty.Redeem{
 			Username:    message.User.Name,
 			DisplayName: message.User.DisplayName,
 			When:        time.Now(),
 			Reward:      reward,
+			RequestText: text,
 		}); err != nil {
 			bot.logger.WithError(err).Error("error while performing redeem")
 			return
