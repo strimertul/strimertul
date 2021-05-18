@@ -65,7 +65,13 @@ func (m *Manager) ReplicateKey(prefix string) error {
 		return err
 	}
 
-	err = m.Client.KV.SetKeys(vals)
+	// Add prefix to keys
+	newvals := make(map[string]string)
+	for k, v := range vals {
+		newvals[prefix+k] = v
+	}
+
+	err = m.Client.KV.SetKeys(newvals)
 	if err != nil {
 		return err
 	}
