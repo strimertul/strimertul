@@ -90,19 +90,13 @@ func cmdRedeemReward(bot *Bot, message irc.PrivateMessage) {
 		}
 
 		// Perform redeem
-		if err := bot.Loyalty.AddRedeem(loyalty.Redeem{
+		if err := bot.Loyalty.PerformRedeem(loyalty.Redeem{
 			Username:    message.User.Name,
 			DisplayName: message.User.DisplayName,
 			When:        time.Now(),
 			Reward:      reward,
 		}); err != nil {
-			bot.logger.WithError(err).Error("error while adding redeem")
-			return
-		}
-
-		// Remove points from user
-		if err := bot.Loyalty.TakePoints(map[string]int64{message.User.Name: reward.Price}); err != nil {
-			bot.logger.WithError(err).Error("error while taking points for redeem")
+			bot.logger.WithError(err).Error("error while performing redeem")
 			return
 		}
 

@@ -5,10 +5,12 @@ import (
 	"errors"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/dgraph-io/badger/v3"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
+	"github.com/strimertul/stulbe/api"
 
 	"github.com/strimertul/strimertul/database"
 )
@@ -90,9 +92,8 @@ func NewManager(db *database.DB, log logrus.FieldLogger) (*Manager, error) {
 	}
 
 	// Subscribe for changes
-	go func() {
-		db.Subscribe(context.Background(), manager.update, "loyalty/")
-	}()
+	go db.Subscribe(context.Background(), manager.update, "loyalty/")
+	go db.Subscribe(context.Background(), manager.handleRemote, "stulbe/loyalty/")
 
 	return manager, nil
 }
@@ -152,6 +153,39 @@ func (m *Manager) update(kvs []database.ModifiedKV) error {
 			}).Error("subscribe error: invalid JSON received on key")
 		} else {
 			m.logger.WithField("key", string(kv.Key)).Debug("updated key")
+		}
+	}
+	return nil
+}
+
+func (m *Manager) handleRemote(kvs []database.ModifiedKV) error {
+	for _, kv := range kvs {
+		m.logger.WithField("key", kv.Key).Trace("loyalty request from stulbe")
+		switch kv.Key {
+		case api.KVExLoyaltyRedeem:
+			// Parse request
+			var redeemRequest api.ExLoyaltyRedeem
+			err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &redeemRequest)
+			if err != nil {
+				m.logger.WithError(err).Warn("error decoding redeem request")
+				break
+			}
+			// Find reward
+			reward := m.getReward(redeemRequest.RewardID)
+			if reward.ID == "" {
+				m.logger.WithField("reward-id", redeemRequest.RewardID).Warn("redeem request contains invalid reward id")
+				break
+			}
+			err = m.PerformRedeem(Redeem{
+				Username:    redeemRequest.Username,
+				DisplayName: redeemRequest.DisplayName,
+				Reward:      reward,
+				When:        time.Now(),
+				RequestText: redeemRequest.RequestText,
+			})
+			if err != nil {
+				m.logger.WithError(err).Warn("error performing redeem request")
+			}
 		}
 	}
 	return nil
@@ -218,6 +252,17 @@ func (m *Manager) AddRedeem(redeem Redeem) error {
 	return m.saveQueue()
 }
 
+func (m *Manager) PerformRedeem(redeem Redeem) error {
+	// Add redeem
+	err := m.AddRedeem(redeem)
+	if err != nil {
+		return err
+	}
+
+	// Remove points from user
+	return m.TakePoints(map[string]int64{redeem.Username: redeem.Reward.Price})
+}
+
 func (m *Manager) RemoveRedeem(redeem Redeem) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -264,6 +309,17 @@ func (m *Manager) Rewards() []Reward {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	return m.rewards[:]
+}
+
+func (m *Manager) getReward(id string) Reward {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, reward := range m.rewards {
+		if reward.ID == id {
+			return reward
+		}
+	}
+	return Reward{}
 }
 
 func (m *Manager) Config() Config {

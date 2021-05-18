@@ -40,6 +40,20 @@ func Initialize(db *database.DB, logger logrus.FieldLogger) (*Manager, error) {
 	}, err
 }
 
+func (m *Manager) ReceiveEvents() error {
+	chn, err := m.Client.KV.SubscribePrefix("stulbe/")
+	if err != nil {
+		return err
+	}
+	for {
+		kv := <-chn
+		err := m.db.PutKey(kv.Key, []byte(kv.Value))
+		if err != nil {
+			return err
+		}
+	}
+}
+
 func (m *Manager) Close() {
 	m.Client.Close()
 }
@@ -51,11 +65,9 @@ func (m *Manager) ReplicateKey(prefix string) error {
 		return err
 	}
 
-	for k, v := range vals {
-		err = m.Client.KV.SetKey(k, v)
-		if err != nil {
-			return err
-		}
+	err = m.Client.KV.SetKeys(vals)
+	if err != nil {
+		return err
 	}
 
 	m.logger.WithFields(logrus.Fields{

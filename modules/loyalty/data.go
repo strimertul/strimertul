@@ -58,6 +58,7 @@ type Redeem struct {
 	DisplayName string    `json:"display_name"`
 	Reward      Reward    `json:"reward"`
 	When        time.Time `json:"when"`
+	RequestText string    `json:"request_text"`
 }
 
 const CreateRedeemRPC = "loyalty/@create-redeem"

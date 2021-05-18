@@ -123,12 +123,17 @@ func main() {
 	// Get Stulbe config, if enabled
 	var stulbeManager *stulbe.Manager = nil
 	if moduleConfig.EnableStulbe {
-		stulbeManager, err = stulbe.Initialize(db, wrapLogger("stulbe"))
+		stulbeLogger := wrapLogger("stulbe")
+		stulbeManager, err = stulbe.Initialize(db, stulbeLogger)
 		if err != nil {
 			log.WithError(err).Error("Stulbe initialization failed! Module was temporarely disabled")
 			moduleConfig.EnableStulbe = false
 		}
 		defer stulbeManager.Close()
+		go func() {
+			err := stulbeManager.ReceiveEvents()
+			stulbeLogger.WithError(err).Error("Stulbe subscription died unexpectedly!")
+		}()
 	}
 
 	var loyaltyManager *loyalty.Manager
