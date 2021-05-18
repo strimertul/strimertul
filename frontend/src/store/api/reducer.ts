@@ -68,7 +68,7 @@ interface LoyaltyConfig {
   banlist: string[];
 }
 
-interface LoyaltyPointsEntry {
+export interface LoyaltyPointsEntry {
   points: number;
 }
 
@@ -100,6 +100,7 @@ export interface LoyaltyRedeem {
   display_name: string;
   when: Date;
   reward: LoyaltyReward;
+  request_text: string;
 }
 
 export interface APIState {

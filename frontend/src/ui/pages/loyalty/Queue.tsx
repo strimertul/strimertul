@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { RouteComponentProps } from '@reach/router';
-import { useModule } from '../../../lib/react-utils';
+import { useModule, useUserPoints } from '../../../lib/react-utils';
 import {
   LoyaltyRedeem,
   modules,
@@ -20,6 +20,9 @@ export default function LoyaltyRedeemQueuePage(
   props: RouteComponentProps<unknown>,
 ): React.ReactElement {
   const [redemptions] = useModule(modules.loyaltyRedeemQueue);
+
+  // Big hack but this is required or refunds break
+  useUserPoints();
 
   const [sorting, setSorting] = useState<SortingOrder>({
     key: 'when',
@@ -120,6 +123,8 @@ export default function LoyaltyRedeemQueuePage(
             current={page + 1}
             min={1}
             max={totalPages + 1}
+            itemsPerPage={entriesPerPage}
+            onSelectChange={(em) => setEntriesPerPage(em)}
             onPageChange={(p) => setPage(p - 1)}
           />
           <table className="table is-striped is-fullwidth">
@@ -146,6 +151,7 @@ export default function LoyaltyRedeemQueuePage(
                   </span>
                 </th>
                 <th>Reward name</th>
+                <th>Request</th>
                 <th></th>
               </tr>
             </thead>
@@ -160,6 +166,7 @@ export default function LoyaltyRedeemQueuePage(
                     {redemption.display_name} ({redemption.username})
                   </td>
                   <td>{redemption.reward.name}</td>
+                  <td>{redemption.request_text}</td>
                   <td style={{ textAlign: 'right' }}>
                     <a onClick={() => acceptRedeem(redemption)}>Accept</a>
                     {redemption.username !== '@PLATFORM' ? (
@@ -177,6 +184,8 @@ export default function LoyaltyRedeemQueuePage(
             current={page + 1}
             min={1}
             max={totalPages + 1}
+            itemsPerPage={entriesPerPage}
+            onSelectChange={(em) => setEntriesPerPage(em)}
             onPageChange={(p) => setPage(p - 1)}
           />
         </>

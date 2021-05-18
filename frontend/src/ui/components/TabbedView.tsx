@@ -21,11 +21,9 @@ export default function TabbedView({
           {tabs.map(({ route, name }) => (
             <li key={route}>
               <Link
-                getProps={({ isCurrent }) => {
-                  return {
-                    className: isCurrent ? 'is-active' : '',
-                  };
-                }}
+                getProps={({ isCurrent }) => ({
+                  className: isCurrent ? 'is-active' : '',
+                })}
                 to={route}
               >
                 {name}

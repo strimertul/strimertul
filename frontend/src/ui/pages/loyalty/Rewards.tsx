@@ -374,6 +374,7 @@ export default function LoyaltyRewardsPage(
         display_name: 'me :3',
         when: new Date(),
         reward,
+        request_text: '',
       }),
     );
   };

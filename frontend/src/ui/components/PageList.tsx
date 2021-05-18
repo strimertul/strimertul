@@ -4,6 +4,8 @@ export interface PageListProps {
   current: number;
   max: number;
   min: number;
+  itemsPerPage: number;
+  onSelectChange: (itemsPerPage: number) => void;
   onPageChange: (page: number) => void;
 }
 
@@ -11,11 +13,13 @@ export default function PageList({
   current,
   max,
   min,
+  itemsPerPage,
+  onSelectChange,
   onPageChange,
 }: PageListProps): React.ReactElement {
   return (
     <nav
-      className="pagination is-centered is-small"
+      className="pagination is-small"
       role="navigation"
       aria-label="pagination"
     >
@@ -24,15 +28,25 @@ export default function PageList({
         disabled={current <= min}
         onClick={() => onPageChange(current - 1)}
       >
-        Previous
+        &lsaquo;
       </button>
       <button
         className="button pagination-next"
         disabled={current >= max}
         onClick={() => onPageChange(current + 1)}
       >
-        Next page
+        &rsaquo;
       </button>
+      <select
+        className="pagination-next"
+        value={itemsPerPage}
+        onChange={(ev) => onSelectChange(Number(ev.target.value))}
+      >
+        <option value={15}>15</option>
+        <option value={30}>30</option>
+        <option value={50}>50</option>
+        <option value={100}>100</option>
+      </select>
       <ul className="pagination-list">
         {current > min ? (
           <li>
