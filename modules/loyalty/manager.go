@@ -108,20 +108,20 @@ func (m *Manager) update(kvs []database.ModifiedKV) error {
 		switch key {
 		case ConfigKey:
 			m.mu.Lock()
-			defer m.mu.Unlock()
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.config)
+			m.mu.Unlock()
 		case GoalsKey:
 			m.mu.Lock()
-			defer m.mu.Unlock()
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.goals)
+			m.mu.Unlock()
 		case RewardsKey:
 			m.mu.Lock()
-			defer m.mu.Unlock()
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.rewards)
+			m.mu.Unlock()
 		case QueueKey:
 			m.mu.Lock()
-			defer m.mu.Unlock()
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.queue)
+			m.mu.Unlock()
 		case CreateRedeemRPC:
 			var redeem Redeem
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &redeem)
@@ -139,12 +139,12 @@ func (m *Manager) update(kvs []database.ModifiedKV) error {
 			switch {
 			// User point changed
 			case strings.HasPrefix(kv.Key, PointsPrefix):
-				m.mu.Lock()
-				defer m.mu.Unlock()
 				var entry PointsEntry
 				err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &entry)
 				user := kv.Key[len(PointsPrefix):]
+				m.mu.Lock()
 				m.points[user] = entry
+				m.mu.Unlock()
 			}
 		}
 		if err != nil {

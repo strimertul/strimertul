@@ -2,6 +2,7 @@ package twitch
 
 import (
 	"strings"
+	"sync"
 	"time"
 
 	irc "github.com/gempir/go-twitch-irc/v2"
@@ -21,6 +22,8 @@ type Bot struct {
 	activeUsers map[string]bool
 	banlist     map[string]bool
 
+	mu sync.Mutex
+
 	// Module specific vars
 	Loyalty *loyalty.Manager
 }
@@ -38,6 +41,7 @@ func NewBot(api *Client, config BotConfig) *Bot {
 		lastMessage: time.Now(),
 		activeUsers: make(map[string]bool),
 		banlist:     make(map[string]bool),
+		mu:          sync.Mutex{},
 	}
 
 	client.OnPrivateMessage(func(message irc.PrivateMessage) {
@@ -47,14 +51,16 @@ func NewBot(api *Client, config BotConfig) *Bot {
 			bot.logger.Debug("message received too soon, ignoring")
 			return
 		}
+		bot.mu.Lock()
 		bot.activeUsers[message.User.Name] = true
+		bot.mu.Unlock()
 
 		// Check if it's a command
 		if strings.HasPrefix(message.Message, "!") {
 			// Run through supported commands
 			for cmd, data := range commands {
 				if strings.HasPrefix(message.Message, cmd) {
-					data.Handler(bot, message)
+					go data.Handler(bot, message)
 					bot.lastMessage = time.Now()
 				}
 			}
@@ -71,6 +77,7 @@ func NewBot(api *Client, config BotConfig) *Bot {
 			}).Debug("user joined channel")
 		}
 	})
+
 	client.OnUserPartMessage(func(message irc.UserPartMessage) {
 		if strings.ToLower(message.User) == bot.username {
 			bot.logger.WithField("channel", message.Channel).Info("left channel")
@@ -168,11 +175,15 @@ func (b *Bot) IsBanned(user string) bool {
 }
 
 func (b *Bot) IsActive(user string) bool {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	active, ok := b.activeUsers[user]
 	return ok && active
 }
 
 func (b *Bot) ResetActivity() {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	b.activeUsers = make(map[string]bool)
 }
 

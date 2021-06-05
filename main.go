@@ -23,6 +23,8 @@ import (
 
 	"github.com/mattn/go-colorable"
 	"github.com/sirupsen/logrus"
+
+	_ "net/http/pprof"
 )
 
 const AppTitle = "strimertül"
