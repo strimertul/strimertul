@@ -82,6 +82,7 @@ export interface LoyaltyReward {
   image: string;
   price: number;
   required_info?: string;
+  cooldown: number;
 }
 
 export interface LoyaltyGoal {

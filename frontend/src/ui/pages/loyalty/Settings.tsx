@@ -2,17 +2,8 @@ import { RouteComponentProps } from '@reach/router';
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useModule } from '../../../lib/react-utils';
+import { getInterval } from '../../../lib/time-utils';
 import apiReducer, { modules } from '../../../store/api/reducer';
-
-function getInterval(duration: number): [number, number] {
-  if (duration % 3600 === 0) {
-    return [duration / 3600, 3600];
-  }
-  if (duration % 60 === 0) {
-    return [duration / 60, 60];
-  }
-  return [duration, 1];
-}
 
 export default function LoyaltySettingPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

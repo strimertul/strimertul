@@ -16,19 +16,21 @@ import (
 )
 
 var (
+	ErrRedeemInCooldown   = errors.New("redeem is on cooldown")
 	ErrGoalNotFound       = errors.New("goal not found")
 	ErrGoalAlreadyReached = errors.New("goal already reached")
 )
 
 type Manager struct {
-	points  map[string]PointsEntry
-	config  Config
-	rewards RewardStorage
-	goals   GoalStorage
-	queue   RedeemQueueStorage
-	mu      sync.Mutex
-	db      *database.DB
-	logger  logrus.FieldLogger
+	points    map[string]PointsEntry
+	config    Config
+	rewards   RewardStorage
+	goals     GoalStorage
+	queue     RedeemQueueStorage
+	mu        sync.Mutex
+	db        *database.DB
+	logger    logrus.FieldLogger
+	cooldowns map[string]time.Time
 }
 
 func NewManager(db *database.DB, log logrus.FieldLogger) (*Manager, error) {
@@ -44,9 +46,10 @@ func NewManager(db *database.DB, log logrus.FieldLogger) (*Manager, error) {
 	}
 
 	manager := &Manager{
-		logger: log,
-		db:     db,
-		mu:     sync.Mutex{},
+		logger:    log,
+		db:        db,
+		mu:        sync.Mutex{},
+		cooldowns: make(map[string]time.Time),
 	}
 	// Ger data from DB
 	if err := db.GetJSON(ConfigKey, &manager.config); err != nil {
@@ -255,6 +258,19 @@ func (m *Manager) saveQueue() error {
 	return m.db.PutJSON(QueueKey, m.queue)
 }
 
+func (m *Manager) GetRewardCooldown(rewardID string) time.Time {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	cooldown, ok := m.cooldowns[rewardID]
+	if !ok {
+		// Return zero time for a reward with no cooldown
+		return time.Time{}
+	}
+
+	return cooldown
+}
+
 func (m *Manager) AddRedeem(redeem Redeem) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -267,11 +283,21 @@ func (m *Manager) AddRedeem(redeem Redeem) error {
 		return err
 	}
 
+	// Add cooldown if applicable
+	if redeem.Reward.Cooldown > 0 {
+		m.cooldowns[redeem.Reward.ID] = time.Now().Add(time.Second * time.Duration(redeem.Reward.Cooldown))
+	}
+
 	// Save points
 	return m.saveQueue()
 }
 
 func (m *Manager) PerformRedeem(redeem Redeem) error {
+	// Check cooldown
+	if time.Now().Before(m.GetRewardCooldown(redeem.Reward.ID)) {
+		return ErrRedeemInCooldown
+	}
+
 	// Add redeem
 	err := m.AddRedeem(redeem)
 	if err != nil {

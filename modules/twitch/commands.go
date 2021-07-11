@@ -102,7 +102,14 @@ func cmdRedeemReward(bot *Bot, message irc.PrivateMessage) {
 		Reward:      reward,
 		RequestText: text,
 	}); err != nil {
-		bot.logger.WithError(err).Error("error while performing redeem")
+		switch err {
+		case loyalty.ErrRedeemInCooldown:
+			nextAvailable := bot.Loyalty.GetRewardCooldown(reward.ID)
+			bot.Client.Say(message.Channel, fmt.Sprintf("%s: That reward is in cooldown (available in %s)", message.User.DisplayName,
+				time.Until(nextAvailable).Truncate(time.Second)))
+		default:
+			bot.logger.WithError(err).Error("error while performing redeem")
+		}
 		return
 	}
 

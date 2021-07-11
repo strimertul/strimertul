@@ -1,6 +1,7 @@
 import { RouteComponentProps } from '@reach/router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import prettyTime from 'pretty-ms';
 import { useModule } from '../../../lib/react-utils';
 import { RootState } from '../../../store';
 import {
@@ -9,6 +10,7 @@ import {
   modules,
 } from '../../../store/api/reducer';
 import Modal from '../../components/Modal';
+import { getInterval } from '../../../lib/time-utils';
 
 interface RewardItemProps {
   item: LoyaltyReward;
@@ -71,6 +73,11 @@ function RewardItem({
       {expanded ? (
         <div className="content">
           {item.description}
+          {item.cooldown > 0 ? (
+            <div style={{ marginTop: '1rem' }}>
+              <b>Cooldown:</b> {prettyTime(item.cooldown * 1000)}
+            </div>
+          ) : null}
           {item.required_info ? (
             <div style={{ marginTop: '1rem' }}>
               <b>Required info:</b> {item.required_info}
@@ -126,12 +133,19 @@ function RewardModal({
     initialData?.description ?? '',
   );
   const [price, setPrice] = useState(initialData?.price ?? 0);
-  const [extraRequired, setExtraRequired] = useState(
-    initialData?.required_info !== null,
-  );
   const [extraDetails, setExtraDetails] = useState(
     initialData?.required_info ?? '',
   );
+  const [extraRequired, setExtraRequired] = useState(extraDetails !== '');
+  const [cooldown, setCooldown] = useState(initialData?.cooldown ?? 0);
+
+  const [cooldownNum, cooldownMultiplier] = getInterval(cooldown);
+  const [tempCooldownNum, setTempCooldownNum] = useState(cooldownNum);
+  const [tempCooldownMult, setTempCooldownMult] = useState(cooldownMultiplier);
+
+  useEffect(() => {
+    setCooldown(tempCooldownNum * tempCooldownMult);
+  }, [tempCooldownNum, tempCooldownMult]);
 
   const setIDex = (newID) =>
     setID(newID.toLowerCase().replace(/[^a-zA-Z0-9]/gi, '-'));
@@ -152,6 +166,7 @@ function RewardModal({
         enabled: initialData?.enabled ?? false,
         image,
         required_info: extraRequired ? extraDetails : undefined,
+        cooldown,
       });
     }
   };
@@ -311,6 +326,50 @@ function RewardModal({
           </div>
         </>
       ) : null}
+      <div className="field is-horizontal">
+        <div className="field-label is-normal">
+          <label className="label">Cooldown</label>
+        </div>
+        <div className="field-body">
+          <div className="field has-addons">
+            <p className="control">
+              <input
+                disabled={!active}
+                className="input"
+                type="number"
+                placeholder="#"
+                value={tempCooldownNum ?? ''}
+                onChange={(ev) => {
+                  const intNum = parseInt(ev.target.value, 10);
+                  if (Number.isNaN(intNum)) {
+                    return;
+                  }
+                  setTempCooldownNum(intNum);
+                }}
+              />
+            </p>
+            <p className="control">
+              <span className="select">
+                <select
+                  value={tempCooldownMult.toString() ?? ''}
+                  disabled={!active}
+                  onChange={(ev) => {
+                    const intMult = parseInt(ev.target.value, 10);
+                    if (Number.isNaN(intMult)) {
+                      return;
+                    }
+                    setTempCooldownMult(intMult);
+                  }}
+                >
+                  <option value="1">seconds</option>
+                  <option value="60">minutes</option>
+                  <option value="3600">hours</option>
+                </select>
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
     </Modal>
   );
 }
