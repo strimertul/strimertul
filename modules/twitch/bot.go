@@ -21,6 +21,7 @@ type Bot struct {
 	lastMessage time.Time
 	activeUsers map[string]bool
 	banlist     map[string]bool
+	chatHistory []irc.PrivateMessage
 
 	mu sync.Mutex
 
@@ -45,7 +46,6 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	}
 
 	client.OnPrivateMessage(func(message irc.PrivateMessage) {
-		bot.logger.Debugf("MSG: <%s> %s", message.User.Name, message.Message)
 		// Ignore messages for a while or twitch will get mad!
 		if message.Time.Before(bot.lastMessage.Add(time.Second * 2)) {
 			bot.logger.Debug("message received too soon, ignoring")
@@ -63,6 +63,17 @@ func NewBot(api *Client, config BotConfig) *Bot {
 					go data.Handler(bot, message)
 					bot.lastMessage = time.Now()
 				}
+			}
+		}
+
+		if bot.config.EnableChatKeys {
+			bot.api.db.PutJSON(BotChatEventKey, message)
+			if bot.config.ChatHistory > 0 {
+				if len(bot.chatHistory) >= bot.config.ChatHistory {
+					bot.chatHistory = bot.chatHistory[len(bot.chatHistory)-bot.config.ChatHistory+1:]
+				}
+				bot.chatHistory = append(bot.chatHistory, message)
+				bot.api.db.PutJSON(BotChatHistoryKey, bot.chatHistory)
 			}
 		}
 	})

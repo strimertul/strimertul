@@ -108,6 +108,44 @@ export default function TwitchBotSettingsPage(
           <a href="https://twitchapps.com/tmi/">https://twitchapps.com/tmi/</a>
         </p>
       </div>
+      <div className="field">
+        <label className="checkbox">
+          <input
+            type="checkbox"
+            checked={twitchBotConfig?.chat_keys ?? false}
+            disabled={busy}
+            onChange={(ev) =>
+              dispatch(
+                apiReducer.actions.twitchBotConfigChanged({
+                  ...twitchBotConfig,
+                  chat_keys: ev.target.checked,
+                }),
+              )
+            }
+          />{' '}
+          Enable chat keys (for 3rd party chat integration)
+        </label>
+      </div>
+      <div className="field">
+        <label className="label">Chat history</label>
+        <p className="control">
+          <input
+            className="input"
+            type="number"
+            disabled={!twitchBotConfig?.chat_keys ?? true}
+            placeholder="#"
+            value={twitchBotConfig?.chat_history ?? '5'}
+            onChange={(ev) =>
+              dispatch(
+                apiReducer.actions.twitchBotConfigChanged({
+                  ...twitchBotConfig,
+                  chat_history: parseInt(ev.target.value, 10) ?? 0,
+                }),
+              )
+            }
+          />
+        </p>
+      </div>
       <button
         className="button"
         onClick={() => {

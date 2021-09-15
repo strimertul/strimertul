@@ -3,14 +3,16 @@ package twitch
 import (
 	"github.com/nicklaw5/helix"
 	"github.com/sirupsen/logrus"
+	"github.com/strimertul/strimertul/database"
 )
 
 type Client struct {
+	db     *database.DB
 	API    *helix.Client
 	logger logrus.FieldLogger
 }
 
-func NewClient(config Config, log logrus.FieldLogger) (*Client, error) {
+func NewClient(db *database.DB, config Config, log logrus.FieldLogger) (*Client, error) {
 	if log == nil {
 		log = logrus.New()
 	}
@@ -34,6 +36,7 @@ func NewClient(config Config, log logrus.FieldLogger) (*Client, error) {
 	log.Info("obtained API access token")
 
 	return &Client{
+		db:     db,
 		API:    api,
 		logger: log,
 	}, nil

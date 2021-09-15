@@ -166,7 +166,7 @@ func main() {
 		failOnError(db.GetJSON(twitch.ConfigKey, &twitchConfig), "Could not retrieve twitch config")
 
 		// Create Twitch client
-		twitchClient, err := twitch.NewClient(twitchConfig, twitchLogger)
+		twitchClient, err := twitch.NewClient(db, twitchConfig, twitchLogger)
 		if err == nil {
 
 			// Get Twitchbot config
