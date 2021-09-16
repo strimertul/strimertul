@@ -15,6 +15,7 @@ const moduleConfigKey = 'stul-meta/modules';
 const httpConfigKey = 'http/config';
 const twitchConfigKey = 'twitch/config';
 const twitchBotConfigKey = 'twitch/bot-config';
+const twitchBotCommandsKey = 'twitch/bot-custom-commands';
 const stulbeConfigKey = 'stulbe/config';
 const loyaltyConfigKey = 'loyalty/config';
 const loyaltyPointsPrefix = 'loyalty/points/';
@@ -53,6 +54,17 @@ interface TwitchBotConfig {
   chat_keys: boolean;
   chat_history: number;
 }
+
+type AccessLevelType = 'everyone' | 'vip' | 'moderators' | 'streamer';
+
+interface TwitchBotCustomCommand {
+  description: string;
+  access_level: AccessLevelType;
+  response: string;
+  enabled: boolean;
+}
+
+type TwitchBotCustomCommands = Record<string, TwitchBotCustomCommand>;
 
 interface StulbeConfig {
   endpoint: string;
@@ -116,6 +128,9 @@ export interface APIState {
     goals: LoyaltyGoal[];
     redeemQueue: LoyaltyRedeem[];
   };
+  twitchBot: {
+    commands: TwitchBotCustomCommands;
+  };
   moduleConfigs: {
     moduleConfig: ModuleConfig;
     httpConfig: HTTPConfig;
@@ -135,6 +150,9 @@ const initialState: APIState = {
     rewards: null,
     goals: null,
     redeemQueue: null,
+  },
+  twitchBot: {
+    commands: null,
   },
   moduleConfigs: {
     moduleConfig: null,
@@ -268,6 +286,13 @@ export const modules = {
       state.moduleConfigs.twitchBotConfig = payload;
     },
   ),
+  twitchBotCommands: makeModule<TwitchBotCustomCommands>(
+    twitchBotCommandsKey,
+    (state) => state.twitchBot?.commands,
+    (state, { payload }) => {
+      state.twitchBot.commands = payload;
+    },
+  ),
   stulbeConfig: makeModule<StulbeConfig>(
     stulbeConfigKey,
     (state) => state.moduleConfigs?.stulbeConfig,
@@ -321,39 +346,32 @@ export const removeRedeem = createAsyncThunk(
   },
 );
 
+const moduleChangeReducers = Object.fromEntries(
+  Object.entries(modules).map(([key, mod]) => [
+    `${key}Changed`,
+    mod.stateSetter,
+  ]),
+) as Record<
+  `${keyof typeof modules}Changed`,
+  (
+    state: unknown,
+    action: {
+      payload: unknown;
+      type: string;
+    },
+  ) => never
+>;
+
 const apiReducer = createSlice({
   name: 'api',
   initialState,
   reducers: {
+    ...moduleChangeReducers,
     initialLoadCompleted(state) {
       state.initialLoadComplete = true;
     },
     connectionStatusChanged(state, { payload }: PayloadAction<boolean>) {
       state.connected = payload;
-    },
-    moduleConfigChanged(state, { payload }: PayloadAction<ModuleConfig>) {
-      state.moduleConfigs.moduleConfig = payload;
-    },
-    httpConfigChanged(state, { payload }: PayloadAction<HTTPConfig>) {
-      state.moduleConfigs.httpConfig = payload;
-    },
-    twitchConfigChanged(state, { payload }: PayloadAction<TwitchConfig>) {
-      state.moduleConfigs.twitchConfig = payload;
-    },
-    twitchBotConfigChanged(state, { payload }: PayloadAction<TwitchBotConfig>) {
-      state.moduleConfigs.twitchBotConfig = payload;
-    },
-    stulbeConfigChanged(state, { payload }: PayloadAction<StulbeConfig>) {
-      state.moduleConfigs.stulbeConfig = payload;
-    },
-    loyaltyConfigChanged(state, { payload }: PayloadAction<LoyaltyConfig>) {
-      state.moduleConfigs.loyaltyConfig = payload;
-    },
-    loyaltyRewardsChanged(state, { payload }: PayloadAction<LoyaltyReward[]>) {
-      state.loyalty.rewards = payload;
-    },
-    loyaltyGoalsChanged(state, { payload }: PayloadAction<LoyaltyGoal[]>) {
-      state.loyalty.goals = payload;
     },
     loyaltyUserPointsChanged(
       state,
