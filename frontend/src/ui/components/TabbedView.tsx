@@ -10,7 +10,7 @@ export interface TabbedViewProps {
   tabs: TabItem[];
 }
 
-export default function TabbedView({
+function TabbedView({
   tabs,
   children,
 }: React.PropsWithChildren<TabbedViewProps>): React.ReactElement {
@@ -36,3 +36,5 @@ export default function TabbedView({
     </>
   );
 }
+
+export default React.memo(TabbedView);

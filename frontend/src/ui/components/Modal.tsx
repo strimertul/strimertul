@@ -14,7 +14,7 @@ export interface ModalProps {
   bgDismiss?: boolean;
 }
 
-export default function Modal({
+function Modal({
   active,
   title,
   onClose,
@@ -67,3 +67,5 @@ export default function Modal({
     </div>
   );
 }
+
+export default React.memo(Modal);

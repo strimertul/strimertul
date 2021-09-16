@@ -9,7 +9,7 @@ export interface PageListProps {
   onPageChange: (page: number) => void;
 }
 
-export default function PageList({
+function PageList({
   current,
   max,
   min,
@@ -116,3 +116,5 @@ export default function PageList({
     </nav>
   );
 }
+
+export default React.memo(PageList);
