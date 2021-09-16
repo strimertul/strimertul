@@ -3,6 +3,7 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useModule } from '../../../lib/react-utils';
 import apiReducer, { modules } from '../../../store/api/reducer';
+import Field from '../../components/Field';
 
 export default function TwitchBotSettingsPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -23,7 +24,7 @@ export default function TwitchBotSettingsPage(
   return (
     <>
       <h1 className="title is-4">Twitch module configuration</h1>
-      <div className="field">
+      <Field>
         <label className="checkbox">
           <input
             type="checkbox"
@@ -41,9 +42,8 @@ export default function TwitchBotSettingsPage(
           Enable twitch bot
           {twitchActive ? '' : '(Twitch integration must be enabled for this!)'}
         </label>
-      </div>
-      <div className="field">
-        <label className="label">Twitch channel</label>
+      </Field>
+      <Field name="Twitch channel">
         <p className="control">
           <input
             disabled={!active}
@@ -61,11 +61,8 @@ export default function TwitchBotSettingsPage(
             }
           />
         </p>
-      </div>
-      <div className="field">
-        <label className="label">
-          Bot username (must be a valid Twitch account)
-        </label>
+      </Field>
+      <Field name="Bot username (must be a valid Twitch account)">
         <p className="control">
           <input
             disabled={!active}
@@ -83,9 +80,8 @@ export default function TwitchBotSettingsPage(
             }
           />
         </p>
-      </div>
-      <div className="field">
-        <label className="label">Bot OAuth token</label>
+      </Field>
+      <Field name="Bot OAuth token">
         <p className="control">
           <input
             disabled={!active}
@@ -107,8 +103,8 @@ export default function TwitchBotSettingsPage(
           You can get this by logging in with the bot account and going here:{' '}
           <a href="https://twitchapps.com/tmi/">https://twitchapps.com/tmi/</a>
         </p>
-      </div>
-      <div className="field">
+      </Field>
+      <Field>
         <label className="checkbox">
           <input
             type="checkbox"
@@ -125,9 +121,8 @@ export default function TwitchBotSettingsPage(
           />{' '}
           Enable chat keys (for 3rd party chat integration)
         </label>
-      </div>
-      <div className="field">
-        <label className="label">Chat history</label>
+      </Field>
+      <Field name="Chat history">
         <p className="control">
           <input
             className="input"
@@ -145,7 +140,7 @@ export default function TwitchBotSettingsPage(
             }
           />
         </p>
-      </div>
+      </Field>
       <button
         className="button"
         onClick={() => {

@@ -3,6 +3,7 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useModule } from '../../../lib/react-utils';
 import apiReducer, { modules } from '../../../store/api/reducer';
+import Field from '../../components/Field';
 
 export default function TwitchBotSettingsPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -18,7 +19,7 @@ export default function TwitchBotSettingsPage(
   return (
     <>
       <h1 className="title is-4">Twitch module configuration</h1>
-      <div className="field">
+      <Field>
         <label className="checkbox">
           <input
             type="checkbox"
@@ -35,7 +36,7 @@ export default function TwitchBotSettingsPage(
           />{' '}
           Enable twitch integration
         </label>
-      </div>
+      </Field>
       <div className="copyblock">
         <p>You will need to create an application, here's how:</p>
         <p>
@@ -54,8 +55,7 @@ export default function TwitchBotSettingsPage(
         </dl>
         - Once created, create a <b>New Secret</b>, then copy both fields below!
       </div>
-      <div className="field">
-        <label className="label">App Client ID</label>
+      <Field name="App Client ID">
         <p className="control">
           <input
             disabled={!active}
@@ -73,9 +73,8 @@ export default function TwitchBotSettingsPage(
             }
           />
         </p>
-      </div>
-      <div className="field">
-        <label className="label">App Client Secret</label>
+      </Field>
+      <Field name="App Client Secret">
         <p className="control">
           <input
             disabled={!active}
@@ -93,7 +92,7 @@ export default function TwitchBotSettingsPage(
             }
           />
         </p>
-      </div>
+      </Field>
       <button
         className="button"
         onClick={() => {
