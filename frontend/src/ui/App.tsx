@@ -16,6 +16,8 @@ import LoyaltyGoalsPage from './pages/loyalty/Goals';
 import LoyaltyRedeemQueuePage from './pages/loyalty/Queue';
 import TwitchSettingsPage from './pages/twitch/APISettings';
 import TwitchBotSettingsPage from './pages/twitch/BotSettings';
+import TwitchBotCommandsPage from './pages/twitch/Commands';
+import TwitchBotModulesPage from './pages/twitch/Modules';
 
 interface RouteItem {
   name: string;
@@ -43,6 +45,14 @@ const menu: RouteItem[] = [
       {
         name: 'Bot Configuration',
         route: '/twitch/bot/settings',
+      },
+      {
+        name: 'Bot commands',
+        route: '/twitch/bot/commands',
+      },
+      {
+        name: 'Bot modules',
+        route: '/twitch/bot/modules',
       },
     ],
   },
@@ -146,6 +156,8 @@ export default function App(): React.ReactElement {
               <Redirect from="/" to="settings" noThrow />
               <TwitchSettingsPage path="settings" />
               <TwitchBotSettingsPage path="bot/settings" />
+              <TwitchBotCommandsPage path="bot/commands" />
+              <TwitchBotModulesPage path="bot/modules" />
             </TwitchPage>
             <LoyaltyPage path="loyalty">
               <Redirect from="/" to="settings" noThrow />
