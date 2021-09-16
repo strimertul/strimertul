@@ -80,13 +80,13 @@ func NewBot(api *Client, config BotConfig) *Bot {
 		}
 
 		if bot.config.EnableChatKeys {
-			bot.api.db.PutJSON(BotChatEventKey, message)
+			bot.api.db.PutJSON(ChatEventKey, message)
 			if bot.config.ChatHistory > 0 {
 				if len(bot.chatHistory) >= bot.config.ChatHistory {
 					bot.chatHistory = bot.chatHistory[len(bot.chatHistory)-bot.config.ChatHistory+1:]
 				}
 				bot.chatHistory = append(bot.chatHistory, message)
-				bot.api.db.PutJSON(BotChatHistoryKey, bot.chatHistory)
+				bot.api.db.PutJSON(ChatHistoryKey, bot.chatHistory)
 			}
 		}
 	})

@@ -18,7 +18,16 @@ type BotConfig struct {
 	ChatHistory    int    `json:"chat_history"`
 }
 
-const BotChatEventKey = "twitch/ev/chat-message"
-const BotChatHistoryKey = "twitch/chat-history"
+const ChatEventKey = "twitch/ev/chat-message"
+const ChatHistoryKey = "twitch/chat-history"
 
-const BotCustomCommandsKey = "twitch/bot-custom-commands"
+type BotCustomCommand struct {
+	Description string          `json:"description"`
+	AccessLevel AccessLevelType `json:"access_level"`
+	Response    string          `json:"response"`
+	Enabled     bool            `json:"enabled"`
+}
+
+const CustomCommandsKey = "twitch/bot-custom-commands"
+
+const WriteMessageRPC = "twitch/@send-chat-message"

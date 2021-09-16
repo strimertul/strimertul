@@ -23,13 +23,6 @@ type BotCommand struct {
 	Enabled     bool
 }
 
-type BotCustomCommand struct {
-	Description string
-	AccessLevel AccessLevelType
-	Response    string
-	Enabled     bool
-}
-
 var commands = map[string]BotCommand{}
 var customCommands = map[string]BotCustomCommand{}
 
