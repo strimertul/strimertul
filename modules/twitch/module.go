@@ -21,4 +21,4 @@ type BotConfig struct {
 const BotChatEventKey = "twitch/ev/chat-message"
 const BotChatHistoryKey = "twitch/chat-history"
 
-const BotCustomCommands = "twitch/bot-custom-commands"
+const BotCustomCommandsKey = "twitch/bot-custom-commands"

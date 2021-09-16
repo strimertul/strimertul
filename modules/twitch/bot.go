@@ -6,7 +6,6 @@ import (
 	"time"
 
 	irc "github.com/gempir/go-twitch-irc/v2"
-	"github.com/nicklaw5/helix"
 	"github.com/sirupsen/logrus"
 	"github.com/strimertul/strimertul/modules/loyalty"
 )
@@ -59,10 +58,24 @@ func NewBot(api *Client, config BotConfig) *Bot {
 		if strings.HasPrefix(message.Message, "!") {
 			// Run through supported commands
 			for cmd, data := range commands {
+				if !data.Enabled {
+					continue
+				}
 				if strings.HasPrefix(message.Message, cmd) {
 					go data.Handler(bot, message)
 					bot.lastMessage = time.Now()
 				}
+			}
+		}
+
+		// Run through custom commands
+		for cmd, data := range customCommands {
+			if !data.Enabled {
+				continue
+			}
+			if strings.HasPrefix(message.Message, cmd) {
+				go cmdCustom(bot, data, message)
+				bot.lastMessage = time.Now()
 			}
 		}
 
@@ -103,99 +116,6 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	bot.Client.Join(config.Channel)
 
 	return bot
-}
-
-func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
-	config := loyalty.Config()
-	b.Loyalty = loyalty
-	b.SetBanList(config.BanList)
-	b.Client.OnConnect(func() {
-		if config.Points.Interval > 0 {
-			go func() {
-				b.logger.Info("loyalty poll started")
-				for {
-					// Wait for next poll
-					time.Sleep(time.Duration(config.Points.Interval) * time.Second)
-
-					// Check if streamer is online, if possible
-					streamOnline := true
-					status, err := b.api.API.GetStreams(&helix.StreamsParams{
-						UserLogins: []string{b.config.Channel},
-					})
-					if err != nil {
-						b.logger.WithError(err).Error("Error checking stream status")
-					} else {
-						streamOnline = len(status.Data.Streams) > 0
-					}
-
-					// If stream is confirmed offline, don't give points away!
-					if !streamOnline {
-						b.logger.Debug("loyalty poll active but stream is offline!")
-						continue
-					} else {
-						b.logger.Debug("awarding points")
-					}
-
-					// Get user list
-					users, err := b.Client.Userlist(b.config.Channel)
-					if err != nil {
-						b.logger.WithError(err).Error("error listing users")
-						continue
-					}
-
-					// Iterate for each user in the list
-					pointsToGive := make(map[string]int64)
-					for _, user := range users {
-						// Check if user is blocked
-						if b.IsBanned(user) {
-							continue
-						}
-
-						// Check if user was active (chatting) for the bonus dingus
-						award := config.Points.Amount
-						if b.IsActive(user) {
-							award += config.Points.ActivityBonus
-						}
-
-						// Add to point pool if already on it, otherwise initialize
-						pointsToGive[user] = award
-					}
-
-					b.ResetActivity()
-
-					// If changes were made, save the pool!
-					if len(users) > 0 {
-						b.Loyalty.GivePoints(pointsToGive)
-					}
-				}
-			}()
-		}
-	})
-}
-
-func (b *Bot) SetBanList(banned []string) {
-	b.banlist = make(map[string]bool)
-	for _, usr := range banned {
-		b.banlist[usr] = true
-	}
-}
-
-func (b *Bot) IsBanned(user string) bool {
-	banned, ok := b.banlist[user]
-	return ok && banned
-}
-
-func (b *Bot) IsActive(user string) bool {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	active, ok := b.activeUsers[user]
-	return ok && active
-}
-
-func (b *Bot) ResetActivity() {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.activeUsers = make(map[string]bool)
 }
 
 func (b *Bot) Connect() error {
