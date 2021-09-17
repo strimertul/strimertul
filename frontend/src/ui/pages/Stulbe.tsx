@@ -1,5 +1,6 @@
 import { RouteComponentProps } from '@reach/router';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { useModule } from '../../lib/react-utils';
 import apiReducer, { modules } from '../../store/api/reducer';
@@ -8,6 +9,7 @@ export default function StulbePage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   params: RouteComponentProps<unknown>,
 ): React.ReactElement {
+  const { t } = useTranslation();
   const [moduleConfig, setModuleConfig] = useModule(modules.moduleConfig);
   const [stulbeConfig, setStulbeConfig] = useModule(modules.stulbeConfig);
   const dispatch = useDispatch();
@@ -17,7 +19,7 @@ export default function StulbePage(
 
   return (
     <>
-      <h1 className="title is-4">Stulbe integration settings</h1>
+      <h1 className="title is-4">{t('backend.header')}</h1>
       <div className="field">
         <label className="checkbox">
           <input
@@ -33,11 +35,11 @@ export default function StulbePage(
               )
             }
           />{' '}
-          Enable Stulbe integration
+          {t('backend.enable')}
         </label>
       </div>
       <div className="field">
-        <label className="label">Stulbe Endpoint</label>
+        <label className="label">{t('backend.endpoint')}</label>
         <p className="control">
           <input
             className="input"
@@ -57,12 +59,12 @@ export default function StulbePage(
         </p>
       </div>
       <div className="field">
-        <label className="label">User name</label>
+        <label className="label">{t('backend.username')}</label>
         <p className="control">
           <input
             className="input"
             type="text"
-            placeholder="myUserName"
+            placeholder={t('backend.username-placeholder')}
             disabled={busy || !active}
             value={stulbeConfig?.username ?? ''}
             onChange={(ev) =>
@@ -77,12 +79,12 @@ export default function StulbePage(
         </p>
       </div>
       <div className="field">
-        <label className="label">Authorization key</label>
+        <label className="label">{t('backend.authkey')}</label>
         <p className="control">
           <input
             className="input"
             type="password"
-            placeholder="key goes here"
+            placeholder={t('backend.authkey-placeholder')}
             disabled={busy || !active}
             value={stulbeConfig?.auth_key ?? ''}
             onChange={(ev) =>

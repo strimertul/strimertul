@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { createHistory, LocationProvider } from '@reach/router';
 
+import './locale/setup';
+
 import store from './store';
 import App from './ui/App';
 

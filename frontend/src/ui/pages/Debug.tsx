@@ -1,5 +1,6 @@
 import { RouteComponentProps } from '@reach/router';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 
@@ -7,6 +8,7 @@ export default function DebugPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   params: RouteComponentProps<unknown>,
 ): React.ReactElement {
+  const { t } = useTranslation();
   const api = useSelector((state: RootState) => state.api.client);
   const [readKey, setReadKey] = useState('');
   const [readValue, setReadValue] = useState('');
@@ -38,7 +40,7 @@ export default function DebugPage(
       </p>
       <div className="columns">
         <div className="column">
-          <label className="label">Read key</label>
+          <label className="label">{t('debug.read-key')}</label>
           <div className="field has-addons">
             <div className="control">
               <input
@@ -51,7 +53,7 @@ export default function DebugPage(
             </div>
             <div className="control">
               <button className="button is-primary" onClick={performRead}>
-                Read
+                {t('debug.read-btn')}
               </button>
             </div>
           </div>
@@ -62,7 +64,7 @@ export default function DebugPage(
           </div>
         </div>
         <div className="column">
-          <label className="label">Write key</label>
+          <label className="label">{t('debug.write-key')}</label>
           <div className="field">
             <div className="control">
               <input
@@ -91,10 +93,10 @@ export default function DebugPage(
           <div className="field">
             <div className="control">
               <button className="button is-primary" onClick={performWrite}>
-                Write
+                {t('debug.write-btn')}
               </button>{' '}
               <button className="button" onClick={fixJSON}>
-                Fix JSON
+                {t('debug.fix-json-btn')}
               </button>
             </div>
           </div>

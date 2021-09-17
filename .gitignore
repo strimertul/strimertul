@@ -3,3 +3,4 @@
 *.db.lock
 rice-box.go
 data/
+.vscode

@@ -1,5 +1,6 @@
 import { RouteComponentProps } from '@reach/router';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { useModule } from '../../lib/react-utils';
 import apiReducer, { modules } from '../../store/api/reducer';
@@ -8,6 +9,7 @@ export default function HTTPPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   params: RouteComponentProps<unknown>,
 ): React.ReactElement {
+  const { t } = useTranslation();
   const [moduleConfig, setModuleConfig] = useModule(modules.moduleConfig);
   const [httpConfig, setHTTPConfig] = useModule(modules.httpConfig);
   const dispatch = useDispatch();
@@ -17,15 +19,15 @@ export default function HTTPPage(
 
   return (
     <>
-      <h1 className="title is-4">Web server configuration</h1>
+      <h1 className="title is-4">{t('http.header')}</h1>
       <div className="field">
-        <label className="label">HTTP server port</label>
+        <label className="label">{t('http.server-port')}</label>
         <p className="control">
           <input
             disabled={busy}
             className="input"
             type="text"
-            placeholder="HTTP server bind"
+            placeholder=":8080"
             value={httpConfig?.bind ?? ''}
             onChange={(ev) =>
               dispatch(
@@ -37,11 +39,9 @@ export default function HTTPPage(
             }
           />
         </p>
-        <p className="help">
-          Note: You must restart strimertul after changing this!
-        </p>
+        <p className="help">{t('http.server-port-note')}</p>
       </div>
-      <label className="label">Static content</label>
+      <label className="label">{t('http.static-content')}</label>
       <div className="field">
         <label className="checkbox">
           <input
@@ -57,16 +57,15 @@ export default function HTTPPage(
               )
             }
           />{' '}
-          Enable static server
+          {t('http.enable-static')}
         </label>
       </div>
       <div className="field">
-        <label className="label">Static content root path</label>
+        <label className="label">{t('http.static-root-path')}</label>
         <p className="control">
           <input
             className="input"
             type="text"
-            placeholder="HTTP server bind"
             disabled={busy || !active}
             value={httpConfig?.path ?? ''}
             onChange={(ev) =>
@@ -87,7 +86,7 @@ export default function HTTPPage(
           dispatch(setHTTPConfig(httpConfig));
         }}
       >
-        Save
+        {t('actions.save')}
       </button>
     </>
   );

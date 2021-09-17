@@ -1,6 +1,8 @@
 import { Link, Redirect, Router, useLocation } from '@reach/router';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+
 import { RootState } from '../store';
 import { createWSClient } from '../store/api/reducer';
 import Home from './pages/Home';
@@ -20,76 +22,39 @@ import TwitchBotCommandsPage from './pages/twitch/Commands';
 import TwitchBotModulesPage from './pages/twitch/Modules';
 
 interface RouteItem {
-  name: string;
+  name?: string;
   route: string;
   subroutes?: RouteItem[];
 }
 
 const menu: RouteItem[] = [
+  { route: '/' },
+  { route: '/http' },
   {
-    name: 'Home',
-    route: '/',
-  },
-  {
-    name: 'Web server',
-    route: '/http',
-  },
-  {
-    name: 'Twitch integration',
-    route: '/twitch/',
+    route: '/twitch',
     subroutes: [
-      {
-        name: 'Module configuration',
-        route: '/twitch/settings',
-      },
-      {
-        name: 'Bot configuration',
-        route: '/twitch/bot/settings',
-      },
-      {
-        name: 'Bot commands',
-        route: '/twitch/bot/commands',
-      },
-      {
-        name: 'Bot modules',
-        route: '/twitch/bot/modules',
-      },
+      { route: '/twitch/settings' },
+      { route: '/twitch/bot/settings' },
+      { route: '/twitch/bot/commands' },
+      { route: '/twitch/bot/modules' },
     ],
   },
   {
-    name: 'Loyalty points',
-    route: '/loyalty/',
+    route: '/loyalty',
     subroutes: [
-      {
-        name: 'Configuration',
-        route: '/loyalty/settings',
-      },
-      {
-        name: 'Viewer points',
-        route: '/loyalty/users',
-      },
-      {
-        name: 'Redempions',
-        route: '/loyalty/queue',
-      },
-      {
-        name: 'Rewards',
-        route: '/loyalty/rewards',
-      },
-      {
-        name: 'Goals',
-        route: '/loyalty/goals',
-      },
+      { route: '/loyalty/settings' },
+      { route: '/loyalty/users' },
+      { route: '/loyalty/queue' },
+      { route: '/loyalty/rewards' },
+      { route: '/loyalty/goals' },
     ],
   },
-  {
-    name: 'Back-end integration',
-    route: '/stulbe',
-  },
+  { route: '/stulbe' },
 ];
 
 export default function App(): React.ReactElement {
   const loc = useLocation();
+  const { t } = useTranslation();
 
   const client = useSelector((state: RootState) => state.api.client);
   const connected = useSelector((state: RootState) => state.api.connected);
@@ -109,7 +74,7 @@ export default function App(): React.ReactElement {
   }, []);
 
   if (!client) {
-    return <div className="container">Loading...</div>;
+    return <div className="container">{t('system.loading')}</div>;
   }
 
   const basepath = process.env.NODE_ENV === 'development' ? '/' : '/ui/';
@@ -125,7 +90,7 @@ export default function App(): React.ReactElement {
         }}
         to={`${basepath}${route}`.replace(/\/\//gi, '/')}
       >
-        {name}
+        {name ?? t(`pages.${route}`)}
       </Link>
       {subroutes ? (
         <ul className="subroute">{subroutes.map(routeItem)}</ul>
@@ -138,12 +103,12 @@ export default function App(): React.ReactElement {
       <section className="notifications">
         {!connected ? (
           <div className="notification is-danger">
-            Connection to server was lost, retrying...
+            {t('system.connection-lost')}
           </div>
         ) : null}
       </section>
       <aside className="menu sidebar column is-3 is-fullheight section">
-        <p className="menu-label is-hidden-touch">Navigation</p>
+        <p className="menu-label is-hidden-touch">{t('system.menu-header')}</p>
         <ul className="menu-list">{menu.map(routeItem)}</ul>
       </aside>
 

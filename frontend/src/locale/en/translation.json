@@ -1,0 +1,50 @@
+{
+  "pages": {
+    "/": "Home",
+    "/http": "Web server",
+    "/twitch": "Twitch integration",
+    "/twitch/settings": "Module configuration",
+    "/twitch/bot/settings": "Bot configuration",
+    "/twitch/bot/commands": "Bot commands",
+    "/twitch/bot/modules": "Bot modules",
+    "/loyalty": "Loyalty points",
+    "/loyalty/settings": "Configuration",
+    "/loyalty/users": "Viewer points",
+    "/loyalty/queue": "Redempions",
+    "/loyalty/rewards": "Rewards",
+    "/loyalty/goals": "Goals",
+    "/stulbe": "Back-end integration"
+  },
+  "system": {
+    "menu-header": "Navigation",
+    "loading": "Loading…",
+    "connection-lost": "Connection to server was lost, retrying..."
+  },
+  "debug": {
+    "read-key": "Read key",
+    "read-btn": "Read",
+    "write-key": "Write key",
+    "write-btn": "Write",
+    "fix-json-btn": "Fix JSON"
+  },
+  "actions": {
+    "save": "Save"
+  },
+  "http": {
+    "header": "Web server configuration",
+    "server-port": "HTTP server port",
+    "server-port-note": "Note: You must restart strimertul after changing this!",
+    "static-content": "Static content",
+    "enable-static": "Enable static server",
+    "static-root-path": "Static content root path"
+  },
+  "backend": {
+    "header": "Back-end integration settings",
+    "enable": "Enable back-end (stulbe) integration",
+    "endpoint": "Stulbe Endpoint",
+    "username": "User name",
+    "authkey": "Authorization key",
+    "authkey-placeholder": "key goes here",
+    "username-placeholder": "myUserName"
+  }
+}
