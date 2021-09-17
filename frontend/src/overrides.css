@@ -51,6 +51,16 @@ body .button.is-success {
   color:#879799;
 }
 
+.customcommand .card-header-title code {
+  background-color: transparent;
+  padding-right: 1em;
+}
+
+.customcommand .content blockquote {
+  padding: 10px 20px;
+  margin: 5px;
+}
+
 /* Nice expand/contract icon without FontAwesome! */
 .icon.expand-on, .icon.expand-off {
   transition: all 50ms;

@@ -57,7 +57,7 @@ interface TwitchBotConfig {
 
 type AccessLevelType = 'everyone' | 'vip' | 'moderators' | 'streamer';
 
-interface TwitchBotCustomCommand {
+export interface TwitchBotCustomCommand {
   description: string;
   access_level: AccessLevelType;
   response: string;
@@ -353,13 +353,7 @@ const moduleChangeReducers = Object.fromEntries(
   ]),
 ) as Record<
   `${keyof typeof modules}Changed`,
-  (
-    state: unknown,
-    action: {
-      payload: unknown;
-      type: string;
-    },
-  ) => never
+  (state: APIState, action: PayloadAction<unknown>) => never
 >;
 
 const apiReducer = createSlice({

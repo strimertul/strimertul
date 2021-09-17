@@ -39,11 +39,11 @@ const menu: RouteItem[] = [
     route: '/twitch/',
     subroutes: [
       {
-        name: 'Module Configuration',
+        name: 'Module configuration',
         route: '/twitch/settings',
       },
       {
-        name: 'Bot Configuration',
+        name: 'Bot configuration',
         route: '/twitch/bot/settings',
       },
       {

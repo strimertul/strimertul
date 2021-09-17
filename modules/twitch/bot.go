@@ -1,12 +1,15 @@
 package twitch
 
 import (
+	"context"
 	"strings"
 	"sync"
 	"time"
 
 	irc "github.com/gempir/go-twitch-irc/v2"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
+	"github.com/strimertul/strimertul/database"
 	"github.com/strimertul/strimertul/modules/loyalty"
 )
 
@@ -22,6 +25,9 @@ type Bot struct {
 	banlist     map[string]bool
 	chatHistory []irc.PrivateMessage
 
+	commands       map[string]BotCommand
+	customCommands map[string]BotCustomCommand
+
 	mu sync.Mutex
 
 	// Module specific vars
@@ -33,15 +39,17 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	client := irc.NewClient(config.Username, config.Token)
 
 	bot := &Bot{
-		Client:      client,
-		username:    strings.ToLower(config.Username), // Normalize username
-		config:      config,
-		logger:      api.logger,
-		api:         api,
-		lastMessage: time.Now(),
-		activeUsers: make(map[string]bool),
-		banlist:     make(map[string]bool),
-		mu:          sync.Mutex{},
+		Client:         client,
+		username:       strings.ToLower(config.Username), // Normalize username
+		config:         config,
+		logger:         api.logger,
+		api:            api,
+		lastMessage:    time.Now(),
+		activeUsers:    make(map[string]bool),
+		banlist:        make(map[string]bool),
+		mu:             sync.Mutex{},
+		commands:       make(map[string]BotCommand),
+		customCommands: make(map[string]BotCustomCommand),
 	}
 
 	client.OnPrivateMessage(func(message irc.PrivateMessage) {
@@ -52,12 +60,11 @@ func NewBot(api *Client, config BotConfig) *Bot {
 		}
 		bot.mu.Lock()
 		bot.activeUsers[message.User.Name] = true
-		bot.mu.Unlock()
 
 		// Check if it's a command
 		if strings.HasPrefix(message.Message, "!") {
 			// Run through supported commands
-			for cmd, data := range commands {
+			for cmd, data := range bot.commands {
 				if !data.Enabled {
 					continue
 				}
@@ -69,7 +76,7 @@ func NewBot(api *Client, config BotConfig) *Bot {
 		}
 
 		// Run through custom commands
-		for cmd, data := range customCommands {
+		for cmd, data := range bot.customCommands {
 			if !data.Enabled {
 				continue
 			}
@@ -78,6 +85,7 @@ func NewBot(api *Client, config BotConfig) *Bot {
 				bot.lastMessage = time.Now()
 			}
 		}
+		bot.mu.Unlock()
 
 		if bot.config.EnableChatKeys {
 			bot.api.db.PutJSON(ChatEventKey, message)
@@ -115,7 +123,25 @@ func NewBot(api *Client, config BotConfig) *Bot {
 
 	bot.Client.Join(config.Channel)
 
+	// Load custom commands
+	api.db.GetJSON(CustomCommandsKey, &bot.customCommands)
+	go api.db.Subscribe(context.Background(), bot.updateCommands, CustomCommandsKey)
+
 	return bot
+}
+
+func (b *Bot) updateCommands(kvs []database.ModifiedKV) error {
+	for _, kv := range kvs {
+		key := string(kv.Key)
+		switch key {
+		case CustomCommandsKey:
+			b.mu.Lock()
+			err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &b.customCommands)
+			b.mu.Unlock()
+			return err
+		}
+	}
+	return nil
 }
 
 func (b *Bot) Connect() error {

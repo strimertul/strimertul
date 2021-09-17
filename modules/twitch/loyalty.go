@@ -17,25 +17,25 @@ func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
 	b.SetBanList(config.BanList)
 
 	// Add loyalty-based commands
-	commands["!redeem"] = BotCommand{
+	b.commands["!redeem"] = BotCommand{
 		Description: "Redeem a reward with loyalty points",
 		Usage:       "!redeem <reward-id> [request text]",
 		AccessLevel: ALTEveryone,
 		Handler:     cmdRedeemReward,
 	}
-	commands["!balance"] = BotCommand{
+	b.commands["!balance"] = BotCommand{
 		Description: "See your current point balance",
 		Usage:       "!balance",
 		AccessLevel: ALTEveryone,
 		Handler:     cmdBalance,
 	}
-	commands["!goals"] = BotCommand{
+	b.commands["!goals"] = BotCommand{
 		Description: "Check currently active community goals",
 		Usage:       "!goals",
 		AccessLevel: ALTEveryone,
 		Handler:     cmdGoalList,
 	}
-	commands["!contribute"] = BotCommand{
+	b.commands["!contribute"] = BotCommand{
 		Description: "Contribute points to a community goal",
 		Usage:       "!contribute <points> [<goal-id>]",
 		AccessLevel: ALTEveryone,
