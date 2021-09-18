@@ -2,13 +2,12 @@
 
 Smol broadcasting suite, includes:
 
-- Extremely simple/fast disk-backed KV over websocket (Kilovolt) for interacting with web-based overlays
+- Extremely simple/fast disk-backed KV over websocket ([Kilovolt](https://github.com/strimertul/kilovolt)) for interacting with web-based overlays
   - oh and it has pub/sub
 - Static file server for said overlays
 - Loyalty system that tracks viewers and allows them to redeem rewards and contribute to community goals
-  - WIP betting system
 - Twitch IRC bot to tie everything together
-- WIP own backend integration (stulbe)
+- (Incomplete) Backend integration ([stulbe](https://github.com/strimertul/stulbe))
 
 Platform support is limited to Twitch only for the time being (sorry!)
 
