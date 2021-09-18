@@ -1,5 +1,6 @@
 import { RouteComponentProps } from '@reach/router';
 import React from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { useModule } from '../../../lib/react-utils';
 import apiReducer, { modules } from '../../../store/api/reducer';
@@ -14,6 +15,7 @@ export default function TwitchBotSettingsPage(
   const [twitchBotConfig, setTwitchBotConfig] = useModule(
     modules.twitchBotConfig,
   );
+  const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const busy = moduleConfig === null;
@@ -23,7 +25,7 @@ export default function TwitchBotSettingsPage(
 
   return (
     <>
-      <h1 className="title is-4">Twitch module configuration</h1>
+      <h1 className="title is-4">{t('twitch.bot.header')}</h1>
       <Field>
         <label className="checkbox">
           <input
@@ -39,17 +41,17 @@ export default function TwitchBotSettingsPage(
               )
             }
           />{' '}
-          Enable twitch bot
-          {twitchActive ? '' : '(Twitch integration must be enabled for this!)'}
+          {t('twitch.bot.enable')}
+          {twitchActive ? '' : t('twitch.bot.err-module-disabled')}
         </label>
       </Field>
-      <Field name="Twitch channel">
+      <Field name={t('twitch.bot.channel-name')}>
         <p className="control">
           <input
             disabled={!active}
             className="input"
             type="text"
-            placeholder="Twitch channel name"
+            placeholder={t('twitch.bot.channel-name')}
             value={twitchBotConfig?.channel ?? ''}
             onChange={(ev) =>
               dispatch(
@@ -62,13 +64,15 @@ export default function TwitchBotSettingsPage(
           />
         </p>
       </Field>
-      <Field name="Bot username (must be a valid Twitch account)">
+      <Field
+        name={`${t('twitch.bot.username')} (${t('twitch.bot.username-expl')})`}
+      >
         <p className="control">
           <input
             disabled={!active}
             className="input"
             type="text"
-            placeholder="Bot username"
+            placeholder={t('twitch.bot.username')}
             value={twitchBotConfig?.username ?? ''}
             onChange={(ev) =>
               dispatch(
@@ -81,13 +85,13 @@ export default function TwitchBotSettingsPage(
           />
         </p>
       </Field>
-      <Field name="Bot OAuth token">
+      <Field name={t('twitch.bot.oauth-token')}>
         <p className="control">
           <input
             disabled={!active}
             className="input"
             type="password"
-            placeholder="Bot OAuth token"
+            placeholder={t('twitch.bot.oauth-token')}
             value={twitchBotConfig?.oauth ?? ''}
             onChange={(ev) =>
               dispatch(
@@ -100,8 +104,14 @@ export default function TwitchBotSettingsPage(
           />
         </p>
         <p className="help">
-          You can get this by logging in with the bot account and going here:{' '}
-          <a href="https://twitchapps.com/tmi/">https://twitchapps.com/tmi/</a>
+          <Trans i18nKey="twitch.bot.oauth-help">
+            {
+              'You can get this by logging in with the bot account and going here: '
+            }
+            <a href="https://twitchapps.com/tmi/">
+              https://twitchapps.com/tmi/
+            </a>
+          </Trans>
         </p>
       </Field>
       <Field>
@@ -119,27 +129,34 @@ export default function TwitchBotSettingsPage(
               )
             }
           />{' '}
-          Enable chat keys (for 3rd party chat integration)
+          {t('twitch.bot.chat-keys')}
         </label>
       </Field>
-      <Field name="Chat history">
-        <p className="control">
-          <input
-            className="input"
-            type="number"
-            disabled={!twitchBotConfig?.chat_keys ?? true}
-            placeholder="#"
-            value={twitchBotConfig?.chat_history ?? '5'}
-            onChange={(ev) =>
-              dispatch(
-                apiReducer.actions.twitchBotConfigChanged({
-                  ...twitchBotConfig,
-                  chat_history: parseInt(ev.target.value, 10) ?? 0,
-                }),
-              )
-            }
-          />
-        </p>
+      <Field name={t('twitch.bot.chat-history')}>
+        <div className="field-body">
+          <div className="field has-addons">
+            <p className="control">
+              <input
+                className="input"
+                type="number"
+                disabled={!twitchBotConfig?.chat_keys ?? true}
+                placeholder="#"
+                value={twitchBotConfig?.chat_history ?? '5'}
+                onChange={(ev) =>
+                  dispatch(
+                    apiReducer.actions.twitchBotConfigChanged({
+                      ...twitchBotConfig,
+                      chat_history: parseInt(ev.target.value, 10) ?? 0,
+                    }),
+                  )
+                }
+              />
+            </p>
+            <p className="control">
+              <a className="button is-static">{t('twitch.bot.suf-messages')}</a>
+            </p>
+          </div>
+        </div>
       </Field>
       <button
         className="button"
@@ -149,7 +166,7 @@ export default function TwitchBotSettingsPage(
           dispatch(setTwitchBotConfig(twitchBotConfig));
         }}
       >
-        Save
+        {t('actions.save')}
       </button>
     </>
   );

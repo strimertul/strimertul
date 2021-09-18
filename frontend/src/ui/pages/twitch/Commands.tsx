@@ -1,5 +1,6 @@
 import { RouteComponentProps } from '@reach/router';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { useModule } from '../../../lib/react-utils';
 import { modules, TwitchBotCustomCommand } from '../../../store/api/reducer';
@@ -19,6 +20,7 @@ function CommandItem({
   onEdit,
   onDelete,
 }: CommandItemProps) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -46,16 +48,17 @@ function CommandItem({
       </header>
       {expanded ? (
         <div className="content">
-          Response: <blockquote>{item.response}</blockquote>
+          {t('twitch.commands.response')}:{' '}
+          <blockquote>{item.response}</blockquote>
           <div style={{ marginTop: '1rem' }}>
             <a className="button is-small" onClick={onToggleState}>
               {item.enabled ? 'Disable' : 'Enable'}
             </a>{' '}
             <a className="button is-small" onClick={onEdit}>
-              Edit
+              {t('actions.edit')}
             </a>{' '}
             <a className="button is-small" onClick={onDelete}>
-              Delete
+              {t('actions.delete')}
             </a>
           </div>
         </div>
@@ -89,6 +92,7 @@ function CommandModal({
   );
   const [response, setResponse] = useState(initialData?.response ?? '');
 
+  const { t } = useTranslation();
   const slugify = (str: string) =>
     str.toLowerCase().replace(/[^a-zA-Z0-9!.-_@:;'"<>]/gi, '-');
   const validForm = name !== '' && response !== '';
@@ -118,7 +122,7 @@ function CommandModal({
     >
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Command</label>
+          <label className="label">{t('twitch.commands.command')}</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -136,14 +140,14 @@ function CommandModal({
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Description</label>
+          <label className="label">{t('twitch.commands.description')}</label>
         </div>
         <div className="field-body">
           <div className="field">
             <p className="control">
               <textarea
                 className="textarea"
-                placeholder="What does this command do?"
+                placeholder={t('twitch.commands.description-help')}
                 rows={1}
                 onChange={(ev) => setDescription(ev.target.value)}
                 value={description}
@@ -154,14 +158,14 @@ function CommandModal({
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Response</label>
+          <label className="label">{t('twitch.commands.response')}</label>
         </div>
         <div className="field-body">
           <div className="field">
             <p className="control">
               <textarea
                 className={response !== '' ? 'textarea' : 'textarea is-danger'}
-                placeholder="What does the bot reply to this command?"
+                placeholder={t('twitch.commands.response-help')}
                 onChange={(ev) => setResponse(ev.target.value)}
                 value={response}
               ></textarea>
@@ -171,24 +175,29 @@ function CommandModal({
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Access level</label>
+          <label className="label">{t('twitch.commands.access-level')}</label>
         </div>
         <div className="field-body">
           <div className="field">
             <p className="control">
               <span className="select">
                 <select>
-                  <option value="everyone">Everyone</option>
-                  <option value="vip">VIPs</option>
-                  <option value="moderators">Moderators</option>
-                  <option value="streamer">Streamer only</option>
+                  <option value="everyone">
+                    {t('twitch.commands.access-everyone')}
+                  </option>
+                  <option value="vip">
+                    {t('twitch.commands.access-vips')}
+                  </option>
+                  <option value="moderators">
+                    {t('twitch.commands.access-moderators')}
+                  </option>
+                  <option value="streamer">
+                    {t('twitch.commands.access-streamer')}
+                  </option>
                 </select>
               </span>
             </p>
-            <p className="help">
-              This specifies the minimum level, eg. if you choose VIPs,
-              moderators and streamer can still use the command
-            </p>
+            <p className="help">{t('twitch.commands.access-level-help')}</p>
           </div>
         </div>
       </div>
@@ -201,6 +210,7 @@ export default function TwitchBotCommandsPage(
 ): React.ReactElement {
   const [commands, setCommands] = useModule(modules.twitchBotCommands);
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   const [createModal, setCreateModal] = useState(false);
   const [showModifyCommand, setShowModifyCommand] = useState(null);
@@ -258,11 +268,11 @@ export default function TwitchBotCommandsPage(
 
   return (
     <>
-      <h1 className="title is-4">Bot commands</h1>
+      <h1 className="title is-4">{t('twitch.commands.header')}</h1>
       <div className="field is-grouped">
         <p className="control">
           <button className="button" onClick={() => setCreateModal(true)}>
-            New command
+            {t('twitch.commands.new-command')}
           </button>
         </p>
 
@@ -270,7 +280,7 @@ export default function TwitchBotCommandsPage(
           <input
             className="input"
             type="text"
-            placeholder="Search by name"
+            placeholder={t('twitch.commands.search')}
             value={commandFilter}
             onChange={(ev) => setCommandFilter(ev.target.value)}
           />
@@ -278,16 +288,16 @@ export default function TwitchBotCommandsPage(
       </div>
 
       <CommandModal
-        title="New command"
-        confirmText="Create"
+        title={t('twitch.commands.new-command')}
+        confirmText={t('actions.create')}
         active={createModal}
         onConfirm={createCommand}
         onClose={() => setCreateModal(false)}
       />
       {showModifyCommand ? (
         <CommandModal
-          title="Modify command"
-          confirmText="Edit"
+          title={t('twitch.commands.modify-command')}
+          confirmText={t('actions.edit')}
           active={true}
           onConfirm={(newName, cmdData) =>
             modifyCommand(showModifyCommand, newName, cmdData)

@@ -139,5 +139,48 @@
       "minutes": "minutes",
       "hours": "hours"
     }
+  },
+  "twitch": {
+    "config": {
+      "header": "Twitch module configuration",
+      "enable": "Enable twitch integration",
+      "apiguide-1": "You will need to create an application, here's how:",
+      "apiguide-2": "Go to <1>https://dev.twitch.tv/console/apps/create</1>",
+      "apiguide-3": "Use the following data for the required fields:",
+      "oauth-redir-uri": "OAuth Redirect URLs",
+      "apiguide-4": "Once created, create a <1>New Secret</1>, then copy both fields below!",
+      "app-client-id": "App Client ID",
+      "app-client-secret": "App Client Secret"
+    },
+    "bot": {
+      "header": "Twitch bot configuration",
+      "enable": "Enable twitch bot",
+      "err-module-disabled": "(Twitch integration must be enabled for this!)",
+      "channel-name": "Twitch channel name",
+      "username": "Bot username",
+      "username-expl": "must be a valid Twitch account",
+      "oauth-token": "Bot OAuth token",
+      "oauth-help": "You can get this by logging in with the bot account and going here: <1>https://twitchapps.com/tmi/</1>",
+      "chat-keys": "Enable chat keys (for 3rd party chat integration)",
+      "chat-history": "Chat history",
+      "suf-messages": "messages"
+    },
+    "commands": {
+      "command": "Command",
+      "response": "Response",
+      "response-help": "What does the bot reply to this command?",
+      "description": "Description",
+      "description-help": "What does this command do?",
+      "access-level": "Access level",
+      "access-everyone": "Everyone",
+      "access-vips": "VIPs",
+      "access-moderators": "Moderators",
+      "access-streamer": "Streamer only",
+      "access-level-help": "This specifies the minimum level, eg. if you choose VIPs, moderators and streamer can still use the command",
+      "header": "Bot commands",
+      "new-command": "New command",
+      "search": "Search by name",
+      "modify-command": "Modify command"
+    }
   }
 }
