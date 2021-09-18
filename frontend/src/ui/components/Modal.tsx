@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 export interface ModalProps {
   title: string;
@@ -28,6 +29,7 @@ function Modal({
   bgDismiss,
   children,
 }: React.PropsWithChildren<ModalProps>): React.ReactElement {
+  const { t } = useTranslation();
   return (
     <div className={`modal ${active ? 'is-active' : ''}`}>
       <div
@@ -52,14 +54,14 @@ function Modal({
             disabled={!confirmEnabled}
             onClick={() => onConfirm()}
           >
-            {confirmName ?? 'OK'}
+            {confirmName ?? t('actions.ok')}
           </button>
           {showCancel ? (
             <button
               className={`button ${cancelClass ?? ''}`}
               onClick={() => onClose()}
             >
-              {cancelName ?? 'Cancel'}
+              {cancelName ?? t('actions.cancel')}
             </button>
           ) : null}
         </footer>

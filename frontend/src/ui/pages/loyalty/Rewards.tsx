@@ -2,6 +2,7 @@ import { RouteComponentProps } from '@reach/router';
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import prettyTime from 'pretty-ms';
+import { useTranslation } from 'react-i18next';
 import { useModule } from '../../../lib/react-utils';
 import { RootState } from '../../../store';
 import {
@@ -26,9 +27,11 @@ function RewardItem({
   onDelete,
   onTest,
 }: RewardItemProps) {
+  const { t } = useTranslation();
   const currency = useSelector(
     (state: RootState) =>
-      state.api.moduleConfigs?.loyaltyConfig?.currency ?? 'points',
+      state.api.moduleConfigs?.loyaltyConfig?.currency ??
+      t('loyalty.points-fallback'),
   );
   const [expanded, setExpanded] = useState(false);
   const placeholder = 'https://bulma.io/images/placeholders/128x128.png';
@@ -75,26 +78,27 @@ function RewardItem({
           {item.description}
           {item.cooldown > 0 ? (
             <div style={{ marginTop: '1rem' }}>
-              <b>Cooldown:</b> {prettyTime(item.cooldown * 1000)}
+              <b>{t('loyalty.rewards.cooldown')}:</b>{' '}
+              {prettyTime(item.cooldown * 1000)}
             </div>
           ) : null}
           {item.required_info ? (
             <div style={{ marginTop: '1rem' }}>
-              <b>Required info:</b> {item.required_info}
+              <b>{t('loyalty.rewards.required-info')}:</b> {item.required_info}
             </div>
           ) : null}
           <div style={{ marginTop: '1rem' }}>
             <a className="button is-small" onClick={onTest}>
-              Test
+              {t('loyalty.rewards.test')}
             </a>{' '}
             <a className="button is-small" onClick={onToggleState}>
               {item.enabled ? 'Disable' : 'Enable'}
             </a>{' '}
             <a className="button is-small" onClick={onEdit}>
-              Edit
+              {t('actions.edit')}
             </a>{' '}
             <a className="button is-small" onClick={onDelete}>
-              Delete
+              {t('actions.delete')}
             </a>
           </div>
         </div>
@@ -120,6 +124,7 @@ function RewardModal({
   title,
   confirmText,
 }: RewardModalProps) {
+  const { t } = useTranslation();
   const currency = useSelector(
     (state: RootState) =>
       state.api.moduleConfigs?.loyaltyConfig?.currency ?? 'points',
@@ -185,7 +190,7 @@ function RewardModal({
     >
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Reward ID</label>
+          <label className="label">{t('loyalty.rewards.id')}</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -193,29 +198,24 @@ function RewardModal({
               <input
                 className={idInvalid ? 'input is-danger' : 'input'}
                 type="text"
-                placeholder="reward_id_here"
+                placeholder={t('loyalty.rewards.id-placeholder')}
                 value={slug}
                 onChange={(ev) => setIDex(ev.target.value)}
               />
             </p>
             {idInvalid ? (
               <p className="help is-danger">
-                There is already a reward with this ID! Please choose a
-                different one.
+                {t('loyalty.rewards.err-rewid-dup')}
               </p>
             ) : (
-              <p className="help">
-                Choose a simple name that can be referenced by other software.
-                It will be auto-generated from the reward name if you leave it
-                blank.
-              </p>
+              <p className="help">{t('loyalty.rewards.id-help')}</p>
             )}
           </div>
         </div>
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Name</label>
+          <label className="label">{t('loyalty.rewards.name')}</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -224,7 +224,7 @@ function RewardModal({
                 disabled={!active}
                 className="input"
                 type="text"
-                placeholder="My awesome reward"
+                placeholder={t('loyalty.rewards.name-placeholder')}
                 value={name ?? ''}
                 onChange={(ev) => setName(ev.target.value)}
               />
@@ -234,7 +234,7 @@ function RewardModal({
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Icon</label>
+          <label className="label">{t('loyalty.rewards.icon')}</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -242,7 +242,7 @@ function RewardModal({
               <input
                 className="input"
                 type="text"
-                placeholder="Image URL"
+                placeholder={t('loyalty.rewards.icon-placeholder')}
                 value={image ?? ''}
                 onChange={(ev) => setImage(ev.target.value)}
               />
@@ -252,14 +252,14 @@ function RewardModal({
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Description</label>
+          <label className="label">{t('loyalty.rewards.description')}</label>
         </div>
         <div className="field-body">
           <div className="field">
             <p className="control">
               <textarea
                 className="textarea"
-                placeholder="What's so cool about this reward?"
+                placeholder={t('loyalty.rewards.description-placeholder')}
                 onChange={(ev) => setDescription(ev.target.value)}
                 value={description}
               ></textarea>
@@ -269,7 +269,7 @@ function RewardModal({
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Cost</label>
+          <label className="label">{t('loyalty.rewards.cost')}</label>
         </div>
         <div className="field-body">
           <div className="field has-addons">
@@ -298,7 +298,7 @@ function RewardModal({
                 checked={extraRequired}
                 onChange={(ev) => setExtraRequired(ev.target.checked)}
               />{' '}
-              Requires viewer-specified details
+              {t('loyalty.rewards.requires-extra-info')}
             </label>
           </div>
         </div>
@@ -307,7 +307,7 @@ function RewardModal({
         <>
           <div className="field is-horizontal">
             <div className="field-label is-normal">
-              <label className="label">Required info</label>
+              <label className="label">{t('loyalty.rewards.extra-info')}</label>
             </div>
             <div className="field-body">
               <div className="field">
@@ -316,7 +316,7 @@ function RewardModal({
                     disabled={!active}
                     className="input"
                     type="text"
-                    placeholder="What extra detail to ask the viewer for"
+                    placeholder={t('loyalty.rewards.extra-info-placeholder')}
                     value={extraDetails ?? ''}
                     onChange={(ev) => setExtraDetails(ev.target.value)}
                   />
@@ -328,7 +328,7 @@ function RewardModal({
       ) : null}
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Cooldown</label>
+          <label className="label">{t('loyalty.rewards.cooldown')}</label>
         </div>
         <div className="field-body">
           <div className="field has-addons">
@@ -361,9 +361,9 @@ function RewardModal({
                     setTempCooldownMult(intMult);
                   }}
                 >
-                  <option value="1">seconds</option>
-                  <option value="60">minutes</option>
-                  <option value="3600">hours</option>
+                  <option value="1">{t('form-common.time.seconds')}</option>
+                  <option value="60">{t('form-common.time.minutes')}</option>
+                  <option value="3600">{t('form-common.time.hours')}</option>
                 </select>
               </span>
             </p>
@@ -382,6 +382,7 @@ export default function LoyaltyRewardsPage(
   const [moduleConfig] = useModule(modules.moduleConfig);
 
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   const twitchActive = moduleConfig?.twitch ?? false;
   const loyaltyEnabled = moduleConfig?.loyalty ?? false;
@@ -440,7 +441,7 @@ export default function LoyaltyRewardsPage(
 
   return (
     <>
-      <h1 className="title is-4">Loyalty rewards</h1>
+      <h1 className="title is-4">{t('loyalty.rewards.header')}</h1>
 
       <div className="field is-grouped">
         <p className="control">
@@ -449,7 +450,7 @@ export default function LoyaltyRewardsPage(
             disabled={!active}
             onClick={() => setCreateModal(true)}
           >
-            New reward
+            {t('loyalty.rewards.new-reward')}
           </button>
         </p>
 
@@ -457,7 +458,7 @@ export default function LoyaltyRewardsPage(
           <input
             className="input"
             type="text"
-            placeholder="Search by name"
+            placeholder={t('loyalty.rewards.search')}
             value={rewardFilter}
             onChange={(ev) => setRewardFilter(ev.target.value)}
           />
@@ -465,16 +466,16 @@ export default function LoyaltyRewardsPage(
       </div>
 
       <RewardModal
-        title="New reward"
-        confirmText="Create"
+        title={t('loyalty.rewards.new-reward')}
+        confirmText={t('actions.create')}
         active={createModal}
         onConfirm={createReward}
         onClose={() => setCreateModal(false)}
       />
       {showModifyReward ? (
         <RewardModal
-          title="Modify reward"
-          confirmText="Edit"
+          title={t('loyalty.rewards.modify-reward')}
+          confirmText={t('actions.edit')}
           active={true}
           onConfirm={(reward) => modifyReward(showModifyReward.id, reward)}
           initialData={showModifyReward}

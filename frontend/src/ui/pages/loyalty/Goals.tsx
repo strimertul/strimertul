@@ -1,5 +1,6 @@
 import { RouteComponentProps } from '@reach/router';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { useModule } from '../../../lib/react-utils';
 import { RootState } from '../../../store';
@@ -13,9 +14,11 @@ interface GoalItemProps {
   onDelete: () => void;
 }
 function GoalItem({ item, onToggleState, onEdit, onDelete }: GoalItemProps) {
+  const { t } = useTranslation();
   const currency = useSelector(
     (state: RootState) =>
-      state.api.moduleConfigs?.loyaltyConfig?.currency ?? 'points',
+      state.api.moduleConfigs?.loyaltyConfig?.currency ??
+      t('loyalty.points-fallback'),
   );
   const [expanded, setExpanded] = useState(false);
   const placeholder = 'https://bulma.io/images/placeholders/128x128.png';
@@ -46,7 +49,7 @@ function GoalItem({ item, onToggleState, onEdit, onDelete }: GoalItemProps) {
           }}
         >
           {item.contributed >= item.total ? (
-            <span className="goal-reached">Reached!</span>
+            <span className="goal-reached">{t('loyalty.goals.reached')}</span>
           ) : (
             <>
               {item.contributed} / {item.total} {currency}
@@ -69,11 +72,11 @@ function GoalItem({ item, onToggleState, onEdit, onDelete }: GoalItemProps) {
           <div className="contributors" style={{ marginTop: '1rem' }}>
             {contributors.length > 0 ? (
               <>
-                <b>Contributors:</b>
+                <b>{t('loyalty.goals.contributors')}</b>
                 <table className="table is-striped is-narrow">
                   <tr>
-                    <th>Username</th>
-                    <th>Points</th>
+                    <th>{t('form-common.username')}</th>
+                    <th>{t('loyalty.points')}</th>
                   </tr>
                   {contributors.map(([user, points]) => (
                     <tr>
@@ -89,18 +92,18 @@ function GoalItem({ item, onToggleState, onEdit, onDelete }: GoalItemProps) {
                 </table>
               </>
             ) : (
-              <b>No one has contributed yet :(</b>
+              <b>{t('loyalty.goals.no-contributors')}</b>
             )}
           </div>
           <div style={{ marginTop: '1rem' }}>
             <a className="button is-small" onClick={onToggleState}>
-              {item.enabled ? 'Disable' : 'Enable'}
+              {item.enabled ? t('actions.disable') : t('actions.enable')}
             </a>{' '}
             <a className="button is-small" onClick={onEdit}>
-              Edit
+              {t('actions.edit')}
             </a>{' '}
             <a className="button is-small" onClick={onDelete}>
-              Delete
+              {t('actions.delete')}
             </a>
           </div>
         </div>
@@ -126,6 +129,8 @@ function GoalModal({
   title,
   confirmText,
 }: GoalModalProps) {
+  const { t } = useTranslation();
+
   const [loyaltyConfig] = useModule(modules.loyaltyConfig);
   const [goals] = useModule(modules.loyaltyGoals);
 
@@ -175,7 +180,7 @@ function GoalModal({
     >
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Goal ID</label>
+          <label className="label">{t('loyalty.goals.id')}</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -183,29 +188,24 @@ function GoalModal({
               <input
                 className={idInvalid ? 'input is-danger' : 'input'}
                 type="text"
-                placeholder="goal_id_here"
+                placeholder={t('loyalty.goals.id-placeholder')}
                 value={slug}
                 onChange={(ev) => setIDex(ev.target.value)}
               />
             </p>
             {idInvalid ? (
               <p className="help is-danger">
-                There is already a goal with this ID! Please choose a different
-                one.
+                {t('loyalty.goals.err-goalid-dup')}
               </p>
             ) : (
-              <p className="help">
-                Choose a simple name that can be referenced by other software.
-                It will be auto-generated from the goal name if you leave it
-                blank.
-              </p>
+              <p className="help">{t('loyalty.goals.id-help')}</p>
             )}
           </div>
         </div>
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Name</label>
+          <label className="label">{t('loyalty.goals.name')}</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -214,7 +214,7 @@ function GoalModal({
                 disabled={!active}
                 className="input"
                 type="text"
-                placeholder="My dream goal"
+                placeholder={t('loyalty.goals.name-placeholder')}
                 value={name ?? ''}
                 onChange={(ev) => setName(ev.target.value)}
               />
@@ -224,7 +224,7 @@ function GoalModal({
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Icon</label>
+          <label className="label">{t('loyalty.goals.icon')}</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -232,7 +232,7 @@ function GoalModal({
               <input
                 className="input"
                 type="text"
-                placeholder="Image URL"
+                placeholder={t('loyalty.goals.icon-placeholder')}
                 value={image ?? ''}
                 onChange={(ev) => setImage(ev.target.value)}
               />
@@ -242,14 +242,14 @@ function GoalModal({
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Description</label>
+          <label className="label">{t('loyalty.goals.description')}</label>
         </div>
         <div className="field-body">
           <div className="field">
             <p className="control">
               <textarea
                 className="textarea"
-                placeholder="What's gonna happen when we reach this goal?"
+                placeholder={t('loyalty.goals.description-placeholder')}
                 onChange={(ev) => setDescription(ev.target.value)}
                 value={description}
               ></textarea>
@@ -259,7 +259,7 @@ function GoalModal({
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Required</label>
+          <label className="label">{t('form-common.required')}</label>
         </div>
         <div className="field-body">
           <div className="field has-addons">
@@ -289,6 +289,7 @@ export default function LoyaltyGoalsPage(
   const [goals, setGoals] = useModule(modules.loyaltyGoals);
   const [moduleConfig] = useModule(modules.moduleConfig);
 
+  const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const twitchActive = moduleConfig?.twitch ?? false;
@@ -336,7 +337,7 @@ export default function LoyaltyGoalsPage(
 
   return (
     <>
-      <h1 className="title is-4">Community goals</h1>
+      <h1 className="title is-4">{t('loyalty.goals.header')}</h1>
 
       <div className="field is-grouped">
         <p className="control">
@@ -345,7 +346,7 @@ export default function LoyaltyGoalsPage(
             disabled={!active}
             onClick={() => setCreateModal(true)}
           >
-            New goal
+            {t('loyalty.goals.new')}
           </button>
         </p>
 
@@ -353,7 +354,7 @@ export default function LoyaltyGoalsPage(
           <input
             className="input"
             type="text"
-            placeholder="Search by name"
+            placeholder={t('loyalty.goals.search')}
             value={goalFilter}
             onChange={(ev) => setGoalFilter(ev.target.value)}
           />
@@ -361,16 +362,16 @@ export default function LoyaltyGoalsPage(
       </div>
 
       <GoalModal
-        title="New goal"
-        confirmText="Create"
+        title={t('loyalty.goals.new')}
+        confirmText={t('actions.create')}
         active={createModal}
         onConfirm={createGoal}
         onClose={() => setCreateModal(false)}
       />
       {showModifyGoal ? (
         <GoalModal
-          title="Modify goal"
-          confirmText="Edit"
+          title={t('loyalty.goals.modify')}
+          confirmText={t('actions.edit')}
           active={true}
           onConfirm={(goal) => modifyGoal(showModifyGoal.id, goal)}
           initialData={showModifyGoal}

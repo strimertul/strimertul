@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RouteComponentProps } from '@reach/router';
+import { useTranslation } from 'react-i18next';
 import PageList from '../../components/PageList';
 import { useModule, useUserPoints } from '../../../lib/react-utils';
 import { RootState } from '../../../store';
@@ -33,6 +34,7 @@ function UserModal({
   title,
   confirmText,
 }: UserModalProps) {
+  const { t } = useTranslation();
   const currency = useSelector(
     (state: RootState) =>
       state.api.moduleConfigs?.loyaltyConfig?.currency ?? 'points',
@@ -69,7 +71,7 @@ function UserModal({
     >
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Username</label>
+          <label className="label">{t('form-common.username')}</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -120,8 +122,9 @@ export default function LoyaltyUserListPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: RouteComponentProps<unknown>,
 ): React.ReactElement {
+  const { t } = useTranslation();
   const [loyaltyConfig] = useModule(modules.loyaltyConfig);
-  const currency = loyaltyConfig?.currency ?? 'points';
+  const currency = loyaltyConfig?.currency ?? t('loyalty.points-fallback');
   const users = useUserPoints();
   const dispatch = useDispatch();
   const [sorting, setSorting] = useState<SortingOrder>({
@@ -190,8 +193,8 @@ export default function LoyaltyUserListPage(
   return (
     <>
       <UserModal
-        title="Give points to user"
-        confirmText="Give"
+        title={t('loyalty.userlist.give-points')}
+        confirmText={t('loyalty.userlist.give-button')}
         active={createModal}
         onConfirm={(entry) => assignPoints(entry)}
         initialData={{ user: '', entry: { points: 0 } }}
@@ -199,22 +202,24 @@ export default function LoyaltyUserListPage(
       />
       {editModal ? (
         <UserModal
-          title="Modify balance"
-          confirmText="Edit"
+          title={t('loyalty.userlist.modify-balance')}
+          confirmText={t('actions.edit')}
           active={true}
           onConfirm={(entry) => modifyUser(entry)}
           initialData={editModal}
           onClose={() => setEditModal(null)}
         />
       ) : null}
-      <h1 className="title is-4">All viewers with {currency}</h1>
+      <h1 className="title is-4">
+        {t('loyalty.userlist.userlist-header', { currency })}
+      </h1>
       {users ? (
         <>
           <div className="field">
             <input
               className="input is-small"
               type="text"
-              placeholder="Search by username"
+              placeholder={t('loyalty.queue.search')}
               value={usernameFilter}
               onChange={(ev) =>
                 setUsernameFilter(ev.target.value.toLowerCase())
@@ -223,7 +228,7 @@ export default function LoyaltyUserListPage(
           </div>
           <div className="field">
             <a className="button is-small" onClick={() => setCreateModal(true)}>
-              Give points to user
+              {t('loyalty.userlist.give-points')}
             </a>
           </div>
           <PageList
@@ -239,7 +244,7 @@ export default function LoyaltyUserListPage(
               <tr>
                 <th>
                   <span className="sortable" onClick={() => changeSort('user')}>
-                    Username
+                    {t('form-common.username')}
                     {sorting.key === 'user' ? (
                       <span className="sort-icon">
                         {sorting.order === 'asc' ? '▴' : '▾'}
@@ -279,7 +284,7 @@ export default function LoyaltyUserListPage(
                         })
                       }
                     >
-                      Edit
+                      {t('actions.edit')}
                     </a>
                   </td>
                 </tr>
@@ -296,9 +301,7 @@ export default function LoyaltyUserListPage(
           />
         </>
       ) : (
-        <p>
-          Viewer list is not available (loyalty disabled or no one has points)
-        </p>
+        <p>{t('loyalty.userlist.err-not-available')}</p>
       )}
     </>
   );

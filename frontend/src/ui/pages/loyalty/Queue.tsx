@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { RouteComponentProps } from '@reach/router';
+import { useTranslation } from 'react-i18next';
 import { useModule, useUserPoints } from '../../../lib/react-utils';
 import {
   LoyaltyRedeem,
@@ -32,6 +33,7 @@ export default function LoyaltyRedeemQueuePage(
   const [entriesPerPage, setEntriesPerPage] = useState(15);
   const [page, setPage] = useState(0);
   const [usernameFilter, setUsernameFilter] = useState('');
+  const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const changeSort = (key: 'user' | 'when') => {
@@ -105,14 +107,14 @@ export default function LoyaltyRedeemQueuePage(
 
   return (
     <>
-      <h1 className="title is-4">Redemption queue</h1>
+      <h1 className="title is-4">{t('loyalty.queue.header')}</h1>
       {redemptions ? (
         <>
           <div className="field">
             <input
               className="input is-small"
               type="text"
-              placeholder="Search by username"
+              placeholder={t('loyalty.queue.search')}
               value={usernameFilter}
               onChange={(ev) =>
                 setUsernameFilter(ev.target.value.toLowerCase())
@@ -132,7 +134,7 @@ export default function LoyaltyRedeemQueuePage(
               <tr>
                 <th style={{ width: '20%' }}>
                   <span className="sortable" onClick={() => changeSort('when')}>
-                    Date
+                    {t('form-common.date')}
                     {sorting.key === 'when' ? (
                       <span className="sort-icon">
                         {sorting.order === 'asc' ? '▴' : '▾'}
@@ -142,7 +144,7 @@ export default function LoyaltyRedeemQueuePage(
                 </th>
                 <th>
                   <span className="sortable" onClick={() => changeSort('user')}>
-                    Username
+                    {t('form-common.username')}
                     {sorting.key === 'user' ? (
                       <span className="sort-icon">
                         {sorting.order === 'asc' ? '▴' : '▾'}
@@ -150,8 +152,8 @@ export default function LoyaltyRedeemQueuePage(
                     ) : null}
                   </span>
                 </th>
-                <th>Reward name</th>
-                <th>Request</th>
+                <th>{t('loyalty.queue.reward-name')}</th>
+                <th>{t('loyalty.queue.request')}</th>
                 <th></th>
               </tr>
             </thead>
@@ -168,11 +170,15 @@ export default function LoyaltyRedeemQueuePage(
                   <td>{redemption.reward.name}</td>
                   <td>{redemption.request_text}</td>
                   <td style={{ textAlign: 'right' }}>
-                    <a onClick={() => acceptRedeem(redemption)}>Accept</a>
+                    <a onClick={() => acceptRedeem(redemption)}>
+                      {t('loyalty.queue.accept')}
+                    </a>
                     {redemption.username !== '@PLATFORM' ? (
                       <>
                         {' 🞄 '}
-                        <a onClick={() => refundRedeem(redemption)}>Refund</a>
+                        <a onClick={() => refundRedeem(redemption)}>
+                          {t('loyalty.queue.refund')}
+                        </a>
                       </>
                     ) : null}
                   </td>
@@ -190,10 +196,7 @@ export default function LoyaltyRedeemQueuePage(
           />
         </>
       ) : (
-        <p>
-          Redemption queue is not available (loyalty disabled or no one has
-          redeemed anything yet)
-        </p>
+        <p>{t('loyalty.queue.err-not-available')}</p>
       )}
     </>
   );

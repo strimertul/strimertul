@@ -1,5 +1,6 @@
 import { RouteComponentProps } from '@reach/router';
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { useModule } from '../../../lib/react-utils';
 import { getInterval } from '../../../lib/time-utils';
@@ -14,6 +15,7 @@ export default function LoyaltySettingPage(
   const [twitchConfig] = useModule(modules.twitchConfig);
 
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   const twitchActive = moduleConfig?.twitch ?? false;
   const twitchBotActive = twitchConfig?.enable_bot ?? false;
@@ -52,7 +54,7 @@ export default function LoyaltySettingPage(
 
   return (
     <>
-      <h1 className="title is-4">Loyalty system configuration</h1>
+      <h1 className="title is-4">{t('loyalty.config.header')}</h1>
       <div className="field">
         <label className="checkbox">
           <input
@@ -67,21 +69,21 @@ export default function LoyaltySettingPage(
                 }),
               )
             }
-          />{' '}
-          Enable loyalty points{' '}
+          />
+          {` ${t('loyalty.config.enable')} `}
           {twitchActive && twitchBotActive
             ? ''
-            : '(Twitch bot must be enabled for this!)'}
+            : t('loyalty.config.err-twitchbot-disabled')}
         </label>
       </div>
       <div className="field">
-        <label className="label">Currency name</label>
+        <label className="label">{t('loyalty.config.currency-name')}</label>
         <p className="control">
           <input
             disabled={!active}
             className="input"
             type="text"
-            placeholder="points"
+            placeholder={t('loyalty.points-fallback')}
             value={loyaltyConfig?.currency ?? ''}
             onChange={(ev) =>
               dispatch(
@@ -95,11 +97,13 @@ export default function LoyaltySettingPage(
         </p>
       </div>
       <label className="label">
-        How often to give {loyaltyConfig?.currency || 'points'}
+        {t('loyalty.config.point-reward-frequency', {
+          points: loyaltyConfig?.currency || t('loyalty.points-fallback'),
+        })}
       </label>
       <div className="field has-addons" style={{ marginBottom: 0 }}>
         <p className="control">
-          <a className="button is-static">Give</a>
+          <a className="button is-static">{t('loyalty.config.give-points')}</a>
         </p>
         <p className="control">
           <input
@@ -126,7 +130,7 @@ export default function LoyaltySettingPage(
           />
         </p>
         <p className="control">
-          <a className="button is-static">every</a>
+          <a className="button is-static">{t('loyalty.config.points-every')}</a>
         </p>
         <p className="control">
           <input
@@ -157,15 +161,15 @@ export default function LoyaltySettingPage(
                 setTempIntervalMult(intMult);
               }}
             >
-              <option value="1">seconds</option>
-              <option value="60">minutes</option>
-              <option value="3600">hours</option>
+              <option value="1">{t('form-common.time.seconds')}</option>
+              <option value="60">{t('form-common.time.minutes')}</option>
+              <option value="3600">{t('form-common.time.hours')}</option>
             </select>
           </span>
         </p>
       </div>
       <div className="field">
-        <label className="label">Bonus points for active users</label>
+        <label className="label">{t('loyalty.config.bonus-points')}</label>
         <p className="control">
           <input
             disabled={!active}
@@ -197,7 +201,7 @@ export default function LoyaltySettingPage(
           dispatch(setLoyaltyConfig(loyaltyConfig));
         }}
       >
-        Save
+        {t('actions.save')}
       </button>
     </>
   );

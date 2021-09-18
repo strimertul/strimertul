@@ -18,7 +18,11 @@
   "system": {
     "menu-header": "Navigation",
     "loading": "Loading…",
-    "connection-lost": "Connection to server was lost, retrying..."
+    "connection-lost": "Connection to server was lost, retrying...",
+    "pagination": {
+      "page": "Page {{page}}",
+      "gotopage": "Go to page {{page}}"
+    }
   },
   "debug": {
     "read-key": "Read key",
@@ -28,7 +32,14 @@
     "fix-json-btn": "Fix JSON"
   },
   "actions": {
-    "save": "Save"
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "disable": "Disable",
+    "enable": "Enable",
+    "create": "Create",
+    "cancel": "Cancel",
+    "ok": "OK"
   },
   "http": {
     "header": "Web server configuration",
@@ -43,8 +54,90 @@
     "enable": "Enable back-end (stulbe) integration",
     "endpoint": "Stulbe Endpoint",
     "username": "User name",
+    "username-placeholder": "myUserName",
     "authkey": "Authorization key",
-    "authkey-placeholder": "key goes here",
-    "username-placeholder": "myUserName"
+    "authkey-placeholder": "key goes here"
+  },
+  "loyalty": {
+    "goals": {
+      "reached": "Reached!",
+      "contributors": "Contributors:",
+      "no-contributors": "No one has contributed yet :(",
+      "id": "Goal ID",
+      "id-placeholder": "goal_id_here",
+      "id-help": "Choose a simple name that can be referenced by other software. It will be auto-generated from the goal name if you leave it blank.",
+      "err-goalid-dup": "There is already a goal with this ID! Please choose a different one.",
+      "name": "Name",
+      "name-placeholder": "My dream goal",
+      "icon": "Icon",
+      "icon-placeholder": "Image URL",
+      "description": "Description",
+      "description-placeholder": "What's gonna happen when we reach this goal?",
+      "header": "Community goals",
+      "new": "New goal",
+      "search": "Search by name",
+      "modify": "Modify goal"
+    },
+    "points": "Points",
+    "points-fallback": "points",
+    "queue": {
+      "header": "Redemption queue",
+      "search": "Search by username",
+      "reward-name": "Reward name",
+      "request": "Request",
+      "accept": "Accept",
+      "refund": "Refund",
+      "err-not-available": "Redemption queue is not available (loyalty disabled or no one has redeemed anything yet)"
+    },
+    "rewards": {
+      "test": "Test",
+      "cooldown": "Cooldown",
+      "required-info": "Required info",
+      "id": "Reward ID",
+      "id-placeholder": "reward_id_here",
+      "err-rewid-dup": "There is already a reward with this ID! Please choose a different one.",
+      "id-help": "Choose a simple name that can be referenced by other software. It will be auto-generated from the reward name if you leave it blank.",
+      "name": "Name",
+      "name-placeholder": "My awesome reward",
+      "icon": "Icon",
+      "icon-placeholder": "Image URL",
+      "description": "Description",
+      "description-placeholder": "What's so cool about this reward?",
+      "cost": "Cost",
+      "requires-extra-info": "Requires viewer-specified details",
+      "extra-info": "Required info",
+      "extra-info-placeholder": "What extra detail to ask the viewer for",
+      "header": "Loyalty rewards",
+      "new-reward": "New reward",
+      "search": "Search by name",
+      "modify-reward": "Modify reward"
+    },
+    "config": {
+      "header": "Loyalty system configuration",
+      "enable": "Enable loyalty points",
+      "err-twitchbot-disabled": "(Twitch bot must be enabled for this!)",
+      "currency-name": "Currency name",
+      "bonus-points": "Bonus points for active users",
+      "points-every": "every",
+      "give-points": "Give",
+      "point-reward-frequency": "How often to give {{points}}"
+    },
+    "userlist": {
+      "give-points": "Give points to user",
+      "modify-balance": "Modify balance",
+      "give-button": "Give",
+      "userlist-header": "All viewers with {{currency}}",
+      "err-not-available": "Viewer list is not available (loyalty disabled or no one has points)"
+    }
+  },
+  "form-common": {
+    "required": "Required",
+    "date": "Date",
+    "username": "Username",
+    "time": {
+      "seconds": "seconds",
+      "minutes": "minutes",
+      "hours": "hours"
+    }
   }
 }

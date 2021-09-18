@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 export interface PageListProps {
   current: number;
@@ -17,6 +18,7 @@ function PageList({
   onSelectChange,
   onPageChange,
 }: PageListProps): React.ReactElement {
+  const { t } = useTranslation();
   return (
     <nav
       className="pagination is-small"
@@ -52,7 +54,7 @@ function PageList({
           <li>
             <button
               className="button pagination-link"
-              aria-label={`Goto page ${min}`}
+              aria-label={t('system.pagination.gotopage', { page: min })}
               onClick={() => onPageChange(min)}
             >
               {min}
@@ -69,7 +71,9 @@ function PageList({
           <li>
             <button
               className="button pagination-link"
-              aria-label={`Goto page ${current - 1}`}
+              aria-label={t('system.pagination.gotopage', {
+                page: current - 1,
+              })}
               onClick={() => onPageChange(current - 1)}
             >
               {current - 1}
@@ -79,7 +83,9 @@ function PageList({
         <li>
           <button
             className="pagination-link is-current"
-            aria-label={`Page ${current}`}
+            aria-label={t('system.pagination.page', {
+              page: current,
+            })}
             aria-current="page"
           >
             {current}
@@ -89,7 +95,9 @@ function PageList({
           <li>
             <button
               className="button pagination-link"
-              aria-label={`Goto page ${current + 1}`}
+              aria-label={t('system.pagination.gotopage', {
+                page: current + 1,
+              })}
               onClick={() => onPageChange(current + 1)}
             >
               {current + 1}
@@ -105,7 +113,9 @@ function PageList({
           <li>
             <button
               className="button pagination-link"
-              aria-label={`Goto page ${max}`}
+              aria-label={t('system.pagination.gotopage', {
+                page: max,
+              })}
               onClick={() => onPageChange(max)}
             >
               {max}
