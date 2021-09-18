@@ -12,6 +12,12 @@ Smol broadcasting suite, includes:
 
 Platform support is limited to Twitch only for the time being (sorry!)
 
+## Getting started
+
+Download the latest build from here: [github.com/strimertul/strimertul/releases/latest](https://github.com/strimertul/strimertul/releases/latest)
+
+Start strimertul and the Web UI will appear when the app is done loading, you can start configuring and using it from there!
+
 ## Building
 
 You need to build the frontend first!
