@@ -225,11 +225,11 @@ export default function TwitchBotCommandsPage(
     dispatch(
       setCommands({
         ...commands,
+        [oldName]: undefined,
         [newName]: {
           ...commands[oldName],
           ...data,
         },
-        [oldName]: undefined,
       }),
     );
     setShowModifyCommand(null);

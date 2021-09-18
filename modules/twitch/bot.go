@@ -4,8 +4,10 @@ import (
 	"context"
 	"strings"
 	"sync"
+	"text/template"
 	"time"
 
+	"github.com/Masterminds/sprig"
 	irc "github.com/gempir/go-twitch-irc/v2"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
@@ -25,8 +27,10 @@ type Bot struct {
 	banlist     map[string]bool
 	chatHistory []irc.PrivateMessage
 
-	commands       map[string]BotCommand
-	customCommands map[string]BotCustomCommand
+	commands        map[string]BotCommand
+	customCommands  map[string]BotCustomCommand
+	customTemplates map[string]*template.Template
+	customFunctions template.FuncMap
 
 	mu sync.Mutex
 
@@ -39,17 +43,18 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	client := irc.NewClient(config.Username, config.Token)
 
 	bot := &Bot{
-		Client:         client,
-		username:       strings.ToLower(config.Username), // Normalize username
-		config:         config,
-		logger:         api.logger,
-		api:            api,
-		lastMessage:    time.Now(),
-		activeUsers:    make(map[string]bool),
-		banlist:        make(map[string]bool),
-		mu:             sync.Mutex{},
-		commands:       make(map[string]BotCommand),
-		customCommands: make(map[string]BotCustomCommand),
+		Client:          client,
+		username:        strings.ToLower(config.Username), // Normalize username
+		config:          config,
+		logger:          api.logger,
+		api:             api,
+		lastMessage:     time.Now(),
+		activeUsers:     make(map[string]bool),
+		banlist:         make(map[string]bool),
+		mu:              sync.Mutex{},
+		commands:        make(map[string]BotCommand),
+		customCommands:  make(map[string]BotCustomCommand),
+		customTemplates: make(map[string]*template.Template),
 	}
 
 	client.OnPrivateMessage(func(message irc.PrivateMessage) {
@@ -81,7 +86,7 @@ func NewBot(api *Client, config BotConfig) *Bot {
 				continue
 			}
 			if strings.HasPrefix(message.Message, cmd) {
-				go cmdCustom(bot, data, message)
+				go cmdCustom(bot, cmd, data, message)
 				bot.lastMessage = time.Now()
 			}
 		}
@@ -124,7 +129,12 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	bot.Client.Join(config.Channel)
 
 	// Load custom commands
+	bot.setupFunctions()
 	api.db.GetJSON(CustomCommandsKey, &bot.customCommands)
+	err := bot.updateTemplates()
+	if err != nil {
+		bot.logger.WithError(err).Error("failed to load custom commands")
+	}
 	go api.db.Subscribe(context.Background(), bot.updateCommands, CustomCommandsKey)
 
 	return bot
@@ -135,9 +145,28 @@ func (b *Bot) updateCommands(kvs []database.ModifiedKV) error {
 		key := string(kv.Key)
 		switch key {
 		case CustomCommandsKey:
-			b.mu.Lock()
-			err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &b.customCommands)
-			b.mu.Unlock()
+			err := func() error {
+				b.mu.Lock()
+				defer b.mu.Unlock()
+				return jsoniter.ConfigFastest.Unmarshal(kv.Data, &b.customCommands)
+			}()
+			if err != nil {
+				return err
+			}
+			// Recreate templates
+			if err := b.updateTemplates(); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (b *Bot) updateTemplates() error {
+	for cmd, tmpl := range b.customCommands {
+		var err error
+		b.customTemplates[cmd], err = template.New("").Funcs(sprig.TxtFuncMap()).Funcs(b.customFunctions).Parse(tmpl.Response)
+		if err != nil {
 			return err
 		}
 	}

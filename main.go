@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io/fs"
+	"math/rand"
 	"net/http"
 	"runtime"
 	"time"
@@ -68,6 +69,8 @@ func main() {
 	dbdir := flag.String("dbdir", "data", "Path to strimertul database dir")
 	loglevel := flag.String("loglevel", "info", "Logging level (debug, info, warn, error)")
 	flag.Parse()
+
+	rand.Seed(time.Now().UnixNano())
 
 	log.SetLevel(parseLogLevel(*loglevel))
 

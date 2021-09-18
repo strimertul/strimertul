@@ -31,3 +31,5 @@ type BotCustomCommand struct {
 const CustomCommandsKey = "twitch/bot-custom-commands"
 
 const WriteMessageRPC = "twitch/@send-chat-message"
+
+const BotCounterPrefix = "twitch/bot-counters/"

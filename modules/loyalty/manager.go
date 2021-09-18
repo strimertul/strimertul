@@ -110,21 +110,29 @@ func (m *Manager) update(kvs []database.ModifiedKV) error {
 		// Check for config changes/RPC
 		switch key {
 		case ConfigKey:
-			m.mu.Lock()
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.config)
-			m.mu.Unlock()
+			err = func() error {
+				m.mu.Lock()
+				defer m.mu.Unlock()
+				return jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.config)
+			}()
 		case GoalsKey:
-			m.mu.Lock()
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.goals)
-			m.mu.Unlock()
+			err = func() error {
+				m.mu.Lock()
+				defer m.mu.Unlock()
+				return jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.goals)
+			}()
 		case RewardsKey:
-			m.mu.Lock()
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.rewards)
-			m.mu.Unlock()
+			err = func() error {
+				m.mu.Lock()
+				defer m.mu.Unlock()
+				return jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.rewards)
+			}()
 		case QueueKey:
-			m.mu.Lock()
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.queue)
-			m.mu.Unlock()
+			err = func() error {
+				m.mu.Lock()
+				defer m.mu.Unlock()
+				return jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.queue)
+			}()
 		case CreateRedeemRPC:
 			var redeem Redeem
 			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &redeem)
@@ -145,9 +153,11 @@ func (m *Manager) update(kvs []database.ModifiedKV) error {
 				var entry PointsEntry
 				err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &entry)
 				user := kv.Key[len(PointsPrefix):]
-				m.mu.Lock()
-				m.points[user] = entry
-				m.mu.Unlock()
+				func() {
+					m.mu.Lock()
+					defer m.mu.Unlock()
+					m.points[user] = entry
+				}()
 			}
 		}
 		if err != nil {
