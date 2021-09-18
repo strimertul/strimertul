@@ -27,5 +27,4 @@ jobs:
         npm run build
     - name: Build app
       run: |
-        cd ..
         go build .
