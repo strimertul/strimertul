@@ -1,0 +1,27 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup Go environment
+      uses: actions/setup-go@v2.1.4
+    - name: Setup Node.js
+      uses: actions/setup-node@v1
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm install
+        npm run build
+    - name: Build app
+      run: |
+        cd ..
+        go build .
