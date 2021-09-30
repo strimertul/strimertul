@@ -138,6 +138,7 @@ export default function App(): React.ReactElement {
               <LoyaltyGoalsPage path="goals" />
             </LoyaltyPage>
             <StulbePage path="stulbe">
+              <Redirect from="/" to="config" noThrow />
               <StulbeConfigPage path="config" />
               <StulbeWebhooksPage path="webhooks" />
             </StulbePage>
