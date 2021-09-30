@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 /* eslint-disable no-param-reassign */
 import {
   AsyncThunk,
@@ -9,160 +8,12 @@ import {
   PayloadAction,
 } from '@reduxjs/toolkit';
 import KilovoltWS from '@strimertul/kilovolt-client';
-
-// Storage
-const moduleConfigKey = 'stul-meta/modules';
-const httpConfigKey = 'http/config';
-const twitchConfigKey = 'twitch/config';
-const twitchBotConfigKey = 'twitch/bot-config';
-const twitchBotCommandsKey = 'twitch/bot-custom-commands';
-const stulbeConfigKey = 'stulbe/config';
-const loyaltyConfigKey = 'loyalty/config';
-const loyaltyPointsPrefix = 'loyalty/points/';
-const loyaltyRewardsKey = 'loyalty/rewards';
-const loyaltyGoalsKey = 'loyalty/goals';
-const loyaltyRedeemQueueKey = 'loyalty/redeem-queue';
-
-// RPCs
-const loyaltyCreateRedeemKey = 'loyalty/@create-redeem';
-const loyaltyRemoveRedeemKey = 'loyalty/@remove-redeem';
-
-interface ModuleConfig {
-  configured: boolean;
-  kv: boolean;
-  static: boolean;
-  twitch: boolean;
-  stulbe: boolean;
-  loyalty: boolean;
-}
-
-interface HTTPConfig {
-  bind: string;
-  path: string;
-}
-
-interface TwitchConfig {
-  enable_bot: boolean;
-  api_client_id: string;
-  api_client_secret: string;
-}
-
-interface TwitchBotConfig {
-  username: string;
-  oauth: string;
-  channel: string;
-  chat_keys: boolean;
-  chat_history: number;
-}
-
-type AccessLevelType = 'everyone' | 'vip' | 'moderators' | 'streamer';
-
-export interface TwitchBotCustomCommand {
-  description: string;
-  access_level: AccessLevelType;
-  response: string;
-  enabled: boolean;
-}
-
-type TwitchBotCustomCommands = Record<string, TwitchBotCustomCommand>;
-
-interface StulbeConfig {
-  endpoint: string;
-  username: string;
-  auth_key: string;
-}
-
-interface LoyaltyConfig {
-  currency: string;
-  points: {
-    interval: number;
-    amount: number;
-    activity_bonus: number;
-  };
-  banlist: string[];
-}
-
-export interface LoyaltyPointsEntry {
-  points: number;
-}
-
-export type LoyaltyStorage = Record<string, LoyaltyPointsEntry>;
-
-export interface LoyaltyReward {
-  enabled: boolean;
-  id: string;
-  name: string;
-  description: string;
-  image: string;
-  price: number;
-  required_info?: string;
-  cooldown: number;
-}
-
-export interface LoyaltyGoal {
-  enabled: boolean;
-  id: string;
-  name: string;
-  description: string;
-  image: string;
-  total: number;
-  contributed: number;
-  contributors: Record<string, number>;
-}
-
-export interface LoyaltyRedeem {
-  username: string;
-  display_name: string;
-  when: Date;
-  reward: LoyaltyReward;
-  request_text: string;
-}
-
-export interface APIState {
-  client: KilovoltWS;
-  connected: boolean;
-  initialLoadComplete: boolean;
-  loyalty: {
-    users: LoyaltyStorage;
-    rewards: LoyaltyReward[];
-    goals: LoyaltyGoal[];
-    redeemQueue: LoyaltyRedeem[];
-  };
-  twitchBot: {
-    commands: TwitchBotCustomCommands;
-  };
-  moduleConfigs: {
-    moduleConfig: ModuleConfig;
-    httpConfig: HTTPConfig;
-    twitchConfig: TwitchConfig;
-    twitchBotConfig: TwitchBotConfig;
-    stulbeConfig: StulbeConfig;
-    loyaltyConfig: LoyaltyConfig;
-  };
-}
-
-const initialState: APIState = {
-  client: null,
-  connected: false,
-  initialLoadComplete: false,
-  loyalty: {
-    users: null,
-    rewards: null,
-    goals: null,
-    redeemQueue: null,
-  },
-  twitchBot: {
-    commands: null,
-  },
-  moduleConfigs: {
-    moduleConfig: null,
-    httpConfig: null,
-    twitchConfig: null,
-    twitchBotConfig: null,
-    stulbeConfig: null,
-    loyaltyConfig: null,
-  },
-};
+import {
+  APIState,
+  LoyaltyPointsEntry,
+  LoyaltyRedeem,
+  LoyaltyStorage,
+} from './types';
 
 function makeGetterThunk<T>(key: string) {
   return async (_: void, { getState }) => {
@@ -215,6 +66,14 @@ function makeModule<T>(
 // eslint-disable-next-line import/no-mutable-exports, @typescript-eslint/ban-types
 export let setupClientReconnect: AsyncThunk<void, KilovoltWS, {}>;
 
+// Storage
+const loyaltyPointsPrefix = 'loyalty/points/';
+const loyaltyRewardsKey = 'loyalty/rewards';
+
+// RPCs
+const loyaltyCreateRedeemKey = 'loyalty/@create-redeem';
+const loyaltyRemoveRedeemKey = 'loyalty/@remove-redeem';
+
 export const createWSClient = createAsyncThunk(
   'api/createClient',
   async (address: string, { dispatch }) => {
@@ -232,7 +91,9 @@ export const getUserPoints = createAsyncThunk(
     const keys = await api.client.getKeysByPrefix(loyaltyPointsPrefix);
     const userpoints: LoyaltyStorage = {};
     Object.entries(keys).forEach(([k, v]) => {
-      userpoints[k.substr(loyaltyPointsPrefix.length)] = JSON.parse(v);
+      userpoints[k.substr(loyaltyPointsPrefix.length)] = JSON.parse(
+        v as string,
+      );
     });
     return userpoints;
   },
@@ -258,71 +119,71 @@ export const setUserPoints = createAsyncThunk(
 );
 
 export const modules = {
-  moduleConfig: makeModule<ModuleConfig>(
-    moduleConfigKey,
+  moduleConfig: makeModule(
+    'stul-meta/modules',
     (state) => state.moduleConfigs?.moduleConfig,
     (state, { payload }) => {
       state.moduleConfigs.moduleConfig = payload;
     },
   ),
-  httpConfig: makeModule<HTTPConfig>(
-    httpConfigKey,
+  httpConfig: makeModule(
+    'http/config',
     (state) => state.moduleConfigs?.httpConfig,
     (state, { payload }) => {
       state.moduleConfigs.httpConfig = payload;
     },
   ),
-  twitchConfig: makeModule<TwitchConfig>(
-    twitchConfigKey,
+  twitchConfig: makeModule(
+    'twitch/config',
     (state) => state.moduleConfigs?.twitchConfig,
     (state, { payload }) => {
       state.moduleConfigs.twitchConfig = payload;
     },
   ),
-  twitchBotConfig: makeModule<TwitchBotConfig>(
-    twitchBotConfigKey,
+  twitchBotConfig: makeModule(
+    'twitch/bot-config',
     (state) => state.moduleConfigs?.twitchBotConfig,
     (state, { payload }) => {
       state.moduleConfigs.twitchBotConfig = payload;
     },
   ),
-  twitchBotCommands: makeModule<TwitchBotCustomCommands>(
-    twitchBotCommandsKey,
+  twitchBotCommands: makeModule(
+    'twitch/bot-custom-commands',
     (state) => state.twitchBot?.commands,
     (state, { payload }) => {
       state.twitchBot.commands = payload;
     },
   ),
-  stulbeConfig: makeModule<StulbeConfig>(
-    stulbeConfigKey,
+  stulbeConfig: makeModule(
+    'stulbe/config',
     (state) => state.moduleConfigs?.stulbeConfig,
     (state, { payload }) => {
       state.moduleConfigs.stulbeConfig = payload;
     },
   ),
-  loyaltyConfig: makeModule<LoyaltyConfig>(
-    loyaltyConfigKey,
+  loyaltyConfig: makeModule(
+    'loyalty/config',
     (state) => state.moduleConfigs?.loyaltyConfig,
     (state, { payload }) => {
       state.moduleConfigs.loyaltyConfig = payload;
     },
   ),
-  loyaltyRewards: makeModule<LoyaltyReward[]>(
+  loyaltyRewards: makeModule(
     loyaltyRewardsKey,
     (state) => state.loyalty.rewards,
     (state, { payload }) => {
       state.loyalty.rewards = payload;
     },
   ),
-  loyaltyGoals: makeModule<LoyaltyGoal[]>(
-    loyaltyGoalsKey,
+  loyaltyGoals: makeModule(
+    'loyalty/goals',
     (state) => state.loyalty.goals,
     (state, { payload }) => {
       state.loyalty.goals = payload;
     },
   ),
-  loyaltyRedeemQueue: makeModule<LoyaltyRedeem[]>(
-    loyaltyRedeemQueueKey,
+  loyaltyRedeemQueue: makeModule(
+    'loyalty/redeem-queue',
     (state) => state.loyalty.redeemQueue,
     (state, { payload }) => {
       state.loyalty.redeemQueue = payload;
@@ -355,6 +216,29 @@ const moduleChangeReducers = Object.fromEntries(
   `${keyof typeof modules}Changed`,
   (state: APIState, action: PayloadAction<unknown>) => never
 >;
+
+const initialState: APIState = {
+  client: null,
+  connected: false,
+  initialLoadComplete: false,
+  loyalty: {
+    users: null,
+    rewards: null,
+    goals: null,
+    redeemQueue: null,
+  },
+  twitchBot: {
+    commands: null,
+  },
+  moduleConfigs: {
+    moduleConfig: null,
+    httpConfig: null,
+    twitchConfig: null,
+    twitchBotConfig: null,
+    stulbeConfig: null,
+    loyaltyConfig: null,
+  },
+};
 
 const apiReducer = createSlice({
   name: 'api',
