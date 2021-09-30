@@ -14,10 +14,10 @@ require (
 	github.com/json-iterator/go v1.1.11
 	github.com/mattn/go-colorable v0.1.8
 	github.com/mitchellh/copystructure v1.2.0 // indirect
-	github.com/nicklaw5/helix v1.15.0
+	github.com/nicklaw5/helix v1.25.0
 	github.com/pkg/browser v0.0.0-20210115035449-ce105d075bb4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/strimertul/kilovolt/v4 v4.0.1
 	github.com/strimertul/stulbe v0.4.3
-	github.com/strimertul/stulbe-client-go v0.2.0
+	github.com/strimertul/stulbe-client-go v0.4.0
 )

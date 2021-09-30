@@ -1,25 +1,37 @@
 import { RouteComponentProps } from '@reach/router';
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
-import { useModule } from '../../lib/react-utils';
-import apiReducer, { modules } from '../../store/api/reducer';
+import { useModule } from '../../../lib/react-utils';
+import Stulbe from '../../../lib/stulbe-lib';
+import apiReducer, { modules } from '../../../store/api/reducer';
 
-export default function StulbePage(
+export default function StulbeConfigPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   params: RouteComponentProps<unknown>,
 ): React.ReactElement {
   const { t } = useTranslation();
   const [moduleConfig, setModuleConfig] = useModule(modules.moduleConfig);
   const [stulbeConfig, setStulbeConfig] = useModule(modules.stulbeConfig);
+  const [testResult, setTestResult] = useState<string>(null);
   const dispatch = useDispatch();
 
   const busy = moduleConfig === null;
   const active = moduleConfig?.stulbe ?? false;
 
+  const test = async () => {
+    try {
+      const client = new Stulbe(stulbeConfig.endpoint);
+      await client.auth(stulbeConfig.username, stulbeConfig.auth_key);
+      setTestResult('Connection/Authentication were successful!');
+    } catch (e) {
+      setTestResult(e.message);
+    }
+  };
+
   return (
     <>
-      <h1 className="title is-4">{t('backend.header')}</h1>
+      <h1 className="title is-4">{t('backend.config.header')}</h1>
       <div className="field">
         <label className="checkbox">
           <input
@@ -35,11 +47,11 @@ export default function StulbePage(
               )
             }
           />{' '}
-          {t('backend.enable')}
+          {t('backend.config.enable')}
         </label>
       </div>
       <div className="field">
-        <label className="label">{t('backend.endpoint')}</label>
+        <label className="label">{t('backend.config.endpoint')}</label>
         <p className="control">
           <input
             className="input"
@@ -59,12 +71,12 @@ export default function StulbePage(
         </p>
       </div>
       <div className="field">
-        <label className="label">{t('backend.username')}</label>
+        <label className="label">{t('backend.config.username')}</label>
         <p className="control">
           <input
             className="input"
             type="text"
-            placeholder={t('backend.username-placeholder')}
+            placeholder={t('backend.config.username-placeholder')}
             disabled={busy || !active}
             value={stulbeConfig?.username ?? ''}
             onChange={(ev) =>
@@ -79,12 +91,12 @@ export default function StulbePage(
         </p>
       </div>
       <div className="field">
-        <label className="label">{t('backend.authkey')}</label>
+        <label className="label">{t('backend.config.authkey')}</label>
         <p className="control">
           <input
             className="input"
             type="password"
-            placeholder={t('backend.authkey-placeholder')}
+            placeholder={t('backend.config.authkey-placeholder')}
             disabled={busy || !active}
             value={stulbeConfig?.auth_key ?? ''}
             onChange={(ev) =>
@@ -105,8 +117,16 @@ export default function StulbePage(
           dispatch(setStulbeConfig(stulbeConfig));
         }}
       >
-        Save
+        {t('actions.save')}
       </button>
+      <button className="button" onClick={test}>
+        {t('actions.test')}
+      </button>
+      {testResult ? (
+        <div className="notification" style={{ marginTop: '1rem' }}>
+          {testResult}
+        </div>
+      ) : null}
     </>
   );
 }

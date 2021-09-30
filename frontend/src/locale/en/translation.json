@@ -13,7 +13,9 @@
     "/loyalty/queue": "Redempions",
     "/loyalty/rewards": "Rewards",
     "/loyalty/goals": "Goals",
-    "/stulbe": "Back-end integration"
+    "/stulbe": "Back-end integration",
+    "/stulbe/config": "Back-end configuration",
+    "/stulbe/webhooks": "Webhooks (for alerts)"
   },
   "system": {
     "menu-header": "Navigation",
@@ -39,7 +41,8 @@
     "enable": "Enable",
     "create": "Create",
     "cancel": "Cancel",
-    "ok": "OK"
+    "ok": "OK",
+    "test": "Test"
   },
   "http": {
     "header": "Web server configuration",
@@ -50,13 +53,33 @@
     "static-root-path": "Static content root path"
   },
   "backend": {
-    "header": "Back-end integration settings",
-    "enable": "Enable back-end (stulbe) integration",
-    "endpoint": "Stulbe Endpoint",
-    "username": "User name",
-    "username-placeholder": "myUserName",
-    "authkey": "Authorization key",
-    "authkey-placeholder": "key goes here"
+    "config": {
+      "header": "Back-end integration settings",
+      "enable": "Enable back-end (stulbe) integration",
+      "endpoint": "Stulbe Endpoint",
+      "username": "User name",
+      "username-placeholder": "myUserName",
+      "authkey": "Authorization key",
+      "authkey-placeholder": "key goes here",
+      "authenticated": "Authenticated as"
+    },
+    "webhook": {
+      "header": "Webhook subscriptions",
+      "err-not-enabled": "Back-end integration must be enabled for this to work",
+      "loading": "Querying user data from backend…",
+      "err-no-user": "No twitch user is currently associated (and therefore webhooks are disabled!)",
+      "current-status": "Current status:",
+      "auth-message": "Click the following button to authenticate the back-end with your Twitch account:",
+      "auth-button": "Authenticate with Twitch",
+      "fake-header": "Simulate events",
+      "sim-channel.update": "Channel update",
+      "sim-channel.follow": "New follow",
+      "sim-channel.subscribe": "New sub",
+      "sim-channel.subscription.gift": "Gift sub",
+      "sim-channel.subscription.message": "Re-sub with message",
+      "sim-channel.cheer": "Cheer",
+      "sim-channel.raid": "Raid"
+    }
   },
   "loyalty": {
     "goals": {
@@ -90,7 +113,6 @@
       "err-not-available": "Redemption queue is not available (loyalty disabled or no one has redeemed anything yet)"
     },
     "rewards": {
-      "test": "Test",
       "cooldown": "Cooldown",
       "required-info": "Required info",
       "id": "Reward ID",

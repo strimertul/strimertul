@@ -2,6 +2,6 @@
 *.db
 *.db.lock
 rice-box.go
-data/
+/data/
 .vscode
 strimertul_*

@@ -89,7 +89,7 @@ function RewardItem({
           ) : null}
           <div style={{ marginTop: '1rem' }}>
             <a className="button is-small" onClick={onTest}>
-              {t('loyalty.rewards.test')}
+              {t('actions.test')}
             </a>{' '}
             <a className="button is-small" onClick={onToggleState}>
               {item.enabled ? 'Disable' : 'Enable'}

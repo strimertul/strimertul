@@ -8,7 +8,7 @@ import { createWSClient } from '../store/api/reducer';
 import Home from './pages/Home';
 import HTTPPage from './pages/HTTP';
 import TwitchPage from './pages/twitch/Main';
-import StulbePage from './pages/Stulbe';
+import StulbePage from './pages/stulbe/Main';
 import LoyaltyPage from './pages/loyalty/Main';
 import DebugPage from './pages/Debug';
 import LoyaltySettingPage from './pages/loyalty/Settings';
@@ -20,6 +20,8 @@ import TwitchSettingsPage from './pages/twitch/APISettings';
 import TwitchBotSettingsPage from './pages/twitch/BotSettings';
 import TwitchBotCommandsPage from './pages/twitch/Commands';
 import TwitchBotModulesPage from './pages/twitch/Modules';
+import StulbeConfigPage from './pages/stulbe/Config';
+import StulbeWebhooksPage from './pages/stulbe/Webhook';
 
 interface RouteItem {
   name?: string;
@@ -49,7 +51,10 @@ const menu: RouteItem[] = [
       { route: '/loyalty/goals' },
     ],
   },
-  { route: '/stulbe' },
+  {
+    route: '/stulbe',
+    subroutes: [{ route: '/stulbe/config' }, { route: '/stulbe/webhooks' }],
+  },
 ];
 
 export default function App(): React.ReactElement {
@@ -132,7 +137,10 @@ export default function App(): React.ReactElement {
               <LoyaltyRewardsPage path="rewards" />
               <LoyaltyGoalsPage path="goals" />
             </LoyaltyPage>
-            <StulbePage path="stulbe" />
+            <StulbePage path="stulbe">
+              <StulbeConfigPage path="config" />
+              <StulbeWebhooksPage path="webhooks" />
+            </StulbePage>
             <DebugPage path="debug" />
           </Router>
         </div>
