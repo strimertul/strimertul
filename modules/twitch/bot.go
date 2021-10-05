@@ -66,6 +66,8 @@ func NewBot(api *Client, config BotConfig) *Bot {
 		bot.mu.Lock()
 		bot.activeUsers[message.User.Name] = true
 
+		lcmessage := strings.ToLower(message.Message)
+
 		// Check if it's a command
 		if strings.HasPrefix(message.Message, "!") {
 			// Run through supported commands
@@ -73,7 +75,7 @@ func NewBot(api *Client, config BotConfig) *Bot {
 				if !data.Enabled {
 					continue
 				}
-				if strings.HasPrefix(message.Message, cmd) {
+				if strings.HasPrefix(lcmessage, cmd) {
 					go data.Handler(bot, message)
 					bot.lastMessage = time.Now()
 				}
@@ -85,7 +87,8 @@ func NewBot(api *Client, config BotConfig) *Bot {
 			if !data.Enabled {
 				continue
 			}
-			if strings.HasPrefix(message.Message, cmd) {
+			lc := strings.ToLower(cmd)
+			if strings.HasPrefix(lcmessage, lc) {
 				go cmdCustom(bot, cmd, data, message)
 				bot.lastMessage = time.Now()
 			}
