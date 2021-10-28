@@ -144,7 +144,6 @@ label {
 }
 .tabs.is-boxed li a.is-active {
   border-color: #5e6d6f;
-      border-bottom-color: rgb(94, 109, 111);
   border-bottom-color: transparent !important;
 }
 .tabs li a.is-active {

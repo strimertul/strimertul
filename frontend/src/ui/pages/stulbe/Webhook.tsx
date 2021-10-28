@@ -147,6 +147,7 @@ export default function StulbeWebhooksPage(
             <img
               style={{ width: '20px', borderRadius: '5px' }}
               src={userStatus.profile_image_url}
+              alt="Profile picture"
             />
             <b>{userStatus.display_name}</b>
           </div>

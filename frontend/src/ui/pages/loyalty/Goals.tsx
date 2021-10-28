@@ -4,8 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { useModule } from '../../../lib/react-utils';
 import { RootState } from '../../../store';
-import { LoyaltyGoal, modules } from '../../../store/api/reducer';
+import { modules } from '../../../store/api/reducer';
 import Modal from '../../components/Modal';
+import {LoyaltyGoal} from "../../../store/api/types";
 
 interface GoalItemProps {
   item: LoyaltyGoal;
@@ -252,7 +253,7 @@ function GoalModal({
                 placeholder={t('loyalty.goals.description-placeholder')}
                 onChange={(ev) => setDescription(ev.target.value)}
                 value={description}
-              ></textarea>
+              />
             </p>
           </div>
         </div>

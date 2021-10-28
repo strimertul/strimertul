@@ -7,10 +7,9 @@ import {
 } from '@strimertul/kilovolt-client';
 import { RootState } from '../store';
 import apiReducer, {
-  APIState,
   getUserPoints,
-  LoyaltyStorage,
 } from '../store/api/reducer';
+import {APIState, LoyaltyStorage} from "../store/api/types";
 
 export function useModule<T>({
   key,

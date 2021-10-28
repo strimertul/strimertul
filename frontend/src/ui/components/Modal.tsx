@@ -35,7 +35,7 @@ function Modal({
       <div
         className="modal-background"
         onClick={bgDismiss ? () => onClose() : null}
-      ></div>
+      />
       <div className="modal-card">
         <header className="modal-card-head">
           <p className="modal-card-title">{title}</p>
@@ -44,7 +44,7 @@ function Modal({
               className="delete"
               aria-label="close"
               onClick={() => onClose()}
-            ></button>
+            />
           ) : null}
         </header>
         <section className="modal-card-body">{children}</section>

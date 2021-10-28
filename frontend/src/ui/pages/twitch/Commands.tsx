@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { useModule } from '../../../lib/react-utils';
-import { modules, TwitchBotCustomCommand } from '../../../store/api/reducer';
+import { modules } from '../../../store/api/reducer';
 import Modal from '../../components/Modal';
+import {TwitchBotCustomCommand} from "../../../store/api/types";
 
 interface CommandItemProps {
   name: string;
@@ -151,7 +152,7 @@ function CommandModal({
                 rows={1}
                 onChange={(ev) => setDescription(ev.target.value)}
                 value={description}
-              ></textarea>
+              />
             </p>
           </div>
         </div>
@@ -168,7 +169,7 @@ function CommandModal({
                 placeholder={t('twitch.commands.response-help')}
                 onChange={(ev) => setResponse(ev.target.value)}
                 value={response}
-              ></textarea>
+              />
             </p>
           </div>
         </div>

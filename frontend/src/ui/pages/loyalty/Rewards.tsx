@@ -7,11 +7,11 @@ import { useModule } from '../../../lib/react-utils';
 import { RootState } from '../../../store';
 import {
   createRedeem,
-  LoyaltyReward,
   modules,
 } from '../../../store/api/reducer';
 import Modal from '../../components/Modal';
 import { getInterval } from '../../../lib/time-utils';
+import {LoyaltyReward} from "../../../store/api/types";
 
 interface RewardItemProps {
   item: LoyaltyReward;
@@ -262,7 +262,7 @@ function RewardModal({
                 placeholder={t('loyalty.rewards.description-placeholder')}
                 onChange={(ev) => setDescription(ev.target.value)}
                 value={description}
-              ></textarea>
+              />
             </p>
           </div>
         </div>
@@ -289,7 +289,7 @@ function RewardModal({
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal"></div>
+        <div className="field-label is-normal" />
         <div className="field-body">
           <div className="field">
             <label className="checkbox">

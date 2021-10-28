@@ -4,12 +4,12 @@ import { RouteComponentProps } from '@reach/router';
 import { useTranslation } from 'react-i18next';
 import { useModule, useUserPoints } from '../../../lib/react-utils';
 import {
-  LoyaltyRedeem,
   modules,
   removeRedeem,
   setUserPoints,
 } from '../../../store/api/reducer';
 import PageList from '../../components/PageList';
+import {LoyaltyRedeem} from "../../../store/api/types";
 
 interface SortingOrder {
   key: 'user' | 'when';
@@ -154,7 +154,7 @@ export default function LoyaltyRedeemQueuePage(
                 </th>
                 <th>{t('loyalty.queue.reward-name')}</th>
                 <th>{t('loyalty.queue.request')}</th>
-                <th></th>
+                <th />
               </tr>
             </thead>
 

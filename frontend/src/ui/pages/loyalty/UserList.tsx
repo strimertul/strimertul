@@ -6,11 +6,11 @@ import PageList from '../../components/PageList';
 import { useModule, useUserPoints } from '../../../lib/react-utils';
 import { RootState } from '../../../store';
 import {
-  LoyaltyPointsEntry,
   modules,
   setUserPoints,
 } from '../../../store/api/reducer';
 import Modal from '../../components/Modal';
+import {LoyaltyPointsEntry} from "../../../store/api/types";
 
 interface UserData {
   user: string;
@@ -266,7 +266,7 @@ export default function LoyaltyUserListPage(
                     ) : null}
                   </span>
                 </th>
-                <th style={{ width: '10%' }}></th>
+                <th style={{ width: '10%' }} />
               </tr>
             </thead>
 
