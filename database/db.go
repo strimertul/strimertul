@@ -40,8 +40,8 @@ func (db *DB) Client() *badger.DB {
 	return db.client
 }
 
-func (db *DB) Close() {
-	db.client.Close()
+func (db *DB) Close() error {
+	return db.client.Close()
 }
 
 func (db *DB) GetKey(key string) ([]byte, error) {

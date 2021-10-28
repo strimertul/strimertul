@@ -145,8 +145,7 @@ func NewBot(api *Client, config BotConfig) *Bot {
 
 func (b *Bot) updateCommands(kvs []database.ModifiedKV) error {
 	for _, kv := range kvs {
-		key := string(kv.Key)
-		switch key {
+		switch kv.Key {
 		case CustomCommandsKey:
 			err := func() error {
 				b.mu.Lock()

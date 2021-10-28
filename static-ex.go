@@ -28,11 +28,9 @@ func FileServerWithDefault(root http.FileSystem) http.Handler {
 				// Revert to homepage
 				r.URL.Path = "/"
 			}
-		}
-
-		// close if successfully opened
-		if err == nil {
-			f.Close()
+		} else {
+			// close if successfully opened
+			_ = f.Close()
 		}
 
 		// default serve

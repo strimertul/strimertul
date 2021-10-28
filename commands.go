@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	ErrPAlreadyBet      error = errors.New("you already have a bet")
-	ErrPNoPrediction    error = errors.New("there's nothing to bet for")
-	ErrPBettingTimeOver error = errors.New("betting time is over")
+	ErrPAlreadyBet      = errors.New("you already have a bet")
+	ErrPNoPrediction    = errors.New("there's nothing to bet for")
+	ErrPBettingTimeOver = errors.New("betting time is over")
 )
 
 type PredictionBet struct {

@@ -31,7 +31,7 @@ type BotCommand struct {
 }
 
 func cmdCustom(bot *Bot, cmd string, data BotCustomCommand, message irc.PrivateMessage) {
-	// Add future logic (like counters etc) here, for now it's just fixed messages
+	// Add future logic (like counters etc.) here, for now it's just fixed messages
 	var buf bytes.Buffer
 	err := bot.customTemplates[cmd].Execute(&buf, message)
 	if err != nil {
@@ -64,12 +64,16 @@ func (b *Bot) setupFunctions() {
 			return info.Data.Channels[0].GameName
 		},
 		"count": func(name string) int {
+			counterKey := BotCounterPrefix + name
 			counter := 0
-			if byt, err := b.api.db.GetKey(BotCounterPrefix + name); err == nil {
+			if byt, err := b.api.db.GetKey(counterKey); err == nil {
 				counter, _ = strconv.Atoi(string(byt))
 			}
 			counter += 1
-			b.api.db.PutKey(BotCounterPrefix+name, []byte(strconv.Itoa(counter)))
+			err := b.api.db.PutKey(counterKey, []byte(strconv.Itoa(counter)))
+			if err != nil {
+				b.logger.WithError(err).WithField("key", counterKey).Error("error saving key")
+			}
 			return counter
 		},
 	}

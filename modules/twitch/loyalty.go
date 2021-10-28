@@ -99,7 +99,10 @@ func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
 
 					// If changes were made, save the pool!
 					if len(users) > 0 {
-						b.Loyalty.GivePoints(pointsToGive)
+						err := b.Loyalty.GivePoints(pointsToGive)
+						if err != nil {
+							b.logger.WithError(err).Error("error giving points to user")
+						}
 					}
 				}
 			}()

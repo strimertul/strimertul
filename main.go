@@ -205,7 +205,11 @@ func main() {
 
 	go func() {
 		time.Sleep(time.Second) // THIS IS STUPID
-		browser.OpenURL(fmt.Sprintf("http://%s/ui", httpConfig.Bind))
+		dashboardURL := fmt.Sprintf("http://%s/ui", httpConfig.Bind)
+		err := browser.OpenURL(dashboardURL)
+		if err != nil {
+			log.WithError(err).Warnf("could not open browser, dashboard URL available at: %s", dashboardURL)
+		}
 	}()
 
 	// Start HTTP server

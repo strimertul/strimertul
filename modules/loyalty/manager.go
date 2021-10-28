@@ -105,10 +105,9 @@ func NewManager(db *database.DB, log logrus.FieldLogger) (*Manager, error) {
 func (m *Manager) update(kvs []database.ModifiedKV) error {
 	for _, kv := range kvs {
 		var err error
-		key := string(kv.Key)
 
 		// Check for config changes/RPC
-		switch key {
+		switch kv.Key {
 		case ConfigKey:
 			err = func() error {
 				m.mu.Lock()
@@ -162,11 +161,11 @@ func (m *Manager) update(kvs []database.ModifiedKV) error {
 		}
 		if err != nil {
 			m.logger.WithFields(logrus.Fields{
-				"key":   string(kv.Key),
+				"key":   kv.Key,
 				"error": err.Error(),
 			}).Error("subscribe error: invalid JSON received on key")
 		} else {
-			m.logger.WithField("key", string(kv.Key)).Debug("updated key")
+			m.logger.WithField("key", kv.Key).Debug("updated key")
 		}
 	}
 	return nil

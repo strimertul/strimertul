@@ -1,13 +1,13 @@
 # Strimertül
 
-Smol broadcasting suite, includes:
+Small broadcasting suite, includes:
 
 - Extremely simple/fast disk-backed KV over websocket ([Kilovolt](https://github.com/strimertul/kilovolt)) for interacting with web-based overlays
-  - oh and it has pub/sub
+  - and it has pub/sub!
 - Static file server for said overlays
 - Loyalty system that tracks viewers and allows them to redeem rewards and contribute to community goals
 - Twitch IRC bot to tie everything together
-- (Incomplete) Backend integration ([stulbe](https://github.com/strimertul/stulbe))
+- Backend integration ([stulbe](https://github.com/strimertul/stulbe))
 
 Platform support is limited to Twitch only for the time being (sorry!)
 
