@@ -52,6 +52,7 @@ const eventSubTestFn = {
 };
 
 export default function StulbeWebhooksPage(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: RouteComponentProps<unknown>,
 ): React.ReactElement {
   const { t } = useTranslation();

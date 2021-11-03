@@ -5,13 +5,10 @@ import prettyTime from 'pretty-ms';
 import { useTranslation } from 'react-i18next';
 import { useModule } from '../../../lib/react-utils';
 import { RootState } from '../../../store';
-import {
-  createRedeem,
-  modules,
-} from '../../../store/api/reducer';
+import { createRedeem, modules } from '../../../store/api/reducer';
 import Modal from '../../components/Modal';
 import { getInterval } from '../../../lib/time-utils';
-import {LoyaltyReward} from "../../../store/api/types";
+import { LoyaltyReward } from '../../../store/api/types';
 
 interface RewardItemProps {
   item: LoyaltyReward;
@@ -92,7 +89,7 @@ function RewardItem({
               {t('actions.test')}
             </a>{' '}
             <a className="button is-small" onClick={onToggleState}>
-              {item.enabled ? 'Disable' : 'Enable'}
+              {t(item.enabled ? 'actions.disable' : 'actions.enable')}
             </a>{' '}
             <a className="button is-small" onClick={onEdit}>
               {t('actions.edit')}

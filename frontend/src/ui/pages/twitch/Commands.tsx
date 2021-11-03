@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { useModule } from '../../../lib/react-utils';
 import { modules } from '../../../store/api/reducer';
 import Modal from '../../components/Modal';
-import {TwitchBotCustomCommand} from "../../../store/api/types";
+import { TwitchBotCustomCommand } from '../../../store/api/types';
 
 interface CommandItemProps {
   name: string;
@@ -207,6 +207,7 @@ function CommandModal({
 }
 
 export default function TwitchBotCommandsPage(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: RouteComponentProps<unknown>,
 ): React.ReactElement {
   const [commands, setCommands] = useModule(modules.twitchBotCommands);

@@ -23,7 +23,7 @@ export default function StulbeConfigPage(
     try {
       const client = new Stulbe(stulbeConfig.endpoint);
       await client.auth(stulbeConfig.username, stulbeConfig.auth_key);
-      setTestResult('Connection/Authentication were successful!');
+      setTestResult(t('backend.config.auth-success-message'));
     } catch (e) {
       setTestResult(e.message);
     }
@@ -91,12 +91,12 @@ export default function StulbeConfigPage(
         </p>
       </div>
       <div className="field">
-        <label className="label">{t('backend.config.authkey')}</label>
+        <label className="label">{t('backend.config.auth-key')}</label>
         <p className="control">
           <input
             className="input"
             type="password"
-            placeholder={t('backend.config.authkey-placeholder')}
+            placeholder={t('backend.config.auth-key-placeholder')}
             disabled={busy || !active}
             value={stulbeConfig?.auth_key ?? ''}
             onChange={(ev) =>

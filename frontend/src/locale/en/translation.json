@@ -59,9 +59,10 @@
       "endpoint": "Stulbe Endpoint",
       "username": "User name",
       "username-placeholder": "myUserName",
-      "authkey": "Authorization key",
-      "authkey-placeholder": "key goes here",
-      "authenticated": "Authenticated as"
+      "auth-key": "Authorization key",
+      "auth-key-placeholder": "key goes here",
+      "authenticated": "Authenticated as",
+      "auth-success-message": "Connection/Authentication was successful!"
     },
     "webhook": {
       "header": "Webhook subscriptions",
