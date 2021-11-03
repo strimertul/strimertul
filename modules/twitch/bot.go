@@ -36,6 +36,7 @@ type Bot struct {
 
 	// Module specific vars
 	Loyalty *loyalty.Manager
+	Timers  *BotTimerModule
 }
 
 func NewBot(api *Client, config BotConfig) *Bot {
@@ -105,6 +106,10 @@ func NewBot(api *Client, config BotConfig) *Bot {
 				bot.api.db.PutJSON(ChatHistoryKey, bot.chatHistory)
 			}
 		}
+
+		if bot.Timers != nil {
+			go bot.Timers.OnMessage(message)
+		}
 	})
 
 	client.OnUserJoinMessage(func(message irc.UserJoinMessage) {
@@ -131,10 +136,16 @@ func NewBot(api *Client, config BotConfig) *Bot {
 
 	bot.Client.Join(config.Channel)
 
+	// Load modules
+	err := bot.LoadModules()
+	if err != nil {
+		bot.logger.WithError(err).Error("failed to load modules")
+	}
+
 	// Load custom commands
 	bot.setupFunctions()
 	api.db.GetJSON(CustomCommandsKey, &bot.customCommands)
-	err := bot.updateTemplates()
+	err = bot.updateTemplates()
 	if err != nil {
 		bot.logger.WithError(err).Error("failed to load custom commands")
 	}
@@ -177,4 +188,8 @@ func (b *Bot) updateTemplates() error {
 
 func (b *Bot) Connect() error {
 	return b.Client.Connect()
+}
+
+func (b *Bot) WriteMessage(message string) {
+	b.Client.Say(b.config.Channel, message)
 }
