@@ -1,15 +1,14 @@
 import { ActionCreatorWithOptionalPayload, AsyncThunk } from '@reduxjs/toolkit';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   KilovoltMessage,
   SubscriptionHandler,
 } from '@strimertul/kilovolt-client';
 import { RootState } from '../store';
-import apiReducer, {
-  getUserPoints,
-} from '../store/api/reducer';
-import {APIState, LoyaltyStorage} from "../store/api/types";
+import apiReducer, { getUserPoints } from '../store/api/reducer';
+import { APIState, LoyaltyStorage } from '../store/api/types';
+import { getInterval } from './time-utils';
 
 export function useModule<T>({
   key,
@@ -63,7 +62,30 @@ export function useUserPoints(): LoyaltyStorage {
   return data;
 }
 
+export function useInterval(
+  initialValue: number,
+): [
+  number,
+  number,
+  number,
+  (newNum: number) => void,
+  (newMult: number) => void,
+] {
+  const [value, setValue] = useState(initialValue);
+
+  const [numInitialValue, multInitialValue] = getInterval(value);
+  const [num, setNum] = useState(numInitialValue);
+  const [mult, setMult] = useState(multInitialValue);
+
+  useEffect(() => {
+    setValue(num * mult);
+  }, [num, mult]);
+
+  return [value, num, mult, setNum, setMult];
+}
+
 export default {
   useModule,
   useUserPoints,
+  useInterval,
 };
