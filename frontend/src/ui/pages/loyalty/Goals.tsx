@@ -6,7 +6,8 @@ import { useModule } from '../../../lib/react-utils';
 import { RootState } from '../../../store';
 import { modules } from '../../../store/api/reducer';
 import Modal from '../../components/Modal';
-import {LoyaltyGoal} from "../../../store/api/types";
+import { LoyaltyGoal } from '../../../store/api/types';
+import Field from '../../components/Field';
 
 interface GoalItemProps {
   item: LoyaltyGoal;
@@ -179,10 +180,7 @@ function GoalModal({
       onConfirm={() => confirm()}
       onClose={() => onClose()}
     >
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('loyalty.goals.id')}</label>
-        </div>
+      <Field name={t('loyalty.goals.id')} horizontal>
         <div className="field-body">
           <div className="field">
             <p className="control">
@@ -203,11 +201,8 @@ function GoalModal({
             )}
           </div>
         </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('loyalty.goals.name')}</label>
-        </div>
+      </Field>
+      <Field name={t('loyalty.goals.name')} horizontal>
         <div className="field-body">
           <div className="field">
             <p className="control">
@@ -222,11 +217,8 @@ function GoalModal({
             </p>
           </div>
         </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('loyalty.goals.icon')}</label>
-        </div>
+      </Field>
+      <Field name={t('loyalty.goals.icon')} horizontal>
         <div className="field-body">
           <div className="field">
             <p className="control">
@@ -240,11 +232,8 @@ function GoalModal({
             </p>
           </div>
         </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('loyalty.goals.description')}</label>
-        </div>
+      </Field>
+      <Field name={t('loyalty.goals.description')} horizontal>
         <div className="field-body">
           <div className="field">
             <p className="control">
@@ -257,11 +246,8 @@ function GoalModal({
             </p>
           </div>
         </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('form-common.required')}</label>
-        </div>
+      </Field>
+      <Field name={t('form-common.required')} horizontal>
         <div className="field-body">
           <div className="field has-addons">
             <p className="control">
@@ -278,7 +264,7 @@ function GoalModal({
             </p>
           </div>
         </div>
-      </div>
+      </Field>
     </Modal>
   );
 }

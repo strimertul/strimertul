@@ -8,7 +8,7 @@ export interface IntervalProps {
   onChange?: (value: number) => void;
 }
 
-function Field({ active, value, onChange }: IntervalProps) {
+function Interval({ active, value, onChange }: IntervalProps) {
   const { t } = useTranslation();
   const [valueNum, num, mult, setNum, setMult] = useInterval(value);
   useEffect(() => {
@@ -56,4 +56,4 @@ function Field({ active, value, onChange }: IntervalProps) {
   );
 }
 
-export default React.memo(Field);
+export default React.memo(Interval);

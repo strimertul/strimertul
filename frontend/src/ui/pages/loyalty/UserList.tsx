@@ -5,12 +5,10 @@ import { useTranslation } from 'react-i18next';
 import PageList from '../../components/PageList';
 import { useModule, useUserPoints } from '../../../lib/react-utils';
 import { RootState } from '../../../store';
-import {
-  modules,
-  setUserPoints,
-} from '../../../store/api/reducer';
+import { modules, setUserPoints } from '../../../store/api/reducer';
 import Modal from '../../components/Modal';
-import {LoyaltyPointsEntry} from "../../../store/api/types";
+import { LoyaltyPointsEntry } from '../../../store/api/types';
+import Field from '../../components/Field';
 
 interface UserData {
   user: string;
@@ -69,10 +67,7 @@ function UserModal({
       onConfirm={() => confirm()}
       onClose={() => onClose()}
     >
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('form-common.username')}</label>
-        </div>
+      <Field name={t('form-common.username')} horizontal>
         <div className="field-body">
           <div className="field">
             <p className="control">
@@ -87,8 +82,8 @@ function UserModal({
             </p>
           </div>
         </div>
-      </div>
-      <div className="field is-horizontal">
+      </Field>
+      <Field horizontal>
         <div className="field-label is-normal">
           <label className="label" style={{ textTransform: 'capitalize' }}>
             {currency}
@@ -109,7 +104,7 @@ function UserModal({
             </p>
           </div>
         </div>
-      </div>
+      </Field>
     </Modal>
   );
 }

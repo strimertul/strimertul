@@ -1,14 +1,15 @@
 import { RouteComponentProps } from '@reach/router';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import prettyTime from 'pretty-ms';
 import { useTranslation } from 'react-i18next';
-import { useModule } from '../../../lib/react-utils';
+import { useInterval, useModule } from '../../../lib/react-utils';
 import { RootState } from '../../../store';
 import { createRedeem, modules } from '../../../store/api/reducer';
 import Modal from '../../components/Modal';
-import { getInterval } from '../../../lib/time-utils';
 import { LoyaltyReward } from '../../../store/api/types';
+import Field from '../../components/Field';
+import Interval from '../../components/Interval';
 
 interface RewardItemProps {
   item: LoyaltyReward;
@@ -139,15 +140,8 @@ function RewardModal({
     initialData?.required_info ?? '',
   );
   const [extraRequired, setExtraRequired] = useState(extraDetails !== '');
+
   const [cooldown, setCooldown] = useState(initialData?.cooldown ?? 0);
-
-  const [cooldownNum, cooldownMultiplier] = getInterval(cooldown);
-  const [tempCooldownNum, setTempCooldownNum] = useState(cooldownNum);
-  const [tempCooldownMult, setTempCooldownMult] = useState(cooldownMultiplier);
-
-  useEffect(() => {
-    setCooldown(tempCooldownNum * tempCooldownMult);
-  }, [tempCooldownNum, tempCooldownMult]);
 
   const setIDex = (newID) =>
     setID(newID.toLowerCase().replace(/[^a-zA-Z0-9]/gi, '-'));
@@ -185,10 +179,7 @@ function RewardModal({
       onConfirm={() => confirm()}
       onClose={() => onClose()}
     >
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('loyalty.rewards.id')}</label>
-        </div>
+      <Field name={t('loyalty.rewards.id')} horizontal>
         <div className="field-body">
           <div className="field">
             <p className="control">
@@ -209,11 +200,8 @@ function RewardModal({
             )}
           </div>
         </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('loyalty.rewards.name')}</label>
-        </div>
+      </Field>
+      <Field name={t('loyalty.rewards.name')} horizontal>
         <div className="field-body">
           <div className="field">
             <p className="control">
@@ -228,11 +216,8 @@ function RewardModal({
             </p>
           </div>
         </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('loyalty.rewards.icon')}</label>
-        </div>
+      </Field>
+      <Field name={t('loyalty.rewards.icon')} horizontal>
         <div className="field-body">
           <div className="field">
             <p className="control">
@@ -246,11 +231,8 @@ function RewardModal({
             </p>
           </div>
         </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('loyalty.rewards.description')}</label>
-        </div>
+      </Field>
+      <Field name={t('loyalty.rewards.description')} horizontal>
         <div className="field-body">
           <div className="field">
             <p className="control">
@@ -263,11 +245,8 @@ function RewardModal({
             </p>
           </div>
         </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('loyalty.rewards.cost')}</label>
-        </div>
+      </Field>
+      <Field name={t('loyalty.rewards.cost')} horizontal>
         <div className="field-body">
           <div className="field has-addons">
             <p className="control">
@@ -284,8 +263,8 @@ function RewardModal({
             </p>
           </div>
         </div>
-      </div>
-      <div className="field is-horizontal">
+      </Field>
+      <Field horizontal>
         <div className="field-label is-normal" />
         <div className="field-body">
           <div className="field">
@@ -299,13 +278,10 @@ function RewardModal({
             </label>
           </div>
         </div>
-      </div>
+      </Field>
       {extraRequired ? (
         <>
-          <div className="field is-horizontal">
-            <div className="field-label is-normal">
-              <label className="label">{t('loyalty.rewards.extra-info')}</label>
-            </div>
+          <Field name={t('loyalty.rewards.extra-info')} horizontal>
             <div className="field-body">
               <div className="field">
                 <p className="control">
@@ -320,53 +296,16 @@ function RewardModal({
                 </p>
               </div>
             </div>
-          </div>
+          </Field>
         </>
       ) : null}
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('loyalty.rewards.cooldown')}</label>
-        </div>
+      <Field horizontal name={t('loyalty.rewards.cooldown')}>
         <div className="field-body">
           <div className="field has-addons">
-            <p className="control">
-              <input
-                disabled={!active}
-                className="input"
-                type="number"
-                placeholder="#"
-                value={tempCooldownNum ?? ''}
-                onChange={(ev) => {
-                  const intNum = parseInt(ev.target.value, 10);
-                  if (Number.isNaN(intNum)) {
-                    return;
-                  }
-                  setTempCooldownNum(intNum);
-                }}
-              />
-            </p>
-            <p className="control">
-              <span className="select">
-                <select
-                  value={tempCooldownMult.toString() ?? ''}
-                  disabled={!active}
-                  onChange={(ev) => {
-                    const intMult = parseInt(ev.target.value, 10);
-                    if (Number.isNaN(intMult)) {
-                      return;
-                    }
-                    setTempCooldownMult(intMult);
-                  }}
-                >
-                  <option value="1">{t('form-common.time.seconds')}</option>
-                  <option value="60">{t('form-common.time.minutes')}</option>
-                  <option value="3600">{t('form-common.time.hours')}</option>
-                </select>
-              </span>
-            </p>
+            <Interval active={active} value={cooldown} onChange={setCooldown} />
           </div>
         </div>
-      </div>
+      </Field>
     </Modal>
   );
 }

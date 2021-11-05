@@ -9,7 +9,7 @@ import {
   setUserPoints,
 } from '../../../store/api/reducer';
 import PageList from '../../components/PageList';
-import {LoyaltyRedeem} from "../../../store/api/types";
+import { LoyaltyRedeem } from '../../../store/api/types';
 
 interface SortingOrder {
   key: 'user' | 'when';

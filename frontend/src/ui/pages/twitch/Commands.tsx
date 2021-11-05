@@ -6,6 +6,7 @@ import { useModule } from '../../../lib/react-utils';
 import { modules } from '../../../store/api/reducer';
 import Modal from '../../components/Modal';
 import { TwitchBotCustomCommand } from '../../../store/api/types';
+import Field from '../../components/Field';
 
 interface CommandItemProps {
   name: string;
@@ -121,10 +122,7 @@ function CommandModal({
       onConfirm={() => confirm()}
       onClose={() => onClose()}
     >
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('twitch.commands.command')}</label>
-        </div>
+      <Field name={t('twitch.commands.command')} horizontal>
         <div className="field-body">
           <div className="field">
             <p className="control">
@@ -138,11 +136,8 @@ function CommandModal({
             </p>
           </div>
         </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('twitch.commands.description')}</label>
-        </div>
+      </Field>
+      <Field name={t('twitch.commands.description')} horizontal>
         <div className="field-body">
           <div className="field">
             <p className="control">
@@ -156,11 +151,8 @@ function CommandModal({
             </p>
           </div>
         </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('twitch.commands.response')}</label>
-        </div>
+      </Field>
+      <Field name={t('twitch.commands.response')} horizontal>
         <div className="field-body">
           <div className="field">
             <p className="control">
@@ -173,11 +165,8 @@ function CommandModal({
             </p>
           </div>
         </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">{t('twitch.commands.access-level')}</label>
-        </div>
+      </Field>
+      <Field name={t('twitch.commands.access-level')} horizontal>
         <div className="field-body">
           <div className="field">
             <p className="control">
@@ -201,7 +190,7 @@ function CommandModal({
             <p className="help">{t('twitch.commands.access-level-help')}</p>
           </div>
         </div>
-      </div>
+      </Field>
     </Modal>
   );
 }

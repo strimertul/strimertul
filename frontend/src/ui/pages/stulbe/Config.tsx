@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { useModule } from '../../../lib/react-utils';
 import Stulbe from '../../../lib/stulbe-lib';
 import apiReducer, { modules } from '../../../store/api/reducer';
+import Field from '../../components/Field';
 
 export default function StulbeConfigPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -32,7 +33,7 @@ export default function StulbeConfigPage(
   return (
     <>
       <h1 className="title is-4">{t('backend.config.header')}</h1>
-      <div className="field">
+      <Field>
         <label className="checkbox">
           <input
             type="checkbox"
@@ -49,9 +50,8 @@ export default function StulbeConfigPage(
           />{' '}
           {t('backend.config.enable')}
         </label>
-      </div>
-      <div className="field">
-        <label className="label">{t('backend.config.endpoint')}</label>
+      </Field>
+      <Field name={t('backend.config.endpoint')}>
         <p className="control">
           <input
             className="input"
@@ -69,9 +69,8 @@ export default function StulbeConfigPage(
             }
           />
         </p>
-      </div>
-      <div className="field">
-        <label className="label">{t('backend.config.username')}</label>
+      </Field>
+      <Field name={t('backend.config.username')}>
         <p className="control">
           <input
             className="input"
@@ -89,9 +88,8 @@ export default function StulbeConfigPage(
             }
           />
         </p>
-      </div>
-      <div className="field">
-        <label className="label">{t('backend.config.auth-key')}</label>
+      </Field>
+      <Field name={t('backend.config.auth-key')}>
         <p className="control">
           <input
             className="input"
@@ -109,7 +107,7 @@ export default function StulbeConfigPage(
             }
           />
         </p>
-      </div>
+      </Field>
       <button
         className="button"
         onClick={() => {
