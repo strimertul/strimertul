@@ -6,6 +6,7 @@
     "/twitch/settings": "Module configuration",
     "/twitch/bot/settings": "Bot configuration",
     "/twitch/bot/commands": "Bot commands",
+    "/twitch/bot/timers": "Bot timers",
     "/twitch/bot/modules": "Bot modules",
     "/loyalty": "Loyalty points",
     "/loyalty/settings": "Configuration",
@@ -204,6 +205,20 @@
       "new-command": "New command",
       "search": "Search by name",
       "modify-command": "Modify command"
+    },
+    "timers": {
+      "header": "Bot timers",
+      "new-timer": "New timer",
+      "modify-timer": "Modify timer",
+      "search": "Search by timer name",
+      "messages": "Messages",
+      "name-hint": "Timer name",
+      "name": "Name",
+      "message-help": "What to write in chat",
+      "minimum-delay": "Interval",
+      "minimum-delay-help": "How many time must pass between each repeat.",
+      "minimum-activity": "Minimum chat activity",
+      "minimum-activity-post": "messages in the last 5 minutes"
     }
   }
 }

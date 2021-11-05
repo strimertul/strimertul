@@ -147,11 +147,25 @@ export const modules = {
       state.moduleConfigs.twitchBotConfig = payload;
     },
   ),
+  twitchBotModulesConfig: makeModule(
+    'twitch/bot-modules/config',
+    (state) => state.twitchBot?.modules,
+    (state, { payload }) => {
+      state.twitchBot.modules = payload;
+    },
+  ),
   twitchBotCommands: makeModule(
     'twitch/bot-custom-commands',
     (state) => state.twitchBot?.commands,
     (state, { payload }) => {
       state.twitchBot.commands = payload;
+    },
+  ),
+  twitchBotTimers: makeModule(
+    'twitch/bot-modules/timers/config',
+    (state) => state.twitchBot?.timers,
+    (state, { payload }) => {
+      state.twitchBot.timers = payload;
     },
   ),
   stulbeConfig: makeModule(
@@ -229,6 +243,8 @@ const initialState: APIState = {
   },
   twitchBot: {
     commands: null,
+    modules: null,
+    timers: null,
   },
   moduleConfigs: {
     moduleConfig: null,

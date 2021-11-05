@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import prettyTime from 'pretty-ms';
 import { useTranslation } from 'react-i18next';
-import { useInterval, useModule } from '../../../lib/react-utils';
+import { useModule } from '../../../lib/react-utils';
 import { RootState } from '../../../store';
 import { createRedeem, modules } from '../../../store/api/reducer';
 import Modal from '../../components/Modal';

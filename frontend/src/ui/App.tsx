@@ -22,6 +22,7 @@ import TwitchBotCommandsPage from './pages/twitch/Commands';
 import TwitchBotModulesPage from './pages/twitch/Modules';
 import StulbeConfigPage from './pages/stulbe/Config';
 import StulbeWebhooksPage from './pages/stulbe/Webhook';
+import TwitchBotTimersPage from './pages/twitch/Timers';
 
 interface RouteItem {
   name?: string;
@@ -38,6 +39,7 @@ const menu: RouteItem[] = [
       { route: '/twitch/settings' },
       { route: '/twitch/bot/settings' },
       { route: '/twitch/bot/commands' },
+      { route: '/twitch/bot/timers' },
       { route: '/twitch/bot/modules' },
     ],
   },
@@ -127,6 +129,7 @@ export default function App(): React.ReactElement {
               <TwitchSettingsPage path="settings" />
               <TwitchBotSettingsPage path="bot/settings" />
               <TwitchBotCommandsPage path="bot/commands" />
+              <TwitchBotTimersPage path="bot/timers" />
               <TwitchBotModulesPage path="bot/modules" />
             </TwitchPage>
             <LoyaltyPage path="loyalty">

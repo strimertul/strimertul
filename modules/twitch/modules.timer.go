@@ -91,7 +91,11 @@ func (m *BotTimerModule) runTimers() {
 				if !ok {
 					continue
 				}
-				if now.Sub(lastTriggeredTime) < time.Duration(timer.MinimumDelay)*time.Second {
+				minDelay := timer.MinimumDelay
+				if minDelay < 5 {
+					minDelay = 5
+				}
+				if now.Sub(lastTriggeredTime) < time.Duration(minDelay)*time.Second {
 					continue
 				}
 				// Make sure chat activity is high enough

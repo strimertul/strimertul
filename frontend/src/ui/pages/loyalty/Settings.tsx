@@ -122,7 +122,12 @@ export default function LoyaltySettingPage(
               {t('loyalty.config.points-every')}
             </a>
           </p>
-          <Interval value={interval} onChange={setInterval} active={active} />
+          <Interval
+            value={interval}
+            onChange={setInterval}
+            active={active}
+            min={5}
+          />
         </div>
       </Field>
       <Field name={t('loyalty.config.bonus-points')}>

@@ -30,6 +30,10 @@ interface TwitchBotConfig {
   chat_history: number;
 }
 
+interface TwitchModulesConfig {
+  enable_timers: boolean;
+}
+
 type AccessLevelType = 'everyone' | 'vip' | 'moderators' | 'streamer';
 
 export interface TwitchBotCustomCommand {
@@ -55,6 +59,18 @@ interface LoyaltyConfig {
     activity_bonus: number;
   };
   banlist: string[];
+}
+
+export interface TwitchBotTimer {
+  enabled: boolean;
+  name: string;
+  minimum_chat_activity: number;
+  minimum_delay: number;
+  messages: string[];
+}
+
+interface TwitchBotTimersConfig {
+  timers: Record<string, TwitchBotTimer>;
 }
 
 export interface LoyaltyPointsEntry {
@@ -105,6 +121,8 @@ export interface APIState {
   };
   twitchBot: {
     commands: TwitchBotCustomCommands;
+    modules: TwitchModulesConfig;
+    timers: TwitchBotTimersConfig;
   };
   moduleConfigs: {
     moduleConfig: ModuleConfig;

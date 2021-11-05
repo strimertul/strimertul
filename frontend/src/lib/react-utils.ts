@@ -62,30 +62,7 @@ export function useUserPoints(): LoyaltyStorage {
   return data;
 }
 
-export function useInterval(
-  initialValue: number,
-): [
-  number,
-  number,
-  number,
-  (newNum: number) => void,
-  (newMult: number) => void,
-] {
-  const [value, setValue] = useState(initialValue);
-
-  const [numInitialValue, multInitialValue] = getInterval(value);
-  const [num, setNum] = useState(numInitialValue);
-  const [mult, setMult] = useState(multInitialValue);
-
-  useEffect(() => {
-    setValue(num * mult);
-  }, [num, mult]);
-
-  return [value, num, mult, setNum, setMult];
-}
-
 export default {
   useModule,
   useUserPoints,
-  useInterval,
 };
