@@ -2,27 +2,40 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getInterval } from '../../lib/time-utils';
 
+export interface TimeUnit {
+  multiplier: number;
+  unit: string;
+}
+
+export const seconds = { multiplier: 1, unit: 'form-common.time.seconds' };
+export const minutes = { multiplier: 60, unit: 'form-common.time.minutes' };
+export const hours = { multiplier: 3600, unit: 'form-common.time.hours' };
+
 export interface IntervalProps {
   active: boolean;
   value: number;
   min?: number;
+  units?: TimeUnit[];
   onChange?: (value: number) => void;
 }
 
-function Interval({ active, value, min, onChange }: IntervalProps) {
+function Interval({ active, value, min, units, onChange }: IntervalProps) {
   const { t } = useTranslation();
+
+  const timeUnits = units ?? [seconds, minutes, hours];
 
   const [numInitialValue, multInitialValue] = getInterval(value);
   const [num, setNum] = useState(numInitialValue);
   const [mult, setMult] = useState(multInitialValue);
 
   useEffect(() => {
-    const seconds = num * mult;
-    if (min && seconds < min) {
-      setNum(5);
-      setMult(1);
+    const total = num * mult;
+    if (min && total < min) {
+      const [minNum, minMult] = getInterval(min);
+      setNum(minNum);
+      setMult(minMult);
     }
-    onChange(Math.max(min ?? 0, seconds));
+    onChange(Math.max(min ?? 0, total));
   }, [num, mult]);
 
   return (
@@ -57,9 +70,11 @@ function Interval({ active, value, min, onChange }: IntervalProps) {
               setMult(intMult);
             }}
           >
-            <option value="1">{t('form-common.time.seconds')}</option>
-            <option value="60">{t('form-common.time.minutes')}</option>
-            <option value="3600">{t('form-common.time.hours')}</option>
+            {timeUnits.map((unit) => (
+              <option key={unit.unit} value={unit.multiplier.toString()}>
+                {t(unit.unit)}
+              </option>
+            ))}
           </select>
         </span>
       </p>

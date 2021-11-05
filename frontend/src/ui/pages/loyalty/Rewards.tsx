@@ -90,7 +90,7 @@ function RewardItem({
               {t('actions.test')}
             </a>{' '}
             <a className="button is-small" onClick={onToggleState}>
-              {t(item.enabled ? 'actions.disable' : 'actions.enable')}
+              {item.enabled ? t('actions.disable') : t('actions.enable')}
             </a>{' '}
             <a className="button is-small" onClick={onEdit}>
               {t('actions.edit')}

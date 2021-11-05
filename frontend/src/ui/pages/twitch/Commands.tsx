@@ -54,7 +54,7 @@ function CommandItem({
           <blockquote>{item.response}</blockquote>
           <div style={{ marginTop: '1rem' }}>
             <a className="button is-small" onClick={onToggleState}>
-              {item.enabled ? 'Disable' : 'Enable'}
+              {item.enabled ? t('actions.disable') : t('actions.enable')}
             </a>{' '}
             <a className="button is-small" onClick={onEdit}>
               {t('actions.edit')}

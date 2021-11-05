@@ -37,17 +37,21 @@ type BotTimerModule struct {
 
 func SetupTimers(bot *Bot) *BotTimerModule {
 	mod := &BotTimerModule{
-		bot:       bot,
-		startTime: time.Now().Round(time.Minute),
+		bot:         bot,
+		startTime:   time.Now().Round(time.Minute),
+		lastTrigger: make(map[string]time.Time),
 	}
 
 	// Load config from database
 	err := bot.api.db.GetJSON(BotTimersKey, &mod.Config)
 	if err != nil {
+		bot.logger.WithError(err).Debug("config load error")
 		mod.Config = BotTimersConfig{
 			Timers: make(map[string]BotTimer),
 		}
 	}
+
+	bot.logger.WithField("timers", len(mod.Config.Timers)).Debug("loaded timers")
 
 	// Start goroutine for clearing message counters and running timers
 	go mod.runTimers()
@@ -89,11 +93,12 @@ func (m *BotTimerModule) runTimers() {
 				// Check if enough time has passed
 				lastTriggeredTime, ok := m.lastTrigger[name]
 				if !ok {
-					continue
+					// If it's the first time we're checking it, start the cooldown
+					lastTriggeredTime = time.Now()
 				}
 				minDelay := timer.MinimumDelay
-				if minDelay < 5 {
-					minDelay = 5
+				if minDelay < 60 {
+					minDelay = 60
 				}
 				if now.Sub(lastTriggeredTime) < time.Duration(minDelay)*time.Second {
 					continue

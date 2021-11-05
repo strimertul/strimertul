@@ -218,7 +218,10 @@
       "minimum-delay": "Interval",
       "minimum-delay-help": "How many time must pass between each repeat.",
       "minimum-activity": "Minimum chat activity",
-      "minimum-activity-post": "messages in the last 5 minutes"
+      "minimum-activity-post": "messages in the last 5 minutes",
+      "condition-text": "every {{time}}, at least {{messages}} messages in the last 5 minutes",
+      "err-twitchbot-disabled": "Twitch bot must be enabled in order to use timers!",
+      "enable": "Enable timers"
     }
   }
 }

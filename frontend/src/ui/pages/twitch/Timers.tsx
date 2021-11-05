@@ -2,12 +2,13 @@ import { RouteComponentProps } from '@reach/router';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
+import prettyTime from 'pretty-ms';
 import { useModule } from '../../../lib/react-utils';
 import { modules } from '../../../store/api/reducer';
 import Modal from '../../components/Modal';
 import { TwitchBotTimer } from '../../../store/api/types';
 import Field from '../../components/Field';
-import Interval from '../../components/Interval';
+import Interval, { hours, minutes } from '../../components/Interval';
 
 interface TimerItemProps {
   item: TwitchBotTimer;
@@ -24,7 +25,14 @@ function TimerItem({ item, onToggleState, onEdit, onDelete }: TimerItemProps) {
       <header className="card-header">
         <div className="card-header-title">
           {item.enabled ? (
-            <code>{item.name}</code>
+            <>
+              <code>{item.name}</code> (
+              {t('twitch.timers.condition-text', {
+                time: prettyTime(item.minimum_delay * 1000),
+                messages: item.minimum_chat_activity,
+              })}
+              )
+            </>
           ) : (
             <span className="reward-disabled">
               <code>{item.name}</code>
@@ -44,12 +52,12 @@ function TimerItem({ item, onToggleState, onEdit, onDelete }: TimerItemProps) {
       {expanded ? (
         <div className="content">
           {t('twitch.timers.messages')}:{' '}
-          {item.messages.map((message) => (
-            <blockquote>{message}</blockquote>
+          {item.messages.map((message, index) => (
+            <blockquote key={index}>{message}</blockquote>
           ))}
           <div style={{ marginTop: '1rem' }}>
             <a className="button is-small" onClick={onToggleState}>
-              {item.enabled ? 'Disable' : 'Enable'}
+              {item.enabled ? t('actions.disable') : t('actions.enable')}
             </a>{' '}
             <a className="button is-small" onClick={onEdit}>
               {t('actions.edit')}
@@ -91,15 +99,16 @@ function TimerModal({
   );
 
   const { t } = useTranslation();
-  const validForm = name !== '' && messages.length > 0 && messages[0] !== '';
+  const validForm =
+    name !== '' && messages.length > 0 && messages.every((msg) => msg !== '');
 
   const confirm = () => {
     if (onConfirm) {
       onConfirm(name, {
         name,
         messages,
-        minimum_chat_activity: 0,
-        minimum_delay: 0,
+        minimum_chat_activity: minActivity,
+        minimum_delay: minDelay,
         enabled: initialData?.enabled ?? false,
       });
     }
@@ -126,7 +135,7 @@ function TimerModal({
       <Field name={t('twitch.timers.name')} horizontal>
         <div className="field-body">
           <div className="field">
-            <p className="control">
+            <div className="control">
               <input
                 className={name !== '' ? 'input' : 'input is-danger'}
                 type="text"
@@ -134,7 +143,7 @@ function TimerModal({
                 value={name}
                 onChange={(ev) => setName(ev.target.value)}
               />
-            </p>
+            </div>
           </div>
         </div>
       </Field>
@@ -145,7 +154,8 @@ function TimerModal({
               value={minDelay}
               onChange={setMinDelay}
               active={active}
-              min={5}
+              min={60}
+              units={[minutes, hours]}
             />
           </div>
         </div>
@@ -153,7 +163,7 @@ function TimerModal({
       <Field name={t('twitch.timers.minimum-activity')} horizontal>
         <div className="field-body">
           <div className="field has-addons" style={{ marginBottom: 0 }}>
-            <p className="control">
+            <div className="control">
               <input
                 disabled={!active}
                 className="input"
@@ -169,7 +179,7 @@ function TimerModal({
                   setMinActivity(amount);
                 }}
               />
-            </p>
+            </div>
             <p className="control">
               <a className="button is-static">
                 {t('twitch.timers.minimum-activity-post')}
@@ -180,18 +190,49 @@ function TimerModal({
       </Field>
       <Field name={t('twitch.timers.messages')} horizontal>
         <div className="field-body">
-          {messages.map((message, index) => (
-            <div className="field">
+          <div className="control">
+            {messages.map((message, index) => (
+              <div
+                className="field has-addons"
+                key={index}
+                style={{ marginTop: index > 0 ? '0.5rem' : '' }}
+              >
+                <p className="control">
+                  <input
+                    placeholder={t('twitch.timers.message-help')}
+                    onChange={(ev) => setMessageIndex(ev.target.value, index)}
+                    value={message}
+                    className={message !== '' ? 'input' : 'input is-danger'}
+                    style={{ width: '28rem' }}
+                  />
+                </p>
+                <p className="control">
+                  <button
+                    className="button is-danger"
+                    onClick={() => {
+                      const newMessages = [...messages];
+                      newMessages.splice(index, 1);
+                      setMessages(newMessages.length > 0 ? newMessages : ['']);
+                    }}
+                  >
+                    X
+                  </button>
+                </p>
+              </div>
+            ))}
+            <div className="field" style={{ marginTop: '0.5rem' }}>
               <p className="control">
-                <textarea
-                  className={message !== '' ? 'textarea' : 'textarea is-danger'}
-                  placeholder={t('twitch.timers.message-help')}
-                  onChange={(ev) => setMessageIndex(ev.target.value, index)}
-                  value={message}
-                />
+                <button
+                  className="button is-primary"
+                  onClick={() => {
+                    setMessages([...messages, '']);
+                  }}
+                >
+                  Add new
+                </button>
               </p>
             </div>
-          ))}
+          </div>
         </div>
       </Field>
     </Modal>
@@ -202,7 +243,11 @@ export default function TwitchBotTimersPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: RouteComponentProps<unknown>,
 ): React.ReactElement {
-  const [timers, setTimers] = useModule(modules.twitchBotTimers);
+  const [twitchConfig] = useModule(modules.twitchConfig);
+  const [moduleConfig, setModuleConfig] = useModule(
+    modules.twitchBotModulesConfig,
+  );
+  const [timerConfig, setTimerConfig] = useModule(modules.twitchBotTimers);
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
@@ -211,11 +256,18 @@ export default function TwitchBotTimersPage(
   const [timerFilter, setTimerFilter] = useState('');
   const timerFilterLC = timerFilter.toLowerCase();
 
+  const botActive = twitchConfig?.enable_bot ?? false;
+  const timersActive = moduleConfig?.enable_timers ?? false;
+  const active = botActive && timersActive;
+
   const createTimer = (name: string, data: TwitchBotTimer): void => {
     dispatch(
-      setTimers({
-        ...timers,
-        [name]: data,
+      setTimerConfig({
+        ...timerConfig,
+        timers: {
+          ...timerConfig.timers,
+          [name]: data,
+        },
       }),
     );
     setCreateModal(false);
@@ -227,12 +279,15 @@ export default function TwitchBotTimersPage(
     data: TwitchBotTimer,
   ): void => {
     dispatch(
-      setTimers({
-        ...timers,
-        [oldName]: undefined,
-        [newName]: {
-          ...timers[oldName],
-          ...data,
+      setTimerConfig({
+        ...timerConfig,
+        timers: {
+          ...timerConfig.timers,
+          [oldName]: undefined,
+          [newName]: {
+            ...timerConfig.timers[oldName],
+            ...data,
+          },
         },
       }),
     );
@@ -241,31 +296,68 @@ export default function TwitchBotTimersPage(
 
   const deleteTimer = (cmd: string): void => {
     dispatch(
-      setTimers({
-        ...timers,
-        [cmd]: undefined,
+      setTimerConfig({
+        ...timerConfig,
+        timers: {
+          ...timerConfig.timers,
+          [cmd]: undefined,
+        },
       }),
     );
   };
 
   const toggleTimer = (cmd: string): void => {
     dispatch(
-      setTimers({
-        ...timers,
-        [cmd]: {
-          ...timers[cmd],
-          enabled: !timers[cmd].enabled,
+      setTimerConfig({
+        ...timerConfig,
+        timers: {
+          ...timerConfig.timers,
+          [cmd]: {
+            ...timerConfig.timers[cmd],
+            enabled: !timerConfig.timers[cmd].enabled,
+          },
         },
       }),
     );
   };
 
+  if (!botActive) {
+    return (
+      <>
+        <h1 className="title is-4">{t('twitch.timers.header')}</h1>
+        <p>{t('twitch.timers.err-twitchbot-disabled')}</p>
+      </>
+    );
+  }
+
   return (
     <>
       <h1 className="title is-4">{t('twitch.timers.header')}</h1>
+      <Field>
+        <label className="checkbox">
+          <input
+            type="checkbox"
+            disabled={!botActive}
+            checked={active}
+            onChange={(ev) =>
+              dispatch(
+                setModuleConfig({
+                  ...moduleConfig,
+                  enable_timers: ev.target.checked,
+                }),
+              )
+            }
+          />
+          {` ${t('twitch.timers.enable')} `}
+        </label>
+      </Field>
       <div className="field is-grouped">
         <p className="control">
-          <button className="button" onClick={() => setCreateModal(true)}>
+          <button
+            className="button"
+            disabled={!timersActive}
+            onClick={() => setCreateModal(true)}
+          >
             {t('twitch.timers.new-timer')}
           </button>
         </p>
@@ -274,6 +366,7 @@ export default function TwitchBotTimersPage(
           <input
             className="input"
             type="text"
+            disabled={!timersActive}
             placeholder={t('twitch.timers.search')}
             value={timerFilter}
             onChange={(ev) => setTimerFilter(ev.target.value)}
@@ -297,22 +390,26 @@ export default function TwitchBotTimersPage(
             modifyTimer(showModifyTimer, newName, cmdData)
           }
           initialName={showModifyTimer}
-          initialData={showModifyTimer ? timers[showModifyTimer] : null}
+          initialData={
+            showModifyTimer ? timerConfig.timers[showModifyTimer] : null
+          }
           onClose={() => setShowModifyTimer(null)}
         />
       ) : null}
       <div className="reward-list" style={{ marginTop: '1rem' }}>
-        {Object.keys(timers ?? {})
-          ?.filter((cmd) => cmd.toLowerCase().includes(timerFilterLC))
-          .map((timer) => (
-            <TimerItem
-              key={timer}
-              item={timer[timer]}
-              onDelete={() => deleteTimer(timer)}
-              onEdit={() => setShowModifyTimer(timer)}
-              onToggleState={() => toggleTimer(timer)}
-            />
-          ))}
+        {timersActive
+          ? Object.keys(timerConfig?.timers ?? {})
+              ?.filter((cmd) => cmd.toLowerCase().includes(timerFilterLC))
+              .map((timer) => (
+                <TimerItem
+                  key={timer}
+                  item={timerConfig.timers[timer]}
+                  onDelete={() => deleteTimer(timer)}
+                  onEdit={() => setShowModifyTimer(timer)}
+                  onToggleState={() => toggleTimer(timer)}
+                />
+              ))
+          : null}
       </div>
     </>
   );

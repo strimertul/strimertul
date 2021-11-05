@@ -20,6 +20,7 @@ func (b *Bot) LoadModules() error {
 		}
 	}
 	if cfg.EnableTimers {
+		b.logger.Debug("starting timer module")
 		b.Timers = SetupTimers(b)
 	}
 	return nil

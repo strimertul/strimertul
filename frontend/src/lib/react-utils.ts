@@ -1,5 +1,5 @@
 import { ActionCreatorWithOptionalPayload, AsyncThunk } from '@reduxjs/toolkit';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   KilovoltMessage,
@@ -8,7 +8,6 @@ import {
 import { RootState } from '../store';
 import apiReducer, { getUserPoints } from '../store/api/reducer';
 import { APIState, LoyaltyStorage } from '../store/api/types';
-import { getInterval } from './time-utils';
 
 export function useModule<T>({
   key,
