@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
-	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
+	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/dgraph-io/badger/v3 v3.2011.1
 	github.com/gempir/go-twitch-irc/v2 v2.5.0
 	github.com/google/uuid v1.3.0 // indirect

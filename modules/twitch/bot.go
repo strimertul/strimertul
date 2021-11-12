@@ -150,6 +150,7 @@ func NewBot(api *Client, config BotConfig) *Bot {
 		bot.logger.WithError(err).Error("failed to load custom commands")
 	}
 	go api.db.Subscribe(context.Background(), bot.updateCommands, CustomCommandsKey)
+	go api.db.Subscribe(context.Background(), bot.handleWriteMessageRPC, WriteMessageRPC)
 
 	return bot
 }
@@ -170,6 +171,16 @@ func (b *Bot) updateCommands(kvs []database.ModifiedKV) error {
 			if err := b.updateTemplates(); err != nil {
 				return err
 			}
+		}
+	}
+	return nil
+}
+
+func (b *Bot) handleWriteMessageRPC(kvs []database.ModifiedKV) error {
+	for _, kv := range kvs {
+		switch kv.Key {
+		case WriteMessageRPC:
+			b.Client.Say(b.config.Channel, string(kv.Data))
 		}
 	}
 	return nil
