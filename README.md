@@ -37,4 +37,4 @@ go build
 
 Kilovolt's code is based on Gorilla Websocket's server example, licensed under [BSD-2-Clause](https://github.com/gorilla/websocket/blob/master/LICENSE)
 
-The entire project is licensed under [AGPL-3.0-only](LICENSE) (see `LICENSE`). For ISC exceptions, see [LICENSING.md](LICENSING.md).
+The entire project is licensed under [AGPL-3.0-only](LICENSE) (see `LICENSE`).
