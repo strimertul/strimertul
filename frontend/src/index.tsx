@@ -8,8 +8,6 @@ import './locale/setup';
 import store from './store';
 import App from './ui/App';
 
-import './overrides.css';
-
 // @ts-expect-error idk
 const history = createHistory(window);
 

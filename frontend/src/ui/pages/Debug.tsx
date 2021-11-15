@@ -32,12 +32,29 @@ export default function DebugPage(
       setWriteErrorMsg(e.message);
     }
   };
+  const dumpKeys = async () => {
+    console.log(await api.keyList());
+  }
+  const dumpAll = async () => {
+    console.log(await api.getKeysByPrefix(""));
+  }
 
   return (
     <div>
       <p className="title is-3" style={{ color: '#fa3' }}>
-        WELCOME TO HELL
+        {t('debug.friendly-greeting')}
       </p>
+      <div className="columns">
+      <div className="column">
+          <label className="label">{t('debug.console-header')}</label>
+      <button className="button" onClick={dumpKeys}>
+                {t('debug.get-keys')}
+              </button>
+      <button className="button" onClick={dumpAll}>
+                {t('debug.get-all')}
+              </button>
+        </div>
+      </div>
       <div className="columns">
         <div className="column">
           <label className="label">{t('debug.read-key')}</label>

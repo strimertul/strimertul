@@ -32,7 +32,11 @@
     "read-btn": "Read",
     "write-key": "Write key",
     "write-btn": "Write",
-    "fix-json-btn": "Fix JSON"
+    "fix-json-btn": "Fix JSON",
+    "console-header": "Console operations",
+    "get-keys": "Get all keys",
+    "get-all": "DUMP ALL",
+    "friendly-greeting": "WELCOME TO HELL"
   },
   "actions": {
     "save": "Save",

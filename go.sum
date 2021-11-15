@@ -129,6 +129,8 @@ github.com/strimertul/kilovolt-client-go/v2 v2.0.0/go.mod h1:y98V8uVMiJZhnBLtSVk
 github.com/strimertul/kilovolt/v3 v3.0.0/go.mod h1:AgfPYRp+kffN64tcqCcQUZdpL/Dm5DGHIYRDm9t3E0Y=
 github.com/strimertul/kilovolt/v4 v4.0.1 h1:81isohdSixVURO2+dZKKZBPw97HJmNN4/BXn6ADFoWM=
 github.com/strimertul/kilovolt/v4 v4.0.1/go.mod h1:AO2ZFQtSB+AcjCw0RTkXjbM6XBAjhsXsrRq10BX95kw=
+github.com/strimertul/kilovolt/v5 v5.0.1 h1:LHAVqb3SrXiew3loTpYuPdz16Nl8/aTReBYj56xwF7I=
+github.com/strimertul/kilovolt/v5 v5.0.1/go.mod h1:HxfnnlEGhY6p+Im9U7pso07HEV+cXEsJH7uFTM7c6uE=
 github.com/strimertul/strimertul v1.3.0/go.mod h1:1pSe9zVWF4BYt56ii1Hg+xTxvtfqfvT4FQ7bYffWsUA=
 github.com/strimertul/stulbe v0.2.5/go.mod h1:0AsY4OVf1dNCwOn9s7KySuAxJ85w88pXeostu1n9E7w=
 github.com/strimertul/stulbe v0.4.0/go.mod h1:Pb0UQCKdyES7UKSKm2i2g9parkgXSJAFeMH/LSOSbgQ=
