@@ -1,17 +1,26 @@
+.content {
+  padding: 1rem;
+}
+
 /* Dark theme fixes */
 body .button.is-static {
   background-color: #5d6b6b;
 }
-body .input, body .select select, body .textarea {
+body .input,
+body .select select,
+body .textarea {
   background-color: #222727;
   color: white;
 }
 
 body .input::placeholder {
-  color:  #7e9292;
+  color: #7e9292;
 }
 
-body .input[disabled],body .select select[disabled], body .textarea[disabled], body .input[disabled]::placeholder {
+body .input[disabled],
+body .select select[disabled],
+body .textarea[disabled],
+body .input[disabled]::placeholder {
   border-color: #5e6d6f;
   color: #464e4e;
   background-color: #6d7979;
@@ -25,7 +34,7 @@ body .button.is-success {
   padding: 1rem;
   border: 2px solid #5e6d6f;
   border-top: 0;
-  border-radius: 0 0 .4em .4em;
+  border-radius: 0 0 0.4em 0.4em;
 }
 
 /* Custom padding for content */
@@ -38,17 +47,18 @@ body .button.is-success {
 }
 
 /* Custom reward/goal classes */
-.reward-disabled, .goal-disabled {
+.reward-disabled,
+.goal-disabled {
   opacity: 0.5;
   text-decoration: line-through;
 }
 
 .goal-reached {
   font-weight: bold;
-  color:#1fdb5e;
+  color: #1fdb5e;
 }
 .goal-point-percent {
-  color:#879799;
+  color: #879799;
 }
 
 .customcommand .card-header-title code {
@@ -62,7 +72,8 @@ body .button.is-success {
 }
 
 /* Nice expand/contract icon without FontAwesome! */
-.icon.expand-on, .icon.expand-off {
+.icon.expand-on,
+.icon.expand-off {
   transition: all 50ms;
   user-select: none;
 }
@@ -80,7 +91,8 @@ aside.menu {
   padding: 1rem 0.25rem 0;
   background-color: #272e2e;
   position: fixed;
-  top: 0; bottom: 0;
+  top: 0;
+  bottom: 0;
   overflow: auto;
 }
 
@@ -106,7 +118,9 @@ p.menu-label {
   div.app-content {
     position: inherit;
     flex: 1;
-    top: inherit; bottom: inherit; right: inherit;
+    top: inherit;
+    bottom: inherit;
+    right: inherit;
     width: 100%;
   }
   .main-content {
@@ -115,11 +129,13 @@ p.menu-label {
 }
 
 /* Fullheight fixes */
-html, body {
+html,
+body {
   height: 100vh;
   display: flex;
   flex: 1;
-  margin: 0; padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 html {
@@ -127,10 +143,12 @@ html {
   overflow-y: auto !important;
 }
 
-#main, section.main-content {
+#main,
+section.main-content {
   display: flex;
   flex: 1;
-  margin: 0 !important; padding: 0;
+  margin: 0 !important;
+  padding: 0;
 }
 
 /* Labels should be non-selectable */
@@ -173,7 +191,7 @@ label {
 }
 
 span.sortable {
-  color:#6bc8b4;
+  color: #6bc8b4;
   cursor: pointer;
   user-select: none;
 }
@@ -186,7 +204,8 @@ span.sortable {
 /* Notifications */
 .notifications {
   position: fixed;
-  bottom: 0; right: 0;
+  bottom: 0;
+  right: 0;
 }
 
 /* Inline definition lists */
@@ -202,5 +221,5 @@ span.sortable {
   padding-right: 0.5rem;
 }
 .inline-dl dt:after {
-  content: ":";
+  content: ':';
 }
