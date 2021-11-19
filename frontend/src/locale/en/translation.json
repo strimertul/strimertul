@@ -51,8 +51,7 @@
   },
   "http": {
     "header": "Web server configuration",
-    "server-port": "HTTP server port",
-    "server-port-note": "Note: You must restart strimertul after changing this!",
+    "server-bind": "HTTP server bind",
     "static-content": "Static content",
     "enable-static": "Enable static server",
     "static-root-path": "Static content root path"

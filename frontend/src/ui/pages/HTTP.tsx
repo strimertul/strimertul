@@ -1,5 +1,5 @@
 import { RouteComponentProps } from '@reach/router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { useModule } from '../../lib/react-utils';
@@ -20,7 +20,7 @@ export default function HTTPPage(
     <>
       <h1 className="title is-4">{t('http.header')}</h1>
       <div className="field">
-        <label className="label">{t('http.server-port')}</label>
+        <label className="label">{t('http.server-bind')}</label>
         <p className="control">
           <input
             disabled={busy}
@@ -38,7 +38,6 @@ export default function HTTPPage(
             }
           />
         </p>
-        <p className="help">{t('http.server-port-note')}</p>
       </div>
       <label className="label">{t('http.static-content')}</label>
       <div className="field">
@@ -82,6 +81,10 @@ export default function HTTPPage(
         className="button"
         onClick={() => {
           dispatch(setHTTPConfig(httpConfig));
+          const port = httpConfig.bind.split(':', 2)[1] ?? '4337';
+          if (port !== window.location.port) {
+            window.location.port = port;
+          }
         }}
       >
         {t('actions.save')}
