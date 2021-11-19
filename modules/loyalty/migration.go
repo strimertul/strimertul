@@ -1,6 +1,8 @@
 package loyalty
 
 import (
+	"errors"
+
 	"github.com/sirupsen/logrus"
 	"github.com/strimertul/strimertul/database"
 )
@@ -13,7 +15,7 @@ func migratePoints(db *database.DB, log logrus.FieldLogger) error {
 	// Retrieve old storage
 	var oldStorage OldPointStorage
 	err := db.GetJSON(OldPointsKey, &oldStorage)
-	if err == database.ErrKeyNotFound {
+	if errors.Is(err, database.ErrKeyNotFound) {
 		// No migration needed, points are already kaput
 		return nil
 	}

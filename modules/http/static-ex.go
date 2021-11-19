@@ -1,6 +1,6 @@
 // FROM https://gist.github.com/lummie/91cd1c18b2e32fa9f316862221a6fd5c
 
-package main
+package http
 
 import (
 	"net/http"

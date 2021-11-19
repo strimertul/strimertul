@@ -1,14 +1,17 @@
 package main
 
 import (
+	"context"
 	"embed"
+	"errors"
 	"flag"
 	"fmt"
 	"io/fs"
 	"math/rand"
-	"net/http"
 	"runtime"
 	"time"
+
+	"github.com/strimertul/strimertul/modules/http"
 
 	kv "github.com/strimertul/kilovolt/v5"
 
@@ -87,13 +90,13 @@ func main() {
 	dblogger := wrapLogger("db")
 	db, err := database.Open(badger.DefaultOptions(*dbdir).WithLogger(dblogger), dblogger)
 	failOnError(err, "Could not open DB")
-	defer db.Close()
+	defer func() { logOnError(db.Close(), "Could not close DB") }()
 
 	// Check if onboarding was completed
 	var moduleConfig modules.ModuleConfig
 	err = db.GetJSON(modules.ModuleConfigKey, &moduleConfig)
 	if err != nil {
-		if err == badger.ErrKeyNotFound {
+		if errors.Is(err, badger.ErrKeyNotFound) {
 			moduleConfig = modules.ModuleConfig{CompletedOnboarding: false}
 		} else {
 			fatalError(err, "Could not read from DB")
@@ -102,13 +105,12 @@ func main() {
 
 	if !moduleConfig.CompletedOnboarding {
 		// Initialize DB as empty and default endpoint
-		failOnError(db.PutJSON(modules.HTTPServerConfigKey, modules.HTTPServerConfig{
+		failOnError(db.PutJSON(http.ServerConfigKey, http.ServerConfig{
 			Bind: DefaultBind,
 		}), "could not save http config")
 
 		failOnError(db.PutJSON(modules.ModuleConfigKey, modules.ModuleConfig{
 			EnableKV:            true,
-			EnableStaticServer:  false,
 			EnableTwitch:        false,
 			EnableStulbe:        false,
 			CompletedOnboarding: true,
@@ -120,10 +122,6 @@ func main() {
 	hub, err := kv.NewHub(db.Client(), wrapLogger("kv"))
 	failOnError(err, "Could not initialize kilovolt hub")
 	go hub.Run()
-
-	// Get HTTP config
-	var httpConfig modules.HTTPServerConfig
-	failOnError(db.GetJSON(modules.HTTPServerConfigKey, &httpConfig), "Could not retrieve HTTP server config")
 
 	// Get Stulbe config, if enabled
 	var stulbeManager *stulbe.Manager = nil
@@ -152,10 +150,14 @@ func main() {
 		}
 
 		if stulbeManager != nil {
-			go stulbeManager.ReplicateKey(loyalty.ConfigKey)
-			go stulbeManager.ReplicateKey(loyalty.RewardsKey)
-			go stulbeManager.ReplicateKey(loyalty.GoalsKey)
-			go stulbeManager.ReplicateKey(loyalty.PointsPrefix)
+			go func() {
+				logOnError(stulbeManager.ReplicateKeys([]string{
+					loyalty.ConfigKey,
+					loyalty.RewardsKey,
+					loyalty.GoalsKey,
+					loyalty.PointsPrefix,
+				}), "Could not replicate loyalty keys")
+			}()
 		}
 	}
 
@@ -164,61 +166,61 @@ func main() {
 		// Create logger
 		twitchLogger := wrapLogger("twitch")
 
-		// Get Twitch config
-		var twitchConfig twitch.Config
-		failOnError(db.GetJSON(twitch.ConfigKey, &twitchConfig), "Could not retrieve twitch config")
-
 		// Create Twitch client
-		twitchClient, err := twitch.NewClient(db, twitchConfig, twitchLogger)
-		if err == nil {
-
-			// Get Twitchbot config
-			var twitchBotConfig twitch.BotConfig
-			failOnError(db.GetJSON(twitch.BotConfigKey, &twitchBotConfig), "Could not retrieve twitch bot config")
-
-			// Create and run IRC bot
-			bot := twitch.NewBot(twitchClient, twitchBotConfig)
-			if moduleConfig.EnableLoyalty {
-				bot.SetupLoyalty(loyaltyManager)
-			}
-			go func() {
-				failOnError(bot.Connect(), "connection failed")
-			}()
-		} else {
+		twitchClient, err := twitch.NewClient(db, twitchLogger)
+		if err != nil {
 			log.WithError(err).Error("Twitch initialization failed! Module was temporarily disabled")
 			moduleConfig.EnableTwitch = false
+		} else {
+			if twitchClient.Bot != nil && moduleConfig.EnableLoyalty {
+				twitchClient.Bot.SetupLoyalty(loyaltyManager)
+			}
 		}
 	}
 
 	// Create logger and endpoints
 	httpLogger := wrapLogger("http")
+	httpServer, err := http.NewServer(db, httpLogger)
+	failOnError(err, "Could not initialize http server")
 
 	fedir, _ := fs.Sub(frontend, "frontend/dist")
-	http.Handle("/ui/", http.StripPrefix("/ui/", FileServerWithDefault(http.FS(fedir))))
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		kv.ServeWs(hub, w, r)
-	})
-	if moduleConfig.EnableStaticServer {
-		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(httpConfig.Path))))
-		httpLogger.WithField("path", httpConfig.Path).Info("serving %s")
-	}
+	httpServer.SetFrontend(fedir)
+	httpServer.SetHub(hub)
 
 	go func() {
 		time.Sleep(time.Second) // THIS IS STUPID
-		dashboardURL := fmt.Sprintf("http://%s/ui", httpConfig.Bind)
+		dashboardURL := fmt.Sprintf("http://%s/ui", httpServer.Config.Bind)
 		err := browser.OpenURL(dashboardURL)
 		if err != nil {
 			log.WithError(err).Warnf("could not open browser, dashboard URL available at: %s", dashboardURL)
 		}
 	}()
 
+	go func() {
+		err := db.Subscribe(context.Background(), func(changed []database.ModifiedKV) error {
+			for _, pair := range changed {
+				if pair.Key == modules.ModuleConfigKey {
+					//TODO Enable/disable modules
+				}
+			}
+			return nil
+		}, modules.ModuleConfigKey)
+		log.WithError(err).Error("Error while listening to module config changes")
+	}()
+
 	// Start HTTP server
-	fatalError(http.ListenAndServe(httpConfig.Bind, nil), "HTTP server died unexepectedly")
+	failOnError(httpServer.Listen(), "HTTP server stopped")
 }
 
 func failOnError(err error, text string) {
 	if err != nil {
 		fatalError(err, text)
+	}
+}
+
+func logOnError(err error, text string) {
+	if err != nil {
+		log.WithError(err).Error(text)
 	}
 }
 

@@ -95,3 +95,14 @@ func (m *Manager) ReplicateKey(prefix string) error {
 		return nil
 	}, prefix)
 }
+
+func (m *Manager) ReplicateKeys(prefixes []string) error {
+	for _, prefix := range prefixes {
+		err := m.ReplicateKey(prefix)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

@@ -53,7 +53,7 @@ func NewManager(db *database.DB, log logrus.FieldLogger) (*Manager, error) {
 	}
 	// Ger data from DB
 	if err := db.GetJSON(ConfigKey, &manager.config); err != nil {
-		if err == badger.ErrKeyNotFound {
+		if errors.Is(err, badger.ErrKeyNotFound) {
 			log.Warn("missing configuration for loyalty (but it's enabled). Please make sure to set it up properly!")
 		} else {
 			return nil, err
@@ -62,17 +62,17 @@ func NewManager(db *database.DB, log logrus.FieldLogger) (*Manager, error) {
 
 	// Retrieve configs
 	if err := db.GetJSON(RewardsKey, &manager.rewards); err != nil {
-		if err != badger.ErrKeyNotFound {
+		if !errors.Is(err, badger.ErrKeyNotFound) {
 			return nil, err
 		}
 	}
 	if err := db.GetJSON(GoalsKey, &manager.goals); err != nil {
-		if err != badger.ErrKeyNotFound {
+		if !errors.Is(err, badger.ErrKeyNotFound) {
 			return nil, err
 		}
 	}
 	if err := db.GetJSON(QueueKey, &manager.queue); err != nil {
-		if err != badger.ErrKeyNotFound {
+		if !errors.Is(err, badger.ErrKeyNotFound) {
 			return nil, err
 		}
 	}
@@ -80,7 +80,7 @@ func NewManager(db *database.DB, log logrus.FieldLogger) (*Manager, error) {
 	// Retrieve user points
 	points, err := db.GetAll(PointsPrefix)
 	if err != nil {
-		if err != badger.ErrKeyNotFound {
+		if !errors.Is(err, badger.ErrKeyNotFound) {
 			return nil, err
 		}
 		points = make(map[string]string)

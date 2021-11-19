@@ -1,6 +1,10 @@
 package twitch
 
-import "github.com/strimertul/strimertul/database"
+import (
+	"errors"
+
+	"github.com/strimertul/strimertul/database"
+)
 
 const BotModulesConfigKey = "twitch/bot-modules/config"
 
@@ -12,7 +16,7 @@ func (b *Bot) LoadModules() error {
 	var cfg BotModulesConfig
 	err := b.api.db.GetJSON(BotModulesConfigKey, &cfg)
 	if err != nil {
-		if err != database.ErrKeyNotFound {
+		if !errors.Is(err, database.ErrKeyNotFound) {
 			return err
 		}
 		cfg = BotModulesConfig{
