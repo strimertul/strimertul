@@ -5,7 +5,6 @@ import KilovoltWS from '@strimertul/kilovolt-client';
 interface ModuleConfig {
   configured: boolean;
   kv: boolean;
-  static: boolean;
   twitch: boolean;
   stulbe: boolean;
   loyalty: boolean;
@@ -13,6 +12,7 @@ interface ModuleConfig {
 
 interface HTTPConfig {
   bind: string;
+  enable_static_server: boolean;
   path: string;
 }
 

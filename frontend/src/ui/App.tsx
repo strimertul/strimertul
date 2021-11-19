@@ -84,7 +84,7 @@ export default function App(): React.ReactElement {
     return <div className="container">{t('system.loading')}</div>;
   }
 
-  const basepath = process.env.NODE_ENV === 'development' ? '/' : '/ui/';
+  const basepath = '/ui/';
 
   const routeItem = ({ route, name, subroutes }: RouteItem) => (
     <li key={route}>

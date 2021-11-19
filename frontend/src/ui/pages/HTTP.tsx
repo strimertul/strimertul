@@ -10,12 +10,11 @@ export default function HTTPPage(
   params: RouteComponentProps<unknown>,
 ): React.ReactElement {
   const { t } = useTranslation();
-  const [moduleConfig, setModuleConfig] = useModule(modules.moduleConfig);
   const [httpConfig, setHTTPConfig] = useModule(modules.httpConfig);
   const dispatch = useDispatch();
 
-  const busy = moduleConfig === null || httpConfig === null;
-  const active = moduleConfig?.static ?? false;
+  const busy = httpConfig === null;
+  const active = httpConfig?.enable_static_server ?? false;
 
   return (
     <>
@@ -50,9 +49,9 @@ export default function HTTPPage(
             checked={active}
             onChange={(ev) =>
               dispatch(
-                apiReducer.actions.moduleConfigChanged({
-                  ...moduleConfig,
-                  static: ev.target.checked,
+                apiReducer.actions.httpConfigChanged({
+                  ...httpConfig,
+                  enable_static_server: ev.target.checked,
                 }),
               )
             }
@@ -82,7 +81,6 @@ export default function HTTPPage(
       <button
         className="button"
         onClick={() => {
-          dispatch(setModuleConfig(moduleConfig));
           dispatch(setHTTPConfig(httpConfig));
         }}
       >

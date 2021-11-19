@@ -15,14 +15,13 @@ import (
 )
 
 type Server struct {
-	Config     ServerConfig
-	db         *database.DB
-	logger     logrus.FieldLogger
-	server     *http.Server
-	frontend   fs.FS
-	hub        *kv.Hub
-	staticPath string
-	mux        *http.ServeMux
+	Config   ServerConfig
+	db       *database.DB
+	logger   logrus.FieldLogger
+	server   *http.Server
+	frontend fs.FS
+	hub      *kv.Hub
+	mux      *http.ServeMux
 }
 
 func NewServer(db *database.DB, log logrus.FieldLogger) (*Server, error) {
@@ -48,10 +47,6 @@ func (s *Server) SetHub(hub *kv.Hub) {
 	s.hub = hub
 }
 
-func (s *Server) SetStaticPath(path string) {
-	s.staticPath = path
-}
-
 func (s *Server) makeMux() *http.ServeMux {
 	mux := http.NewServeMux()
 
@@ -63,8 +58,8 @@ func (s *Server) makeMux() *http.ServeMux {
 			kv.ServeWs(s.hub, w, r)
 		})
 	}
-	if s.staticPath != "" {
-		mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.staticPath))))
+	if s.Config.EnableStaticServer {
+		mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.Config.Path))))
 	}
 
 	return mux
