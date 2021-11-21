@@ -6,7 +6,9 @@ module.exports = {
     'no-console': 0,
     'import/extensions': 0,
     'no-use-before-define': 'off',
+    'no-shadow': 'off',
     '@typescript-eslint/no-use-before-define': ['error'],
+    '@typescript-eslint/no-shadow': ['error'],
   },
   settings: {
     'import/resolver': {

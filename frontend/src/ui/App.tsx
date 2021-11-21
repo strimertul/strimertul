@@ -1,5 +1,5 @@
 import { Link, Redirect, Router, useLocation } from '@reach/router';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
@@ -23,6 +23,8 @@ import TwitchBotModulesPage from './pages/twitch/Modules';
 import StulbeConfigPage from './pages/stulbe/Config';
 import StulbeWebhooksPage from './pages/stulbe/Webhook';
 import TwitchBotTimersPage from './pages/twitch/Timers';
+import { ConnectionStatus } from '../store/api/types';
+import Field from './components/Field';
 
 interface RouteItem {
   name?: string;
@@ -59,26 +61,85 @@ const menu: RouteItem[] = [
   },
 ];
 
+function AuthModal(): React.ReactElement {
+  const { t } = useTranslation();
+  const [password, setPassword] = useState('');
+  const inputRef = useRef<HTMLInputElement>();
+
+  useEffect(() => {
+    if (inputRef?.current) {
+      inputRef.current.focus();
+    }
+  });
+
+  const submit = () => {
+    localStorage.setItem('password', password);
+    window.location.reload();
+  };
+
+  return (
+    <div className="modal is-active">
+      <div className="modal-background"></div>
+      <div className="modal-card">
+        <header className="modal-card-head">
+          <p className="modal-card-title">{t('auth.header')}</p>
+        </header>
+        <section className="modal-card-body">
+          <Field>{t('auth.message')}</Field>
+          <Field>
+            <input
+              className="input"
+              type="password"
+              placeholder={t('auth.placeholder')}
+              value={password ?? ''}
+              ref={inputRef}
+              onChange={(ev) => setPassword(ev.target.value)}
+              onKeyUp={(ev) => {
+                if (ev.key === 'Enter' || ev.code === 'Enter') {
+                  submit();
+                }
+              }}
+            />
+          </Field>
+        </section>
+        <footer className="modal-card-foot">
+          <button className="button is-success" onClick={() => submit()}>
+            {t('auth.button')}
+          </button>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
 export default function App(): React.ReactElement {
   const loc = useLocation();
   const { t } = useTranslation();
 
   const client = useSelector((state: RootState) => state.api.client);
-  const connected = useSelector((state: RootState) => state.api.connected);
+  const connected = useSelector(
+    (state: RootState) => state.api.connectionStatus,
+  );
   const dispatch = useDispatch();
 
   // Create WS client
   useEffect(() => {
     if (!client) {
       dispatch(
-        createWSClient(
-          process.env.NODE_ENV === 'development'
-            ? 'ws://localhost:4337/ws'
-            : `ws://${loc.host}/ws`,
-        ),
+        createWSClient({
+          address:
+            process.env.NODE_ENV === 'development'
+              ? 'ws://localhost:4337/ws'
+              : `ws://${loc.host}/ws`,
+          password: localStorage.password,
+        }),
       );
     }
   }, []);
+
+  if (connected === ConnectionStatus.AuthenticationNeeded) {
+    return <AuthModal />;
+  }
 
   if (!client) {
     return <div className="container">{t('system.loading')}</div>;
@@ -108,7 +169,7 @@ export default function App(): React.ReactElement {
   return (
     <section className="main-content columns is-fullheight">
       <section className="notifications">
-        {!connected ? (
+        {connected !== ConnectionStatus.Connected ? (
           <div className="notification is-danger">
             {t('system.connection-lost')}
           </div>

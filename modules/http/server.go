@@ -7,7 +7,7 @@ import (
 	"io/fs"
 	"net/http"
 
-	kv "github.com/strimertul/kilovolt/v5"
+	kv "github.com/strimertul/kilovolt/v6"
 
 	"github.com/sirupsen/logrus"
 
@@ -35,16 +35,23 @@ func NewServer(db *database.DB, log logrus.FieldLogger) (*Server, error) {
 		server: &http.Server{},
 	}
 	err := db.GetJSON(ServerConfigKey, &server.Config)
+	if err != nil {
+		return nil, err
+	}
 
-	return server, err
+	server.hub, err = kv.NewHub(db.Client(), kv.HubOptions{
+		Password: server.Config.KVPassword,
+	}, log.WithField("module", "kv"))
+	if err != nil {
+		return nil, err
+	}
+	go server.hub.Run()
+
+	return server, nil
 }
 
 func (s *Server) SetFrontend(files fs.FS) {
 	s.frontend = files
-}
-
-func (s *Server) SetHub(hub *kv.Hub) {
-	s.hub = hub
 }
 
 func (s *Server) makeMux() *http.ServeMux {
@@ -74,11 +81,19 @@ func (s *Server) Listen() error {
 			for _, pair := range changed {
 				if pair.Key == ServerConfigKey {
 					oldBind := s.Config.Bind
+					oldPassword := s.Config.KVPassword
 					err := s.db.GetJSON(ServerConfigKey, &s.Config)
 					if err != nil {
 						return err
 					}
 					s.mux = s.makeMux()
+					// Restart hub if password changed
+					if oldPassword != s.Config.KVPassword {
+						s.hub.SetOptions(kv.HubOptions{
+							Password: s.Config.KVPassword,
+						})
+					}
+					// Restart server if bind changed
 					if oldBind != s.Config.Bind {
 						restart.Set(true)
 						err = s.server.Shutdown(context.Background())

@@ -54,7 +54,8 @@
     "server-bind": "HTTP server bind",
     "static-content": "Static content",
     "enable-static": "Enable static server",
-    "static-root-path": "Static content root path"
+    "static-root-path": "Static content root path",
+    "kv-password": "Kilovolt password"
   },
   "backend": {
     "config": {
@@ -226,5 +227,11 @@
       "err-twitchbot-disabled": "Twitch bot must be enabled in order to use timers!",
       "enable": "Enable timers"
     }
+  },
+  "auth": {
+    "message": "Strimertül's database is protected by a password, please write it below to access the control panel. If the database has no password (for example, it was recently changed from having one to none), leave the field empty.",
+    "header": "Authorization needed",
+    "placeholder": "Password",
+    "button": "Authenticate"
   }
 }

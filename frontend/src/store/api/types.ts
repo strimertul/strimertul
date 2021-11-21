@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 
 import KilovoltWS from '@strimertul/kilovolt-client';
+import { kvError } from '@strimertul/kilovolt-client/lib/messages';
 
 interface ModuleConfig {
   configured: boolean;
@@ -13,6 +14,7 @@ interface ModuleConfig {
 interface HTTPConfig {
   bind: string;
   enable_static_server: boolean;
+  kv_password: string;
   path: string;
 }
 
@@ -109,9 +111,16 @@ export interface LoyaltyRedeem {
   request_text: string;
 }
 
+export enum ConnectionStatus {
+  NotConnected,
+  AuthenticationNeeded,
+  Connected,
+}
+
 export interface APIState {
   client: KilovoltWS;
-  connected: boolean;
+  connectionStatus: ConnectionStatus;
+  kvError: kvError;
   initialLoadComplete: boolean;
   loyalty: {
     users: LoyaltyStorage;

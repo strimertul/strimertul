@@ -8,8 +8,10 @@ import {
   PayloadAction,
 } from '@reduxjs/toolkit';
 import KilovoltWS from '@strimertul/kilovolt-client';
+import { kvError } from '@strimertul/kilovolt-client/lib/messages';
 import {
   APIState,
+  ConnectionStatus,
   LoyaltyPointsEntry,
   LoyaltyRedeem,
   LoyaltyStorage,
@@ -63,8 +65,11 @@ function makeModule<T>(
   };
 }
 
-// eslint-disable-next-line import/no-mutable-exports, @typescript-eslint/ban-types
-export let setupClientReconnect: AsyncThunk<void, KilovoltWS, {}>;
+// eslint-disable-next-line @typescript-eslint/ban-types
+let setupClientReconnect: AsyncThunk<void, KilovoltWS, {}>;
+
+// eslint-disable-next-line  @typescript-eslint/ban-types
+let kvErrorReceived: AsyncThunk<void, kvError, {}>;
 
 // Storage
 const loyaltyPointsPrefix = 'loyalty/points/';
@@ -76,8 +81,11 @@ const loyaltyRemoveRedeemKey = 'loyalty/@remove-redeem';
 
 export const createWSClient = createAsyncThunk(
   'api/createClient',
-  async (address: string, { dispatch }) => {
-    const client = new KilovoltWS(address);
+  async (options: { address: string; password?: string }, { dispatch }) => {
+    const client = new KilovoltWS(options.address, options.password);
+    client.on('error', (err) => {
+      dispatch(kvErrorReceived(err.data));
+    });
     await client.wait();
     dispatch(setupClientReconnect(client));
     return client;
@@ -233,7 +241,8 @@ const moduleChangeReducers = Object.fromEntries(
 
 const initialState: APIState = {
   client: null,
-  connected: false,
+  connectionStatus: ConnectionStatus.NotConnected,
+  kvError: null,
   initialLoadComplete: false,
   loyalty: {
     users: null,
@@ -264,8 +273,14 @@ const apiReducer = createSlice({
     initialLoadCompleted(state) {
       state.initialLoadComplete = true;
     },
-    connectionStatusChanged(state, { payload }: PayloadAction<boolean>) {
-      state.connected = payload;
+    connectionStatusChanged(
+      state,
+      { payload }: PayloadAction<ConnectionStatus>,
+    ) {
+      state.connectionStatus = payload;
+    },
+    kvErrorReceived(state, { payload }: PayloadAction<kvError>) {
+      state.kvError = payload;
     },
     loyaltyUserPointsChanged(
       state,
@@ -279,7 +294,7 @@ const apiReducer = createSlice({
   extraReducers: (builder) => {
     builder.addCase(createWSClient.fulfilled, (state, { payload }) => {
       state.client = payload;
-      state.connected = true;
+      state.connectionStatus = ConnectionStatus.Connected;
     });
     builder.addCase(getUserPoints.fulfilled, (state, { payload }) => {
       state.loyalty.users = payload;
@@ -299,11 +314,37 @@ setupClientReconnect = createAsyncThunk(
         console.info('Attempting reconnection');
         client.reconnect();
       }, 5000);
-      dispatch(apiReducer.actions.connectionStatusChanged(false));
+      dispatch(
+        apiReducer.actions.connectionStatusChanged(
+          ConnectionStatus.NotConnected,
+        ),
+      );
     });
     client.on('open', () => {
-      dispatch(apiReducer.actions.connectionStatusChanged(true));
+      dispatch(
+        apiReducer.actions.connectionStatusChanged(ConnectionStatus.Connected),
+      );
     });
+  },
+);
+
+kvErrorReceived = createAsyncThunk(
+  'api/kvErrorReceived',
+  async (error: kvError, { dispatch }) => {
+    switch (error.error) {
+      case 'authentication required':
+      case 'authentication failed':
+        dispatch(
+          apiReducer.actions.connectionStatusChanged(
+            ConnectionStatus.AuthenticationNeeded,
+          ),
+        );
+        break;
+      default:
+        // Unsupported error
+        dispatch(apiReducer.actions.kvErrorReceived(error));
+        console.error(error);
+    }
   },
 );
 

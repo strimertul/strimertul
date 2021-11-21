@@ -1,9 +1,10 @@
 import { RouteComponentProps } from '@reach/router';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { useModule } from '../../lib/react-utils';
 import apiReducer, { modules } from '../../store/api/reducer';
+import Field from '../components/Field';
 
 export default function HTTPPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -19,8 +20,7 @@ export default function HTTPPage(
   return (
     <>
       <h1 className="title is-4">{t('http.header')}</h1>
-      <div className="field">
-        <label className="label">{t('http.server-bind')}</label>
+      <Field name={t('http.server-bind')}>
         <p className="control">
           <input
             disabled={busy}
@@ -38,9 +38,28 @@ export default function HTTPPage(
             }
           />
         </p>
-      </div>
-      <label className="label">{t('http.static-content')}</label>
-      <div className="field">
+      </Field>
+      <Field name={t('http.kv-password')}>
+        <p className="control">
+          <input
+            className="input"
+            type="password"
+            disabled={busy}
+            placeholder="None"
+            value={httpConfig?.kv_password ?? ''}
+            onChange={(ev) =>
+              dispatch(
+                apiReducer.actions.httpConfigChanged({
+                  ...httpConfig,
+                  kv_password: ev.target.value,
+                }),
+              )
+            }
+          />
+        </p>
+        <p className="help">Leave empty to disable authentication</p>
+      </Field>
+      <Field name={t('http.static-content')}>
         <label className="checkbox">
           <input
             type="checkbox"
@@ -57,26 +76,27 @@ export default function HTTPPage(
           />{' '}
           {t('http.enable-static')}
         </label>
-      </div>
-      <div className="field">
-        <label className="label">{t('http.static-root-path')}</label>
-        <p className="control">
-          <input
-            className="input"
-            type="text"
-            disabled={busy || !active}
-            value={httpConfig?.path ?? ''}
-            onChange={(ev) =>
-              dispatch(
-                apiReducer.actions.httpConfigChanged({
-                  ...httpConfig,
-                  path: ev.target.value,
-                }),
-              )
-            }
-          />
-        </p>
-      </div>
+      </Field>
+      {active && (
+        <Field name={t('http.static-root-path')}>
+          <p className="control">
+            <input
+              className="input"
+              type="text"
+              disabled={busy || !active}
+              value={httpConfig?.path ?? ''}
+              onChange={(ev) =>
+                dispatch(
+                  apiReducer.actions.httpConfigChanged({
+                    ...httpConfig,
+                    path: ev.target.value,
+                  }),
+                )
+              }
+            />
+          </p>
+        </Field>
+      )}
       <button
         className="button"
         onClick={() => {

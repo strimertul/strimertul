@@ -13,8 +13,6 @@ import (
 
 	"github.com/strimertul/strimertul/modules/http"
 
-	kv "github.com/strimertul/kilovolt/v5"
-
 	"github.com/strimertul/strimertul/database"
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/loyalty"
@@ -118,11 +116,6 @@ func main() {
 		fmt.Printf("It appears this is your first time running %s! Please go to http://%s and make sure to configure anything you want!\n\n", AppTitle, DefaultBind)
 	}
 
-	// Initialize KV (required)
-	hub, err := kv.NewHub(db.Client(), wrapLogger("kv"))
-	failOnError(err, "Could not initialize kilovolt hub")
-	go hub.Run()
-
 	// Get Stulbe config, if enabled
 	var stulbeManager *stulbe.Manager = nil
 	if moduleConfig.EnableStulbe {
@@ -185,7 +178,6 @@ func main() {
 
 	fedir, _ := fs.Sub(frontend, "frontend/dist")
 	httpServer.SetFrontend(fedir)
-	httpServer.SetHub(hub)
 
 	go func() {
 		time.Sleep(time.Second) // THIS IS STUPID
