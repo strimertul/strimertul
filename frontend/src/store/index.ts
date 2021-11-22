@@ -1,4 +1,4 @@
-import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit';
+import { configureStore } from '@reduxjs/toolkit';
 import { useDispatch } from 'react-redux';
 import thunkMiddleware from 'redux-thunk';
 import apiReducer from './api/reducer';
@@ -7,12 +7,10 @@ const store = configureStore({
   reducer: {
     api: apiReducer.reducer,
   },
-  middleware: [
-    ...getDefaultMiddleware({
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
       serializableCheck: false,
-    }),
-    thunkMiddleware,
-  ],
+    }).concat(thunkMiddleware),
   devTools: true,
 });
 
