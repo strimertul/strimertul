@@ -7,12 +7,13 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/strimertul/strimertul/modules/database"
+	"github.com/strimertul/strimertul/modules/loyalty"
+
 	"github.com/Masterminds/sprig"
 	irc "github.com/gempir/go-twitch-irc/v2"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
-	"github.com/strimertul/strimertul/database"
-	"github.com/strimertul/strimertul/modules/loyalty"
 )
 
 type Bot struct {

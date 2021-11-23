@@ -11,19 +11,16 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/strimertul/strimertul/modules/http"
-
-	"github.com/strimertul/strimertul/database"
 	"github.com/strimertul/strimertul/modules"
+	"github.com/strimertul/strimertul/modules/database"
+	"github.com/strimertul/strimertul/modules/http"
 	"github.com/strimertul/strimertul/modules/loyalty"
 	"github.com/strimertul/strimertul/modules/stulbe"
 	"github.com/strimertul/strimertul/modules/twitch"
 
 	"github.com/dgraph-io/badger/v3"
-
-	"github.com/pkg/browser"
-
 	"github.com/mattn/go-colorable"
+	"github.com/pkg/browser"
 	"github.com/sirupsen/logrus"
 
 	_ "net/http/pprof"
@@ -44,10 +41,6 @@ var frontend embed.FS
 
 var log = logrus.New()
 
-func wrapLogger(module string) logrus.FieldLogger {
-	return log.WithField("module", module)
-}
-
 func parseLogLevel(level string) logrus.Level {
 	switch level {
 	case "error":
@@ -67,7 +60,8 @@ func parseLogLevel(level string) logrus.Level {
 
 func main() {
 	// Get cmd line parameters
-	dbdir := flag.String("dbdir", "data", "Path to strimertul database dir")
+	noheader := flag.Bool("noheader", false, "Do not print the app header")
+	dbdir := flag.String("dbdir", "data", "Path to strimertül database dir")
 	loglevel := flag.String("loglevel", "info", "Logging level (debug, info, warn, error)")
 	flag.Parse()
 
@@ -81,14 +75,18 @@ func main() {
 		log.SetOutput(colorable.NewColorableStdout())
 	}
 
-	// Print the app header :D
-	fmt.Println(AppHeader)
+	if !*noheader {
+		// Print the app header :D
+		fmt.Println(AppHeader)
+	}
+
+	// Create module manager
+	manager := modules.NewManager(log)
 
 	// Loading routine
-	dblogger := wrapLogger("db")
-	db, err := database.Open(badger.DefaultOptions(*dbdir).WithLogger(dblogger), dblogger)
+	db, err := database.Open(badger.DefaultOptions(*dbdir), manager)
 	failOnError(err, "Could not open DB")
-	defer func() { logOnError(db.Close(), "Could not close DB") }()
+	defer db.Close()
 
 	// Check if onboarding was completed
 	var moduleConfig modules.ModuleConfig
@@ -101,6 +99,7 @@ func main() {
 		}
 	}
 
+	// Bootstrap if needed
 	if !moduleConfig.CompletedOnboarding {
 		// Initialize DB as empty and default endpoint
 		failOnError(db.PutJSON(http.ServerConfigKey, http.ServerConfig{
@@ -108,7 +107,6 @@ func main() {
 		}), "could not save http config")
 
 		failOnError(db.PutJSON(modules.ModuleConfigKey, modules.ModuleConfig{
-			EnableKV:            true,
 			EnableTwitch:        false,
 			EnableStulbe:        false,
 			CompletedOnboarding: true,
@@ -117,64 +115,38 @@ func main() {
 	}
 
 	// Get Stulbe config, if enabled
-	var stulbeManager *stulbe.Manager = nil
 	if moduleConfig.EnableStulbe {
-		stulbeLogger := wrapLogger("stulbe")
-		stulbeManager, err = stulbe.Initialize(db, stulbeLogger)
+		stulbeManager, err := stulbe.Initialize(manager)
 		if err != nil {
-			log.WithError(err).Error("Stulbe initialization failed! Module was temporarely disabled")
-			moduleConfig.EnableStulbe = false
+			log.WithError(err).Error("Stulbe initialization failed!")
 		} else {
 			defer stulbeManager.Close()
-			go func() {
-				err := stulbeManager.ReceiveEvents()
-				stulbeLogger.WithError(err).Error("Stulbe subscription died unexpectedly!")
-			}()
 		}
 	}
 
-	var loyaltyManager *loyalty.Manager
-	loyaltyLogger := wrapLogger("loyalty")
 	if moduleConfig.EnableLoyalty {
-		loyaltyManager, err = loyalty.NewManager(db, loyaltyLogger)
+		loyaltyManager, err := loyalty.NewManager(manager)
 		if err != nil {
-			log.WithError(err).Error("Loyalty initialization failed! Module was temporarily disabled")
-			moduleConfig.EnableLoyalty = false
-		}
-
-		if stulbeManager != nil {
-			go func() {
-				logOnError(stulbeManager.ReplicateKeys([]string{
-					loyalty.ConfigKey,
-					loyalty.RewardsKey,
-					loyalty.GoalsKey,
-					loyalty.PointsPrefix,
-				}), "Could not replicate loyalty keys")
-			}()
+			log.WithError(err).Error("Loyalty initialization failed!")
+		} else {
+			defer loyaltyManager.Close()
 		}
 	}
 
-	//TODO Refactor this to something sane
 	if moduleConfig.EnableTwitch {
-		// Create logger
-		twitchLogger := wrapLogger("twitch")
-
 		// Create Twitch client
-		twitchClient, err := twitch.NewClient(db, twitchLogger)
+		twitchModule, err := twitch.NewClient(manager)
 		if err != nil {
-			log.WithError(err).Error("Twitch initialization failed! Module was temporarily disabled")
-			moduleConfig.EnableTwitch = false
+			log.WithError(err).Error("Twitch initialization failed!")
 		} else {
-			if twitchClient.Bot != nil && moduleConfig.EnableLoyalty {
-				twitchClient.Bot.SetupLoyalty(loyaltyManager)
-			}
+			defer twitchModule.Close()
 		}
 	}
 
 	// Create logger and endpoints
-	httpLogger := wrapLogger("http")
-	httpServer, err := http.NewServer(db, httpLogger)
+	httpServer, err := http.NewServer(manager)
 	failOnError(err, "Could not initialize http server")
+	defer httpServer.Close()
 
 	fedir, _ := fs.Sub(frontend, "frontend/dist")
 	httpServer.SetFrontend(fedir)
@@ -207,12 +179,6 @@ func main() {
 func failOnError(err error, text string) {
 	if err != nil {
 		fatalError(err, text)
-	}
-}
-
-func logOnError(err error, text string) {
-	if err != nil {
-		log.WithError(err).Error(text)
 	}
 }
 

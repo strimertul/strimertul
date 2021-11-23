@@ -7,11 +7,11 @@ import (
 	"io/fs"
 	"net/http"
 
-	kv "github.com/strimertul/kilovolt/v6"
+	"github.com/strimertul/strimertul/modules"
+	"github.com/strimertul/strimertul/modules/database"
 
 	"github.com/sirupsen/logrus"
-
-	"github.com/strimertul/strimertul/database"
+	kv "github.com/strimertul/kilovolt/v6"
 )
 
 type Server struct {
@@ -24,10 +24,13 @@ type Server struct {
 	mux      *http.ServeMux
 }
 
-func NewServer(db *database.DB, log logrus.FieldLogger) (*Server, error) {
-	if log == nil {
-		log = logrus.New()
+func NewServer(manager *modules.Manager) (*Server, error) {
+	db, ok := manager.Modules["db"].(*database.DB)
+	if !ok {
+		return nil, errors.New("db module not found")
 	}
+
+	log := manager.Logger(modules.ModuleHTTP)
 
 	server := &Server{
 		logger: log,
@@ -47,7 +50,14 @@ func NewServer(db *database.DB, log logrus.FieldLogger) (*Server, error) {
 	}
 	go server.hub.Run()
 
+	// Register module
+	manager.Modules[modules.ModuleHTTP] = server
+
 	return server, nil
+}
+
+func (s *Server) Close() error {
+	return s.server.Close()
 }
 
 func (s *Server) SetFrontend(files fs.FS) {

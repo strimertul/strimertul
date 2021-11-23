@@ -3,7 +3,7 @@ package twitch
 import (
 	"errors"
 
-	"github.com/strimertul/strimertul/database"
+	"github.com/strimertul/strimertul/modules/database"
 )
 
 const BotModulesConfigKey = "twitch/bot-modules/config"

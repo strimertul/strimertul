@@ -7,12 +7,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/strimertul/strimertul/modules"
+	"github.com/strimertul/strimertul/modules/database"
+	"github.com/strimertul/strimertul/modules/stulbe"
+	"github.com/strimertul/stulbe/api"
+
 	"github.com/dgraph-io/badger/v3"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
-	"github.com/strimertul/stulbe/api"
-
-	"github.com/strimertul/strimertul/database"
 )
 
 var (
@@ -33,10 +35,13 @@ type Manager struct {
 	cooldowns map[string]time.Time
 }
 
-func NewManager(db *database.DB, log logrus.FieldLogger) (*Manager, error) {
-	if log == nil {
-		log = logrus.New()
+func NewManager(manager *modules.Manager) (*Manager, error) {
+	db, ok := manager.Modules["db"].(*database.DB)
+	if !ok {
+		return nil, errors.New("db module not found")
 	}
+
+	log := manager.Logger(modules.ModuleLoyalty)
 
 	// Check if we need to migrate
 	// TODO Remove this in the future
@@ -45,14 +50,14 @@ func NewManager(db *database.DB, log logrus.FieldLogger) (*Manager, error) {
 		return nil, err
 	}
 
-	manager := &Manager{
+	loyalty := &Manager{
 		logger:    log,
 		db:        db,
 		mu:        sync.Mutex{},
 		cooldowns: make(map[string]time.Time),
 	}
 	// Ger data from DB
-	if err := db.GetJSON(ConfigKey, &manager.config); err != nil {
+	if err := db.GetJSON(ConfigKey, &loyalty.config); err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {
 			log.Warn("missing configuration for loyalty (but it's enabled). Please make sure to set it up properly!")
 		} else {
@@ -61,17 +66,17 @@ func NewManager(db *database.DB, log logrus.FieldLogger) (*Manager, error) {
 	}
 
 	// Retrieve configs
-	if err := db.GetJSON(RewardsKey, &manager.rewards); err != nil {
+	if err := db.GetJSON(RewardsKey, &loyalty.rewards); err != nil {
 		if !errors.Is(err, badger.ErrKeyNotFound) {
 			return nil, err
 		}
 	}
-	if err := db.GetJSON(GoalsKey, &manager.goals); err != nil {
+	if err := db.GetJSON(GoalsKey, &loyalty.goals); err != nil {
 		if !errors.Is(err, badger.ErrKeyNotFound) {
 			return nil, err
 		}
 	}
-	if err := db.GetJSON(QueueKey, &manager.queue); err != nil {
+	if err := db.GetJSON(QueueKey, &loyalty.queue); err != nil {
 		if !errors.Is(err, badger.ErrKeyNotFound) {
 			return nil, err
 		}
@@ -85,21 +90,44 @@ func NewManager(db *database.DB, log logrus.FieldLogger) (*Manager, error) {
 		}
 		points = make(map[string]string)
 	}
-	manager.points = make(map[string]PointsEntry)
+	loyalty.points = make(map[string]PointsEntry)
 	for k, v := range points {
 		var entry PointsEntry
 		err := jsoniter.ConfigFastest.UnmarshalFromString(v, &entry)
 		if err != nil {
 			return nil, err
 		}
-		manager.points[k] = entry
+		loyalty.points[k] = entry
 	}
 
 	// Subscribe for changes
-	go db.Subscribe(context.Background(), manager.update, "loyalty/")
-	go db.Subscribe(context.Background(), manager.handleRemote, "stulbe/loyalty/")
+	go db.Subscribe(context.Background(), loyalty.update, "loyalty/")
+	go db.Subscribe(context.Background(), loyalty.handleRemote, "stulbe/loyalty/")
 
-	return manager, nil
+	// Register module
+	manager.Modules[modules.ModuleLoyalty] = loyalty
+
+	// Replicate keys on stulbe if available
+	if stulbeManager, ok := manager.Modules["stulbe"].(*stulbe.Manager); ok {
+		go func() {
+			err := stulbeManager.ReplicateKeys([]string{
+				ConfigKey,
+				RewardsKey,
+				GoalsKey,
+				PointsPrefix,
+			})
+			if err != nil {
+				log.WithError(err).Error("failed to replicate keys")
+			}
+		}()
+	}
+
+	return loyalty, nil
+}
+
+func (m *Manager) Close() error {
+	//TODO Stop subscriptions?
+	return nil
 }
 
 func (m *Manager) update(kvs []database.ModifiedKV) error {

@@ -3,8 +3,9 @@ package loyalty
 import (
 	"errors"
 
+	"github.com/strimertul/strimertul/modules/database"
+
 	"github.com/sirupsen/logrus"
-	"github.com/strimertul/strimertul/database"
 )
 
 const OldPointsKey = "loyalty/users"

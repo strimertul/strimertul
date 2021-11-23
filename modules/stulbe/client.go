@@ -2,12 +2,13 @@ package stulbe
 
 import (
 	"context"
+	"errors"
+
+	"github.com/strimertul/strimertul/modules"
+	"github.com/strimertul/strimertul/modules/database"
 
 	"github.com/sirupsen/logrus"
-
 	"github.com/strimertul/stulbe-client-go"
-
-	"github.com/strimertul/strimertul/database"
 )
 
 type Manager struct {
@@ -16,13 +17,21 @@ type Manager struct {
 	logger logrus.FieldLogger
 }
 
-func Initialize(db *database.DB, logger logrus.FieldLogger) (*Manager, error) {
+func Initialize(manager *modules.Manager) (*Manager, error) {
+	db, ok := manager.Modules["db"].(*database.DB)
+	if !ok {
+		return nil, errors.New("db module not found")
+	}
+
+	logger := manager.Logger(modules.ModuleStulbe)
+
 	var config Config
 	err := db.GetJSON(ConfigKey, &config)
 	if err != nil {
 		return nil, err
 	}
 
+	// Create client
 	stulbeClient, err := stulbe.NewClient(stulbe.ClientOptions{
 		Endpoint: config.Endpoint,
 		Username: config.Username,
@@ -33,11 +42,22 @@ func Initialize(db *database.DB, logger logrus.FieldLogger) (*Manager, error) {
 		return nil, err
 	}
 
-	return &Manager{
+	// Create manager
+	stulbeManager := &Manager{
 		Client: stulbeClient,
 		db:     db,
 		logger: logger,
-	}, err
+	}
+
+	// Register module
+	manager.Modules[modules.ModuleStulbe] = stulbeManager
+
+	go func() {
+		err := stulbeManager.ReceiveEvents()
+		logger.WithError(err).Error("Stulbe subscription died unexpectedly!")
+	}()
+
+	return stulbeManager, nil
 }
 
 func (m *Manager) ReceiveEvents() error {
@@ -54,8 +74,9 @@ func (m *Manager) ReceiveEvents() error {
 	}
 }
 
-func (m *Manager) Close() {
+func (m *Manager) Close() error {
 	m.Client.Close()
+	return nil
 }
 
 func (m *Manager) ReplicateKey(prefix string) error {

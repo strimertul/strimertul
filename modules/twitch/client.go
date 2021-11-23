@@ -1,11 +1,15 @@
 package twitch
 
 import (
+	"errors"
 	"fmt"
+
+	"github.com/strimertul/strimertul/modules"
+	"github.com/strimertul/strimertul/modules/database"
+	"github.com/strimertul/strimertul/modules/loyalty"
 
 	"github.com/nicklaw5/helix"
 	"github.com/sirupsen/logrus"
-	"github.com/strimertul/strimertul/database"
 )
 
 type Client struct {
@@ -15,10 +19,13 @@ type Client struct {
 	logger logrus.FieldLogger
 }
 
-func NewClient(db *database.DB, log logrus.FieldLogger) (*Client, error) {
-	if log == nil {
-		log = logrus.New()
+func NewClient(manager *modules.Manager) (*Client, error) {
+	db, ok := manager.Modules["db"].(*database.DB)
+	if !ok {
+		return nil, errors.New("db module not found")
 	}
+
+	log := manager.Logger(modules.ModuleTwitch)
 
 	// Get Twitch config
 	var config Config
@@ -51,7 +58,7 @@ func NewClient(db *database.DB, log logrus.FieldLogger) (*Client, error) {
 		logger: log,
 	}
 
-	// Get Twitchbot config
+	// Get Twitch bot config
 	var twitchBotConfig BotConfig
 	err = db.GetJSON(BotConfigKey, &twitchBotConfig)
 	if err != nil {
@@ -66,5 +73,16 @@ func NewClient(db *database.DB, log logrus.FieldLogger) (*Client, error) {
 		}
 	}()
 
+	// If loyalty module is enabled, set-up loyalty commands
+	if loyaltyManager, ok := manager.Modules[modules.ModuleLoyalty].(*loyalty.Manager); ok && client.Bot != nil {
+		client.Bot.SetupLoyalty(loyaltyManager)
+	}
+
+	manager.Modules[modules.ModuleTwitch] = client
+
 	return client, nil
+}
+
+func (c *Client) Close() error {
+	return c.Bot.Client.Disconnect()
 }

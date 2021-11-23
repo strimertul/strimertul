@@ -5,7 +5,6 @@ import { kvError } from '@strimertul/kilovolt-client/lib/messages';
 
 interface ModuleConfig {
   configured: boolean;
-  kv: boolean;
   twitch: boolean;
   stulbe: boolean;
   loyalty: boolean;

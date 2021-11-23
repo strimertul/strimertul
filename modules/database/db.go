@@ -3,6 +3,8 @@ package database
 import (
 	"context"
 
+	"github.com/strimertul/strimertul/modules"
+
 	"github.com/dgraph-io/badger/v3"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
@@ -27,13 +29,26 @@ type ModifiedKV struct {
 	Expires uint64
 }
 
-func Open(options badger.Options, logger logrus.FieldLogger) (*DB, error) {
-	client, err := badger.Open(options)
+func Open(options badger.Options, manager *modules.Manager) (*DB, error) {
+	// Create logger
+	logger := manager.Logger(modules.ModuleDB)
 
-	return &DB{
+	// Open database
+	client, err := badger.Open(options.WithLogger(logger))
+	if err != nil {
+		return nil, err
+	}
+
+	// Create DB instance
+	db := &DB{
 		client: client,
 		logger: logger,
-	}, err
+	}
+
+	// Register DB module
+	manager.Modules[modules.ModuleDB] = db
+
+	return db, nil
 }
 
 func (db *DB) Client() *badger.DB {
