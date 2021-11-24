@@ -1,11 +1,15 @@
 package twitch
 
 import (
+	"context"
 	"math/rand"
 	"sync"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
+
 	irc "github.com/gempir/go-twitch-irc/v2"
+	"github.com/strimertul/strimertul/modules/database"
 )
 
 const BotTimersKey = "twitch/bot-modules/timers/config"
@@ -51,6 +55,20 @@ func SetupTimers(bot *Bot) *BotTimerModule {
 		}
 	}
 
+	go bot.api.db.Subscribe(context.Background(), func(changed []database.ModifiedKV) error {
+		for _, kv := range changed {
+			if kv.Key == BotTimersKey {
+				err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &mod.Config)
+				if err != nil {
+					bot.logger.WithError(err).Debug("error reloading timer config")
+				} else {
+					bot.logger.Info("reloaded timer config")
+				}
+			}
+		}
+		return nil
+	}, BotTimersKey)
+
 	bot.logger.WithField("timers", len(mod.Config.Timers)).Debug("loaded timers")
 
 	// Start goroutine for clearing message counters and running timers
@@ -95,6 +113,7 @@ func (m *BotTimerModule) runTimers() {
 				if !ok {
 					// If it's the first time we're checking it, start the cooldown
 					lastTriggeredTime = time.Now()
+					m.lastTrigger[name] = lastTriggeredTime
 				}
 				minDelay := timer.MinimumDelay
 				if minDelay < 60 {
