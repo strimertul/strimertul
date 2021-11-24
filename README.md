@@ -15,7 +15,7 @@ Small broadcasting suite for Twitch, includes:
 
 Download the latest build from here: [github.com/strimertul/strimertul/releases/latest](https://github.com/strimertul/strimertul/releases/latest)
 
-Start `strimertul.exe` and as soon as it will load a browser window will open with a Web UI you can use to configure it to your heart's content.
+Start `strimertul.exe` and as soon as it's ready it will open a browser window with the Web UI you can use to configure it to your heart's content.
 
 You can also build the project yourself, refer to the Building section below.
 
