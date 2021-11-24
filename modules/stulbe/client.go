@@ -15,6 +15,8 @@ type Manager struct {
 	Client *stulbe.Client
 	db     *database.DB
 	logger logrus.FieldLogger
+
+	restart chan bool
 }
 
 func Initialize(manager *modules.Manager) (*Manager, error) {
@@ -44,18 +46,56 @@ func Initialize(manager *modules.Manager) (*Manager, error) {
 
 	// Create manager
 	stulbeManager := &Manager{
-		Client: stulbeClient,
-		db:     db,
-		logger: logger,
+		Client:  stulbeClient,
+		db:      db,
+		logger:  logger,
+		restart: make(chan bool),
 	}
 
 	// Register module
 	manager.Modules[modules.ModuleStulbe] = stulbeManager
 
+	// Receive key updates
 	go func() {
-		err := stulbeManager.ReceiveEvents()
-		logger.WithError(err).Error("Stulbe subscription died unexpectedly!")
+		for {
+			err := stulbeManager.ReceiveEvents()
+			if err != nil {
+				logger.WithError(err).Error("Stulbe subscription died unexpectedly!")
+				// Wait for config change before retrying
+				<-stulbeManager.restart
+			}
+		}
 	}()
+
+	// Listen for config changes
+	go db.Subscribe(context.Background(), func(changed []database.ModifiedKV) error {
+		for _, kv := range changed {
+			if kv.Key == ConfigKey {
+				var config Config
+				err := db.GetJSON(ConfigKey, &config)
+				if err != nil {
+					logger.WithError(err).Warn("Failed to get config")
+					continue
+				}
+
+				client, err := stulbe.NewClient(stulbe.ClientOptions{
+					Endpoint: config.Endpoint,
+					Username: config.Username,
+					AuthKey:  config.AuthKey,
+					Logger:   logger,
+				})
+				if err != nil {
+					logger.WithError(err).Warn("Failed to update stulbe client, keeping old settings")
+				} else {
+					stulbeManager.Client.Close()
+					stulbeManager.Client = client
+					stulbeManager.restart <- true
+					logger.Info("updated/restarted stulbe client")
+				}
+			}
+		}
+		return nil
+	}, ConfigKey)
 
 	return stulbeManager, nil
 }
@@ -66,11 +106,16 @@ func (m *Manager) ReceiveEvents() error {
 		return err
 	}
 	for {
-		kv := <-chn
-		err := m.db.PutKey(kv.Key, []byte(kv.Value))
-		if err != nil {
-			return err
+		select {
+		case kv := <-chn:
+			err := m.db.PutKey(kv.Key, []byte(kv.Value))
+			if err != nil {
+				return err
+			}
+		case <-m.restart:
+			return nil
 		}
+
 	}
 }
 
@@ -99,7 +144,7 @@ func (m *Manager) ReplicateKey(prefix string) error {
 
 	m.logger.WithFields(logrus.Fields{
 		"prefix": prefix,
-	}).Debug("synched to remote")
+	}).Debug("synced to remote")
 
 	// Subscribe to local datastore and update remote on change
 	return m.db.Subscribe(context.Background(), func(pairs []database.ModifiedKV) error {

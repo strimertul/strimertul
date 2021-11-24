@@ -114,7 +114,6 @@ func main() {
 		fmt.Printf("It appears this is your first time running %s! Please go to http://%s and make sure to configure anything you want!\n\n", AppTitle, DefaultBind)
 	}
 
-	// Get Stulbe config, if enabled
 	if moduleConfig.EnableStulbe {
 		stulbeManager, err := stulbe.Initialize(manager)
 		if err != nil {
