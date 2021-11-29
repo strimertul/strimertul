@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 500 200" version="1.1" xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/"
+    style="fill-rule:evenodd;clip-rule:evenodd;">
+    <style>
+        @media (prefers-color-scheme: dark) {
+            .text {
+                fill: #FDF6E3;
+            }
+
+            .logo-icon {
+                stroke: #FDF6E3;
+            }
+        }
+    </style>
+    <g transform="matrix(0.845549,0,0,0.845549,-36.0443,11.2498)">
+        <text class="text" x="119.76px" y="192.838px"
+            style="font-family:'CooperHewitt-Light', 'Cooper Hewitt';font-weight:703;font-size:105.623px;fill:#002B36;">s
+            <tspan x="173.416px 214.609px " y="192.838px 192.838px ">tr</tspan>imertül
+        </text>
+    </g>
+    <g transform="matrix(0.791777,0,0,0.791777,-69.549,-161.623)">
+        <g class="logo-icon" transform="matrix(6.12323e-17,-1,1,6.12323e-17,247.057,623.786)">
+            <path
+                d="M336.71,143.892C339.908,137.497 346.444,133.457 353.595,133.457C360.745,133.457 367.282,137.497 370.48,143.892C375.695,154.322 381.371,165.675 386.34,175.612C389.266,181.464 388.953,188.414 385.513,193.98C382.074,199.545 375.998,202.933 369.455,202.933C359.268,202.933 347.922,202.933 337.735,202.933C331.192,202.933 325.116,199.545 321.676,193.98C318.237,188.414 317.924,181.464 320.85,175.612C325.819,165.675 331.495,154.322 336.71,143.892Z"
+                style="fill:none;stroke:#002B36;stroke-width:4px;" />
+        </g>
+        <g class="logo-icon" transform="matrix(-1.83697e-16,1,-1,-1.83697e-16,560.112,-83.4036)">
+            <path
+                d="M336.71,143.892C339.908,137.497 346.444,133.457 353.595,133.457C360.745,133.457 367.282,137.497 370.48,143.892C375.695,154.322 381.371,165.675 386.34,175.612C389.266,181.464 388.953,188.414 385.513,193.98C382.074,199.545 375.998,202.933 369.455,202.933C359.268,202.933 347.922,202.933 337.735,202.933C331.192,202.933 325.116,199.545 321.676,193.98C318.237,188.414 317.924,181.464 320.85,175.612C325.819,165.675 331.495,154.322 336.71,143.892Z"
+                style="fill:none;stroke:#002B36;stroke-width:4px;" />
+        </g>
+    </g>
+</svg>
