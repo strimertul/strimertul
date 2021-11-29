@@ -1,4 +1,4 @@
-# Strimertül
+# <center><img src="https://raw.githubusercontent.com/strimertul/strimertul/master/frontend/assets/images/readme-logo.svg"/></center>
 
 Small broadcasting suite for Twitch, includes:
 
@@ -22,9 +22,10 @@ You can also build the project yourself, refer to the Building section below.
 ## Technical overview
 
 Strimertül is a single executable app that provides the following:
- - HTTP server for serving static assets and a websocket API
- - Twitch bot for handling chat messages and providing custom commands
- - Polling-based loyalty system for rewards and community goals
+
+- HTTP server for serving static assets and a websocket API
+- Twitch bot for handling chat messages and providing custom commands
+- Polling-based loyalty system for rewards and community goals
 
 At strimertul's core is [Kilovolt](https://github.com/strimertul/kilovolt), a pub/sub key-value store accessible via websocket. You can access every functionality of strimertul through the Kilovolt API. Check [this repository](https://github.com/strimertul/kilovolt-clients) for a list of officially supported kilovolt clients (or submit your own). You should be able to easily build a client yourself by just creating a websocket connection and using the [Kilovolt protocol](https://github.com/strimertul/kilovolt/blob/main/PROTOCOL.md).
 
