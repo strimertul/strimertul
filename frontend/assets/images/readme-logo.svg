@@ -4,7 +4,7 @@
     xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/"
     style="fill-rule:evenodd;clip-rule:evenodd;">
     <style>
-        @media (prefers-color-scheme: light) {
+        @media (prefers-color-scheme: dark) {
             .text {
                 fill: #FDF6E3 !important;
             }
