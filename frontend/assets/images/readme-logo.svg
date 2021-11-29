@@ -9,7 +9,7 @@
                 fill: #FDF6E3 !important;
             }
 
-            .logo-icon {
+            .logo-icon path {
                 stroke: #FDF6E3 !important;
             }
         }
