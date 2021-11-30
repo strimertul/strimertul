@@ -5,7 +5,10 @@ import { useDispatch } from 'react-redux';
 import { useModule } from '../../../lib/react-utils';
 import { modules } from '../../../store/api/reducer';
 import Modal from '../../components/Modal';
-import { TwitchBotCustomCommand } from '../../../store/api/types';
+import {
+  AccessLevelType,
+  TwitchBotCustomCommand,
+} from '../../../store/api/types';
 import Field from '../../components/Field';
 
 interface CommandItemProps {
@@ -92,6 +95,9 @@ function CommandModal({
   const [description, setDescription] = useState(
     initialData?.description ?? '',
   );
+  const [accessLevel, setAccessLevel] = useState(
+    initialData?.access_level ?? 'everyone',
+  );
   const [response, setResponse] = useState(initialData?.response ?? '');
 
   const { t } = useTranslation();
@@ -105,7 +111,7 @@ function CommandModal({
         description,
         response,
         enabled: initialData?.enabled ?? false,
-        access_level: 'everyone',
+        access_level: accessLevel,
       });
     }
   };
@@ -171,9 +177,17 @@ function CommandModal({
           <div className="field">
             <p className="control">
               <span className="select">
-                <select>
+                <select
+                  value={accessLevel}
+                  onChange={(ev) =>
+                    setAccessLevel(ev.target.value as AccessLevelType)
+                  }
+                >
                   <option value="everyone">
                     {t('twitch.commands.access-everyone')}
+                  </option>
+                  <option value="subscribers">
+                    {t('twitch.commands.access-subscribers')}
                   </option>
                   <option value="vip">
                     {t('twitch.commands.access-vips')}

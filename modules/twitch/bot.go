@@ -205,3 +205,27 @@ func (b *Bot) Connect() error {
 func (b *Bot) WriteMessage(message string) {
 	b.Client.Say(b.config.Channel, message)
 }
+
+func getUserAccessLevel(user irc.User) AccessLevelType {
+	// Check broadcaster
+	if _, ok := user.Badges["broadcaster"]; ok {
+		return ALTStreamer
+	}
+
+	// Check mods
+	if _, ok := user.Badges["moderator"]; ok {
+		return ALTModerators
+	}
+
+	// Check VIP
+	if _, ok := user.Badges["vip"]; ok {
+		return ALTVIP
+	}
+
+	// Check subscribers
+	if _, ok := user.Badges["subscriber"]; ok {
+		return ALTSubscribers
+	}
+
+	return ALTEveryone
+}

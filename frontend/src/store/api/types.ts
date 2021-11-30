@@ -35,7 +35,12 @@ interface TwitchModulesConfig {
   enable_timers: boolean;
 }
 
-type AccessLevelType = 'everyone' | 'vip' | 'moderators' | 'streamer';
+export type AccessLevelType =
+  | 'everyone'
+  | 'subscribers'
+  | 'vip'
+  | 'moderators'
+  | 'streamer';
 
 export interface TwitchBotCustomCommand {
   description: string;

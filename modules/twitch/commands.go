@@ -14,11 +14,20 @@ import (
 type AccessLevelType string
 
 const (
-	ALTEveryone   AccessLevelType = "everyone"
-	ALTVIP        AccessLevelType = "vip"
-	ALTModerators AccessLevelType = "moderators"
-	ALTStreamer   AccessLevelType = "streamer"
+	ALTEveryone    AccessLevelType = "everyone"
+	ALTSubscribers AccessLevelType = "subscriber"
+	ALTVIP         AccessLevelType = "vip"
+	ALTModerators  AccessLevelType = "moderators"
+	ALTStreamer    AccessLevelType = "streamer"
 )
+
+var accessLevels = map[AccessLevelType]int{
+	ALTEveryone:    0,
+	ALTSubscribers: 1,
+	ALTVIP:         2,
+	ALTModerators:  3,
+	ALTStreamer:    999,
+}
 
 type BotCommandHandler func(bot *Bot, message irc.PrivateMessage)
 
@@ -31,6 +40,14 @@ type BotCommand struct {
 }
 
 func cmdCustom(bot *Bot, cmd string, data BotCustomCommand, message irc.PrivateMessage) {
+	// Check access level
+	accessLevel := getUserAccessLevel(message.User)
+
+	// Ensure that access level is high enough
+	if accessLevels[accessLevel] < accessLevels[data.AccessLevel] {
+		return
+	}
+
 	// Add future logic (like counters etc.) here, for now it's just fixed messages
 	var buf bytes.Buffer
 	err := bot.customTemplates[cmd].Execute(&buf, message)

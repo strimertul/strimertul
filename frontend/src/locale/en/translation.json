@@ -201,6 +201,7 @@
       "description-help": "What does this command do?",
       "access-level": "Access level",
       "access-everyone": "Everyone",
+      "access-subscribers": "Subscribers",
       "access-vips": "VIPs",
       "access-moderators": "Moderators",
       "access-streamer": "Streamer only",
