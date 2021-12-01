@@ -90,10 +90,15 @@ func NewBot(api *Client, config BotConfig) *Bot {
 				continue
 			}
 			lc := strings.ToLower(cmd)
-			if strings.HasPrefix(lcmessage, lc) {
-				go cmdCustom(bot, cmd, data, message)
-				bot.lastMessage = time.Now()
+			if !strings.HasPrefix(lcmessage, lc) {
+				continue
 			}
+			parts := strings.SplitN(lcmessage, " ", 2)
+			if parts[0] != lc {
+				continue
+			}
+			go cmdCustom(bot, cmd, data, message)
+			bot.lastMessage = time.Now()
 		}
 		bot.mu.Unlock()
 
