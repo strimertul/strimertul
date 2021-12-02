@@ -29,7 +29,7 @@ Strimertül is a single executable app that provides the following:
 
 At strimertul's core is [Kilovolt](https://github.com/strimertul/kilovolt), a pub/sub key-value store accessible via websocket. You can access every functionality of strimertul through the Kilovolt API. Check [this repository](https://github.com/strimertul/kilovolt-clients) for a list of officially supported kilovolt clients (or submit your own). You should be able to easily build a client yourself by just creating a websocket connection and using the [Kilovolt protocol](https://github.com/strimertul/kilovolt/blob/main/PROTOCOL.md).
 
-Check out the [project's wiki](https://github.com/strimertul/strimertul/wiki) for more information on how to use the API to interact with strimertul.
+Check out the [project's wiki](https://github.com/strimertul/strimertul/wiki) for more information on how to use the API to interact with strimertul, or the `docs` folder for more technical informations.
 
 ## Building
 
