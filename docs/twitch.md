@@ -10,7 +10,7 @@ The Twitch integration can be enabled/disabled via `stul-meta/modules`, see [mod
 
 The Twitch integration can be configured via `twitch/config` using a JSON object like this:
 
-```json
+```js
 {
 	"enable_bot": bool,          // Enable IRC bot
 	"api_client_id": string,     // Twitch App Client ID
@@ -20,7 +20,7 @@ The Twitch integration can be configured via `twitch/config` using a JSON object
 
 The IRC bot has its own configuration in `twitch/bot-config` as the following JSON object:
 
-```json
+```js
 {
 	"username": string, // Bot username, probably ignored
 	"oauth": string,    // OAuth token
@@ -43,7 +43,7 @@ The bot supports user-defined custom commands for basic things like auto-replies
 
 The key `twitch/bot-custom-commands` contains a JSON dictionary of custom commands like the following:
 
-```json
+```js
 {
 	"!command" : {
 		"description": string,  // Command description, for UI only

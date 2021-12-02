@@ -2,7 +2,7 @@
 
 Strimertul modules can be toggled on and off by setting flags in the `stul-meta/modules` key, which is a JSON object with the following schema:
 
-```json
+```js
 {
 	"configured": true, // Setting this to false will restore defaults at the next boot
 	"twitch": bool,     // Twitch integration
