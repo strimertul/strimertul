@@ -244,9 +244,6 @@ export default function TwitchBotTimersPage(
   props: RouteComponentProps<unknown>,
 ): React.ReactElement {
   const [twitchConfig] = useModule(modules.twitchConfig);
-  const [moduleConfig, setModuleConfig] = useModule(
-    modules.twitchBotModulesConfig,
-  );
   const [timerConfig, setTimerConfig] = useModule(modules.twitchBotTimers);
   const dispatch = useDispatch();
   const { t } = useTranslation();
@@ -257,8 +254,6 @@ export default function TwitchBotTimersPage(
   const timerFilterLC = timerFilter.toLowerCase();
 
   const botActive = twitchConfig?.enable_bot ?? false;
-  const timersActive = moduleConfig?.enable_timers ?? false;
-  const active = botActive && timersActive;
 
   const createTimer = (name: string, data: TwitchBotTimer): void => {
     dispatch(
@@ -333,31 +328,9 @@ export default function TwitchBotTimersPage(
   return (
     <>
       <h1 className="title is-4">{t('twitch.timers.header')}</h1>
-      <Field>
-        <label className="checkbox">
-          <input
-            type="checkbox"
-            disabled={!botActive}
-            checked={active}
-            onChange={(ev) =>
-              dispatch(
-                setModuleConfig({
-                  ...moduleConfig,
-                  enable_timers: ev.target.checked,
-                }),
-              )
-            }
-          />
-          {` ${t('twitch.timers.enable')} `}
-        </label>
-      </Field>
       <div className="field is-grouped">
         <p className="control">
-          <button
-            className="button"
-            disabled={!timersActive}
-            onClick={() => setCreateModal(true)}
-          >
+          <button className="button" onClick={() => setCreateModal(true)}>
             {t('twitch.timers.new-timer')}
           </button>
         </p>
@@ -366,7 +339,6 @@ export default function TwitchBotTimersPage(
           <input
             className="input"
             type="text"
-            disabled={!timersActive}
             placeholder={t('twitch.timers.search')}
             value={timerFilter}
             onChange={(ev) => setTimerFilter(ev.target.value)}
@@ -397,19 +369,17 @@ export default function TwitchBotTimersPage(
         />
       ) : null}
       <div className="reward-list" style={{ marginTop: '1rem' }}>
-        {timersActive
-          ? Object.keys(timerConfig?.timers ?? {})
-              ?.filter((cmd) => cmd.toLowerCase().includes(timerFilterLC))
-              .map((timer) => (
-                <TimerItem
-                  key={timer}
-                  item={timerConfig.timers[timer]}
-                  onDelete={() => deleteTimer(timer)}
-                  onEdit={() => setShowModifyTimer(timer)}
-                  onToggleState={() => toggleTimer(timer)}
-                />
-              ))
-          : null}
+        {Object.keys(timerConfig?.timers ?? {})
+          ?.filter((cmd) => cmd.toLowerCase().includes(timerFilterLC))
+          .map((timer) => (
+            <TimerItem
+              key={timer}
+              item={timerConfig.timers[timer]}
+              onDelete={() => deleteTimer(timer)}
+              onEdit={() => setShowModifyTimer(timer)}
+              onToggleState={() => toggleTimer(timer)}
+            />
+          ))}
       </div>
     </>
   );

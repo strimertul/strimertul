@@ -155,13 +155,6 @@ export const modules = {
       state.moduleConfigs.twitchBotConfig = payload;
     },
   ),
-  twitchBotModulesConfig: makeModule(
-    'twitch/bot-modules/config',
-    (state) => state.twitchBot?.modules,
-    (state, { payload }) => {
-      state.twitchBot.modules = payload;
-    },
-  ),
   twitchBotCommands: makeModule(
     'twitch/bot-custom-commands',
     (state) => state.twitchBot?.commands,
@@ -252,7 +245,6 @@ const initialState: APIState = {
   },
   twitchBot: {
     commands: null,
-    modules: null,
     timers: null,
   },
   moduleConfigs: {

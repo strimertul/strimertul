@@ -31,10 +31,6 @@ interface TwitchBotConfig {
   chat_history: number;
 }
 
-interface TwitchModulesConfig {
-  enable_timers: boolean;
-}
-
 export type AccessLevelType =
   | 'everyone'
   | 'subscribers'
@@ -134,7 +130,6 @@ export interface APIState {
   };
   twitchBot: {
     commands: TwitchBotCustomCommands;
-    modules: TwitchModulesConfig;
     timers: TwitchBotTimersConfig;
   };
   moduleConfigs: {
