@@ -38,6 +38,7 @@ type Bot struct {
 	// Module specific vars
 	Loyalty *loyalty.Manager
 	Timers  *BotTimerModule
+	Alerts  *BotAlertsModule
 }
 
 func NewBot(api *Client, config BotConfig) *Bot {

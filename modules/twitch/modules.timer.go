@@ -44,6 +44,7 @@ func SetupTimers(bot *Bot) *BotTimerModule {
 		bot:         bot,
 		startTime:   time.Now().Round(time.Minute),
 		lastTrigger: make(map[string]time.Time),
+		mu:          sync.Mutex{},
 	}
 
 	// Load config from database
@@ -79,8 +80,6 @@ func SetupTimers(bot *Bot) *BotTimerModule {
 
 func (m *BotTimerModule) runTimers() {
 	for {
-		//TODO Add stopping condition (channel or something)
-
 		// Wait until next tick (remainder until next minute, as close to 0 seconds as possible)
 		currentTime := time.Now()
 		nextTick := currentTime.Round(time.Minute).Add(time.Minute)
