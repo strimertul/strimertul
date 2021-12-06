@@ -34,6 +34,8 @@ const AppHeader = `
  (_-<  _| '_| | '  \/ -_) '_|  _| || | | 
  /__/\__|_| |_|_|_|_\___|_|  \__|\_,_|_| `
 
+var appVersion = "v0.0.0-UNKNOWN"
+
 const DefaultBind = "localhost:4337"
 
 //go:embed frontend/dist/*
@@ -78,6 +80,8 @@ func main() {
 	if !*noheader {
 		// Print the app header :D
 		fmt.Println(AppHeader)
+		// Print version info
+		fmt.Printf("\n %s - %s/%s (%s)\n\n", appVersion, runtime.GOOS, runtime.GOARCH, runtime.Version())
 	}
 
 	// Create module manager
@@ -87,6 +91,9 @@ func main() {
 	db, err := database.Open(badger.DefaultOptions(*dbdir), manager)
 	failOnError(err, "Could not open DB")
 	defer db.Close()
+
+	// Set meta keys
+	_ = db.PutKey("stul-meta/version", []byte(appVersion))
 
 	// Check if onboarding was completed
 	var moduleConfig modules.ModuleConfig
