@@ -172,15 +172,17 @@ func main() {
 	}()
 
 	// Run garbage collection every once in a while
-	ticker := time.NewTicker(15 * time.Minute)
-	defer ticker.Stop()
-	for range ticker.C {
-		// Run DB garbage collection until it's done
-		var err error
-		for err == nil {
-			err = db.Client().RunValueLogGC(0.5)
+	go func() {
+		ticker := time.NewTicker(15 * time.Minute)
+		defer ticker.Stop()
+		for range ticker.C {
+			// Run DB garbage collection until it's done
+			var err error
+			for err == nil {
+				err = db.Client().RunValueLogGC(0.5)
+			}
 		}
-	}
+	}()
 
 	// Start HTTP server
 	failOnError(httpServer.Listen(), "HTTP server stopped")
