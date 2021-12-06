@@ -25,7 +25,7 @@ jobs:
           npm run build
       - name: Build app for all platforms
         run: |
-          go install github.com/mitchellh/gox
+          go install github.com/mitchellh/gox@latest
           gox -arch="amd64 arm" -os "windows linux" -ldflags "-X 'main.appVersion=`git describe --tags --always`'"
       - name: Create release
         uses: softprops/action-gh-release@v1
