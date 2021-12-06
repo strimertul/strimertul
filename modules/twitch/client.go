@@ -11,7 +11,7 @@ import (
 	"github.com/strimertul/strimertul/modules/database"
 	"github.com/strimertul/strimertul/modules/loyalty"
 
-	"github.com/nicklaw5/helix"
+	"github.com/nicklaw5/helix/v2"
 	"github.com/sirupsen/logrus"
 )
 

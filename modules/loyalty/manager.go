@@ -10,7 +10,6 @@ import (
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/database"
 	"github.com/strimertul/strimertul/modules/stulbe"
-	"github.com/strimertul/stulbe/api"
 
 	"github.com/dgraph-io/badger/v3"
 	jsoniter "github.com/json-iterator/go"
@@ -203,9 +202,9 @@ func (m *Manager) handleRemote(kvs []database.ModifiedKV) error {
 	for _, kv := range kvs {
 		m.logger.WithField("key", kv.Key).Trace("loyalty request from stulbe")
 		switch kv.Key {
-		case api.KVExLoyaltyRedeem:
+		case KVExLoyaltyRedeem:
 			// Parse request
-			var redeemRequest api.ExLoyaltyRedeem
+			var redeemRequest ExLoyaltyRedeem
 			err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &redeemRequest)
 			if err != nil {
 				m.logger.WithError(err).Warn("error decoding redeem request")
@@ -227,9 +226,9 @@ func (m *Manager) handleRemote(kvs []database.ModifiedKV) error {
 			if err != nil {
 				m.logger.WithError(err).Warn("error performing redeem request")
 			}
-		case api.KVExLoyaltyContribute:
+		case KVExLoyaltyContribute:
 			// Parse request
-			var contributeRequest api.ExLoyaltyContribute
+			var contributeRequest ExLoyaltyContribute
 			err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &contributeRequest)
 			if err != nil {
 				m.logger.WithError(err).Warn("error decoding contribution request")

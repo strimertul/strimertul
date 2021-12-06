@@ -6,6 +6,7 @@ import (
 	"github.com/strimertul/strimertul/modules"
 
 	"github.com/dgraph-io/badger/v3"
+	"github.com/dgraph-io/badger/v3/pb"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 )
@@ -83,6 +84,12 @@ func (db *DB) Subscribe(ctx context.Context, fn func(changed []ModifiedKV) error
 	for index, prefix := range prefixes {
 		prefixList[index] = []byte(prefix)
 	}
+	var matches []pb.Match
+	for _, prefix := range prefixList {
+		matches = append(matches, pb.Match{
+			Prefix: prefix,
+		})
+	}
 	return db.client.Subscribe(ctx, func(kv *badger.KVList) error {
 		modified := make([]ModifiedKV, len(kv.Kv))
 		for index, newKV := range kv.Kv {
@@ -95,7 +102,7 @@ func (db *DB) Subscribe(ctx context.Context, fn func(changed []ModifiedKV) error
 			}
 		}
 		return fn(modified)
-	}, prefixList...)
+	}, matches)
 }
 
 func (db *DB) GetJSON(key string, dst interface{}) error {

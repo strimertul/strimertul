@@ -10,7 +10,7 @@ import (
 	"github.com/strimertul/strimertul/modules/database"
 	"github.com/strimertul/strimertul/modules/loyalty"
 
-	"github.com/Masterminds/sprig"
+	"github.com/Masterminds/sprig/v3"
 	irc "github.com/gempir/go-twitch-irc/v2"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"

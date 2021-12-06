@@ -8,7 +8,7 @@ import (
 	"text/template"
 
 	irc "github.com/gempir/go-twitch-irc/v2"
-	"github.com/nicklaw5/helix"
+	"github.com/nicklaw5/helix/v2"
 )
 
 type AccessLevelType string

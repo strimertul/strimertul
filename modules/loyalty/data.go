@@ -65,3 +65,24 @@ type Redeem struct {
 const CreateRedeemRPC = "loyalty/@create-redeem"
 const RemoveRedeemRPC = "loyalty/@remove-redeem"
 const RedeemEvent = "loyalty/ev/new-redeem"
+
+// Stulbe events
+
+type ExLoyaltyRedeem struct {
+	Username    string `json:"username"`
+	DisplayName string `json:"display_name"`
+	Channel     string `json:"channel"`
+	RewardID    string `json:"reward_id"`
+	RequestText string `json:"request_text"`
+}
+
+type ExLoyaltyContribute struct {
+	Username    string `json:"username"`
+	DisplayName string `json:"display_name"`
+	Channel     string `json:"channel"`
+	GoalID      string `json:"goal_id"`
+	Amount      int64  `json:"amount"`
+}
+
+const KVExLoyaltyRedeem = "stulbe/loyalty/@redeem-rpc"
+const KVExLoyaltyContribute = "stulbe/loyalty/@contribute-rpc"
