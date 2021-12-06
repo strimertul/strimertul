@@ -14,3 +14,5 @@ require (
 	github.com/strimertul/kilovolt/v6 v6.1.0
 	github.com/strimertul/stulbe-client-go v0.6.0
 )
+
+replace github.com/nicklaw5/helix/v2 => github.com/ashkeel/helix/v2 v2.2.1-0.20211206103917-e677e633538f

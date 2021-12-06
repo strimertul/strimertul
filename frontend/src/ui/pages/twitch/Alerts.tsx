@@ -133,6 +133,7 @@ export default function TwitchBotAlertsPage(
                       <input
                         type="radio"
                         name={`sub-var-${i}`}
+                        checked={variation.is_gifted ?? false}
                         onChange={(ev) =>
                           dispatch(
                             apiReducer.actions.twitchBotAlertsChanged({
@@ -163,6 +164,7 @@ export default function TwitchBotAlertsPage(
                     <label className="radio">
                       <input
                         type="radio"
+                        checked={!!variation.min_streak}
                         name={`sub-var-${i}`}
                         onChange={(ev) =>
                           dispatch(
@@ -195,7 +197,34 @@ export default function TwitchBotAlertsPage(
                 </Field>
                 {variation.min_streak ? (
                   <Field name={t('twitch.bot-alerts.min-months')}>
-                    <input type="number" className="input" min="1" step="1" />
+                    <input
+                      type="number"
+                      className="input"
+                      min="1"
+                      step="1"
+                      value={variation.min_streak}
+                      onChange={(ev) =>
+                        dispatch(
+                          apiReducer.actions.twitchBotAlertsChanged({
+                            ...twitchBotAlerts,
+                            subscription: {
+                              ...twitchBotAlerts.subscription,
+                              variations:
+                                // Replace messages in nth variation
+                                twitchBotAlerts?.subscription?.variations.map(
+                                  (v, j) =>
+                                    j === i
+                                      ? {
+                                          ...v,
+                                          min_streak: ev.target.value,
+                                        }
+                                      : v,
+                                ),
+                            },
+                          }),
+                        )
+                      }
+                    />
                   </Field>
                 ) : null}
                 <Field name={t('twitch.bot-alerts.messages')}>
@@ -218,6 +247,24 @@ export default function TwitchBotAlertsPage(
                     }
                   />
                 </Field>
+                <button
+                  className="button is-small is-danger"
+                  onClick={() => {
+                    const variations =
+                      twitchBotAlerts?.subscription?.variations ?? [];
+                    dispatch(
+                      apiReducer.actions.twitchBotAlertsChanged({
+                        ...twitchBotAlerts,
+                        subscription: {
+                          ...twitchBotAlerts.subscription,
+                          variations: variations.filter((v, j) => j !== i),
+                        },
+                      }),
+                    );
+                  }}
+                >
+                  {t('twitch.bot-alerts.delete-variation')}
+                </button>
               </article>
             ))}
             <button

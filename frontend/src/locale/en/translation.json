@@ -247,7 +247,8 @@
       "variation-header": "Variations",
       "add-variation": "Add variation",
       "variation-condition": "Condition",
-      "min-months": "Subscription months (at least)"
+      "min-months": "Subscription months (at least)",
+      "delete-variation": "Delete variation"
     }
   },
   "auth": {
