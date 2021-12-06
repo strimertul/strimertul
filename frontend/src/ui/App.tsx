@@ -19,12 +19,12 @@ import LoyaltyRedeemQueuePage from './pages/loyalty/Queue';
 import TwitchSettingsPage from './pages/twitch/APISettings';
 import TwitchBotSettingsPage from './pages/twitch/BotSettings';
 import TwitchBotCommandsPage from './pages/twitch/Commands';
-import TwitchBotModulesPage from './pages/twitch/Modules';
 import StulbeConfigPage from './pages/stulbe/Config';
 import StulbeWebhooksPage from './pages/stulbe/Webhook';
 import TwitchBotTimersPage from './pages/twitch/Timers';
 import { ConnectionStatus } from '../store/api/types';
 import Field from './components/Field';
+import TwitchBotAlertsPage from './pages/twitch/Alerts';
 
 interface RouteItem {
   name?: string;
@@ -42,7 +42,7 @@ const menu: RouteItem[] = [
       { route: '/twitch/bot/settings' },
       { route: '/twitch/bot/commands' },
       { route: '/twitch/bot/timers' },
-      { route: '/twitch/bot/modules' },
+      { route: '/twitch/bot/alerts' },
     ],
   },
   {
@@ -191,7 +191,7 @@ export default function App(): React.ReactElement {
               <TwitchBotSettingsPage path="bot/settings" />
               <TwitchBotCommandsPage path="bot/commands" />
               <TwitchBotTimersPage path="bot/timers" />
-              <TwitchBotModulesPage path="bot/modules" />
+              <TwitchBotAlertsPage path="bot/alerts" />
             </TwitchPage>
             <LoyaltyPage path="loyalty">
               <Redirect from="/" to="settings" noThrow />

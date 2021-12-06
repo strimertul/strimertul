@@ -1,38 +1,50 @@
-import { Link } from '@reach/router';
-import React from 'react';
-
-export interface TabItem {
-  route: string;
-  name: string;
-}
-
-export interface TabbedViewProps {
-  tabs: TabItem[];
-}
+import React, { useEffect } from 'react';
 
 function TabbedView({
-  tabs,
   children,
-}: React.PropsWithChildren<TabbedViewProps>): React.ReactElement {
+}: // eslint-disable-next-line @typescript-eslint/ban-types
+React.PropsWithChildren<{}>): React.ReactElement {
+  const [activeTab, setActiveTab] = React.useState(null);
+
+  const tabs = React.Children.map(children, (elem, i) => {
+    const id =
+      (typeof elem === 'object' && 'props' in elem
+        ? elem.props['data-name']
+        : null) ?? `TAB#${i}`;
+    return {
+      id,
+      tabContent: elem,
+    };
+  });
+
+  useEffect(() => {
+    if (activeTab === null) {
+      setActiveTab(tabs[0].id);
+    }
+  }, [children, activeTab]);
+
+  if (activeTab === null) {
+    return <div></div>;
+  }
+
+  const active = tabs.find((elem) => elem.id === activeTab);
   return (
     <>
       <div className="tabs is-boxed" style={{ marginBottom: 0 }}>
         <ul>
-          {tabs.map(({ route, name }) => (
-            <li key={route}>
-              <Link
-                getProps={({ isCurrent }) => ({
-                  className: isCurrent ? 'is-active' : '',
-                })}
-                to={route}
+          {tabs.map((t) => (
+            <li key={t.id}>
+              <a
+                className={activeTab === t.id ? 'is-active' : ''}
+                onClick={() => setActiveTab(t.id)}
               >
-                {name}
-              </Link>
+                {t.id}
+              </a>
             </li>
           ))}
         </ul>
       </div>
-      <div className="tabContent">{children}</div>
+      <div className="tabContent">{active.tabContent}</div>
     </>
   );
 }

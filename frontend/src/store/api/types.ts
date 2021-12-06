@@ -75,6 +75,47 @@ interface TwitchBotTimersConfig {
   timers: Record<string, TwitchBotTimer>;
 }
 
+interface TwitchBotAlertsConfig {
+  follow: {
+    enabled: boolean;
+    messages: string[];
+  };
+  subscription: {
+    enabled: boolean;
+    messages: string[];
+    variations: {
+      min_streak?: number;
+      is_gifted?: boolean;
+      messages: string[];
+    }[];
+  };
+  gift_sub: {
+    enabled: boolean;
+    messages: string[];
+    variations: {
+      is_anonymous?: boolean;
+      min_cumulative?: number;
+      messages: string[];
+    }[];
+  };
+  raid: {
+    enabled: boolean;
+    messages: string[];
+    variations: {
+      min_viewers?: number;
+      messages: string[];
+    }[];
+  };
+  cheer: {
+    enabled: boolean;
+    messages: string[];
+    variations: {
+      min_amount?: number;
+      messages: string[];
+    }[];
+  };
+}
+
 export interface LoyaltyPointsEntry {
   points: number;
 }
@@ -131,6 +172,7 @@ export interface APIState {
   twitchBot: {
     commands: TwitchBotCustomCommands;
     timers: TwitchBotTimersConfig;
+    alerts: TwitchBotAlertsConfig;
   };
   moduleConfigs: {
     moduleConfig: ModuleConfig;

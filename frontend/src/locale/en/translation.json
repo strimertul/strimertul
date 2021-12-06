@@ -7,7 +7,7 @@
     "/twitch/bot/settings": "Bot configuration",
     "/twitch/bot/commands": "Bot commands",
     "/twitch/bot/timers": "Bot timers",
-    "/twitch/bot/modules": "Bot modules",
+    "/twitch/bot/alerts": "Chat alerts",
     "/loyalty": "Loyalty points",
     "/loyalty/settings": "Configuration",
     "/loyalty/users": "Viewer points",
@@ -166,7 +166,8 @@
       "seconds": "seconds",
       "minutes": "minutes",
       "hours": "hours"
-    }
+    },
+    "add-new": "Add new"
   },
   "twitch": {
     "config": {
@@ -227,6 +228,26 @@
       "condition-text": "every {{time}}, at least {{messages}} messages in the last 5 minutes",
       "err-twitchbot-disabled": "Twitch bot must be enabled in order to use timers!",
       "enable": "Enable timers"
+    },
+    "bot-alerts": {
+      "header": "Chat alerts",
+      "err-twitchbot-disabled": "Twitch bot must be enabled in order to use chat alerts!",
+      "err-stulbe-disabled": "Back-end integration must be enabled in order to use chat alerts!",
+      "messages": "Messages",
+      "follow": "Follow",
+      "follow-enabled": "Enable follow notifications",
+      "subscription": "Subscription",
+      "sub-enabled": "Enable subscription notifications",
+      "gift-sub": "Gift Sub",
+      "gift-sub-enabled": "Enable gift sub notifications",
+      "cheer": "Cheer",
+      "cheer-enabled": "Enable cheer notifications",
+      "raid": "Raid",
+      "raid-enabled": "Enable raid notifications",
+      "variation-header": "Variations",
+      "add-variation": "Add variation",
+      "variation-condition": "Condition",
+      "min-months": "Subscription months (at least)"
     }
   },
   "auth": {

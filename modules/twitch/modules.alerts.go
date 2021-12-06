@@ -9,11 +9,9 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/Masterminds/sprig"
-
-	"github.com/nicklaw5/helix"
-
+	"github.com/Masterminds/sprig/v3"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/nicklaw5/helix/v2"
 
 	"github.com/strimertul/strimertul/modules/database"
 )
@@ -33,35 +31,36 @@ type BotAlertsConfig struct {
 	} `json:"follow"`
 	Subscription struct {
 		Enabled    bool     `json:"enabled"`
-		Messages   []string `json:"message"`
+		Messages   []string `json:"messages"`
 		Variations []struct {
 			MinStreak *int     `json:"min_streak,omitempty"`
 			IsGifted  *bool    `json:"is_gifted,omitempty"`
-			Messages  []string `json:"message"`
+			Messages  []string `json:"messages"`
 		} `json:"variations"`
 	} `json:"subscription"`
 	GiftSub struct {
 		Enabled    bool     `json:"enabled"`
-		Messages   []string `json:"message"`
+		Messages   []string `json:"messages"`
 		Variations []struct {
 			MinCumulative *int     `json:"min_cumulative,omitempty"`
-			Messages      []string `json:"message"`
+			IsAnonymous   *bool    `json:"is_anonymous,omitempty"`
+			Messages      []string `json:"messages"`
 		} `json:"variations"`
 	} `json:"gift_sub"`
 	Raid struct {
 		Enabled    bool     `json:"enabled"`
-		Messages   []string `json:"message"`
+		Messages   []string `json:"messages"`
 		Variations []struct {
 			MinViewers *int     `json:"min_viewers,omitempty"`
-			Messages   []string `json:"message"`
+			Messages   []string `json:"messages"`
 		} `json:"variations"`
 	} `json:"raid"`
 	Cheer struct {
 		Enabled    bool     `json:"enabled"`
-		Messages   []string `json:"message"`
+		Messages   []string `json:"messages"`
 		Variations []struct {
 			MinAmount *int     `json:"min_amount,omitempty"`
-			Messages  []string `json:"message"`
+			Messages  []string `json:"messages"`
 		} `json:"variations"`
 	} `json:"cheer"`
 }
@@ -83,6 +82,8 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 	if err != nil {
 		bot.logger.WithError(err).Debug("config load error")
 		mod.Config = BotAlertsConfig{}
+		// Save empty config
+		bot.api.db.PutJSON(BotAlertsKey, mod.Config)
 	}
 
 	go bot.api.db.Subscribe(context.Background(), func(changed []database.ModifiedKV) error {
@@ -139,8 +140,8 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 	}
 	addPendingSub := func(ev interface{}) {
 		switch ev.(type) {
-		case *helix.EventSubChannelSubscribeEvent:
-			sub := ev.(*helix.EventSubChannelSubscribeEvent)
+		case helix.EventSubChannelSubscribeEvent:
+			sub := ev.(helix.EventSubChannelSubscribeEvent)
 			pendingMux.Lock()
 			defer pendingMux.Unlock()
 			if ev, ok := pendingSubs[sub.UserID]; ok {
@@ -164,8 +165,8 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 				time.Sleep(time.Second * 3)
 				processPendingSub(sub.UserID)
 			}()
-		case *helix.EventSubChannelSubscriptionMessageEvent:
-			sub := ev.(*helix.EventSubChannelSubscriptionMessageEvent)
+		case helix.EventSubChannelSubscriptionMessageEvent:
+			sub := ev.(helix.EventSubChannelSubscriptionMessageEvent)
 			pendingMux.Lock()
 			defer pendingMux.Unlock()
 			if ev, ok := pendingSubs[sub.UserID]; ok {
@@ -287,7 +288,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 						bot.logger.WithError(err).Debug("error parsing sub event")
 						continue
 					}
-					addPendingSub(subEv.UserID)
+					addPendingSub(subEv)
 				case helix.EventSubTypeChannelSubscriptionMessage:
 					// Only process if we care about subscriptions
 					if !mod.Config.Subscription.Enabled {
@@ -300,10 +301,10 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 						bot.logger.WithError(err).Debug("error parsing sub event")
 						continue
 					}
-					addPendingSub(subEv.UserID)
+					addPendingSub(subEv)
 				case helix.EventSubTypeChannelSubscriptionGift:
 					// Only process if we care about gifted subs
-					if !mod.Config.Raid.Enabled {
+					if !mod.Config.GiftSub.Enabled {
 						continue
 					}
 					// Parse as gift event
@@ -317,11 +318,20 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 					msg := mod.Config.GiftSub.Messages[rand.Intn(len(mod.Config.GiftSub.Messages))]
 					// If we have variations, loop through all the available variations and pick the one with the highest minimum cumulative total that are met
 					if len(mod.Config.GiftSub.Variations) > 0 {
-						minCumulative := -1
-						for _, variation := range mod.Config.GiftSub.Variations {
-							if variation.MinCumulative != nil && *variation.MinCumulative > minCumulative && giftEv.CumulativeTotal >= *variation.MinCumulative {
-								msg = variation.Messages[rand.Intn(len(variation.Messages))]
-								minCumulative = *variation.MinCumulative
+						if giftEv.IsAnonymous {
+							for _, variation := range mod.Config.GiftSub.Variations {
+								if variation.IsAnonymous != nil && *variation.IsAnonymous {
+									msg = variation.Messages[rand.Intn(len(variation.Messages))]
+									break
+								}
+							}
+						} else if giftEv.CumulativeTotal > 0 {
+							minCumulative := -1
+							for _, variation := range mod.Config.GiftSub.Variations {
+								if variation.MinCumulative != nil && *variation.MinCumulative > minCumulative && giftEv.CumulativeTotal >= *variation.MinCumulative {
+									msg = variation.Messages[rand.Intn(len(variation.Messages))]
+									minCumulative = *variation.MinCumulative
+								}
 							}
 						}
 					}

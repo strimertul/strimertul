@@ -128,7 +128,9 @@ func (s *Server) Listen() error {
 				Handler: s,
 				Addr:    s.Config.Bind,
 			}
+			s.logger.WithField("bind", s.Config.Bind).Info("HTTP server started")
 			err := s.server.ListenAndServe()
+			s.logger.WithError(err).Debug("HTTP server died")
 			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				exit <- err
 				return

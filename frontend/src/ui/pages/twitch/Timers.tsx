@@ -9,6 +9,7 @@ import Modal from '../../components/Modal';
 import { TwitchBotTimer } from '../../../store/api/types';
 import Field from '../../components/Field';
 import Interval, { hours, minutes } from '../../components/Interval';
+import MessageArray from '../../components/MessageArray';
 
 interface TimerItemProps {
   item: TwitchBotTimer;
@@ -114,12 +115,6 @@ function TimerModal({
     }
   };
 
-  const setMessageIndex = (value: string, index: number) => {
-    const newMessages = [...messages];
-    newMessages[index] = value;
-    setMessages(newMessages);
-  };
-
   return (
     <Modal
       active={active}
@@ -190,49 +185,11 @@ function TimerModal({
       </Field>
       <Field name={t('twitch.timers.messages')} horizontal>
         <div className="field-body">
-          <div className="control">
-            {messages.map((message, index) => (
-              <div
-                className="field has-addons"
-                key={index}
-                style={{ marginTop: index > 0 ? '0.5rem' : '' }}
-              >
-                <p className="control">
-                  <input
-                    placeholder={t('twitch.timers.message-help')}
-                    onChange={(ev) => setMessageIndex(ev.target.value, index)}
-                    value={message}
-                    className={message !== '' ? 'input' : 'input is-danger'}
-                    style={{ width: '28rem' }}
-                  />
-                </p>
-                <p className="control">
-                  <button
-                    className="button is-danger"
-                    onClick={() => {
-                      const newMessages = [...messages];
-                      newMessages.splice(index, 1);
-                      setMessages(newMessages.length > 0 ? newMessages : ['']);
-                    }}
-                  >
-                    X
-                  </button>
-                </p>
-              </div>
-            ))}
-            <div className="field" style={{ marginTop: '0.5rem' }}>
-              <p className="control">
-                <button
-                  className="button is-primary"
-                  onClick={() => {
-                    setMessages([...messages, '']);
-                  }}
-                >
-                  Add new
-                </button>
-              </p>
-            </div>
-          </div>
+          <MessageArray
+            value={messages}
+            placeholder={t('twitch.timers.message-help')}
+            onChange={(changed) => setMessages(changed)}
+          />
         </div>
       </Field>
     </Modal>

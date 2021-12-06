@@ -54,6 +54,8 @@ func SetupTimers(bot *Bot) *BotTimerModule {
 		mod.Config = BotTimersConfig{
 			Timers: make(map[string]BotTimer),
 		}
+		// Save empty config
+		bot.api.db.PutJSON(BotTimersKey, mod.Config)
 	}
 
 	go bot.api.db.Subscribe(context.Background(), func(changed []database.ModifiedKV) error {
