@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [CURRENT]
 
+### Added
+
+- **Chat alerts based on webhooks**: You can now add follow/sub/cheer/raid messages in chat. Basic messages are fully functional, advanced features are still in works (such as variations for certain thresholds, e.g. a different raid message if the raid has more than X viewers coming in).
+- Strimertul now prints its own version when starting up, useful for troubleshooting.
+
+### Changed
+
+- Timers do not have a "enabled" toggle anymore, they are always enabled (just non-functional if you have none).
+
 ### Fixed
 
 - Twitch bot: fixed command checking, previous matching only checked for prefix (eg. !verylong could be called by writing !verylonglongbaaah)
+- DB was not getting garbage collected, this is now fixed with a GC run every 15 minutes.
 
 ## [1.6.3] - 2021-11-30
 
