@@ -73,8 +73,10 @@ func main() {
 
 	// Ok this is dumb but listen, I like colors.
 	if runtime.GOOS == "windows" {
-		log.SetFormatter(&logrus.TextFormatter{ForceColors: true})
+		log.SetFormatter(&logrus.TextFormatter{ForceColors: true, FullTimestamp: true})
 		log.SetOutput(colorable.NewColorableStdout())
+	} else {
+		log.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
 	}
 
 	if !*noheader {

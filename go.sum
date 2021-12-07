@@ -141,8 +141,8 @@ github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5
 github.com/strimertul/kilovolt-client-go/v6 v6.0.0 h1:viIMfjDSMie0y19IerrD0vL0TchaaMnqSxSX9OzC9r4=
 github.com/strimertul/kilovolt-client-go/v6 v6.0.0/go.mod h1:PwdegpaW4gjsLo0cr8O4XxNU6EJq1QhgSnHTXKTAAB4=
 github.com/strimertul/kilovolt/v6 v6.0.0/go.mod h1:O5Rwg8o66omRP4O3qInBKreW9jILZz2MEq4MuotzAXw=
-github.com/strimertul/kilovolt/v6 v6.1.0 h1:N2j6GvI2bZgkm59sxWqAS6DdFO5qUPxOiCDEgN0ONgo=
-github.com/strimertul/kilovolt/v6 v6.1.0/go.mod h1:PJq9umR33xE6XJ7IUEaIyOq/A8oRQnVEkiqqRvsLx3I=
+github.com/strimertul/kilovolt/v6 v6.1.1 h1:fFv901KgKXwr1lBNztbLm+xlBlxdeVUzCGv0HQd9Y6M=
+github.com/strimertul/kilovolt/v6 v6.1.1/go.mod h1:PJq9umR33xE6XJ7IUEaIyOq/A8oRQnVEkiqqRvsLx3I=
 github.com/strimertul/stulbe-client-go v0.6.0 h1:OBIK1AzgkT9dsZvh6IdjQSs540nmHM2yLnBWAu0SC9I=
 github.com/strimertul/stulbe-client-go v0.6.0/go.mod h1:u/bUoqGonI+G5wt4XJZhXbkQKQPlKCWCX+eihpbGNC4=
 github.com/twitchyliquid64/golang-asm v0.15.0/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=

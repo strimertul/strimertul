@@ -11,7 +11,7 @@ require (
 	github.com/nicklaw5/helix/v2 v2.2.0
 	github.com/pkg/browser v0.0.0-20210115035449-ce105d075bb4
 	github.com/sirupsen/logrus v1.8.1
-	github.com/strimertul/kilovolt/v6 v6.1.0
+	github.com/strimertul/kilovolt/v6 v6.1.1
 	github.com/strimertul/stulbe-client-go v0.6.0
 )
 
