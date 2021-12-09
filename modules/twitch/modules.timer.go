@@ -34,7 +34,6 @@ type BotTimerModule struct {
 	lastTrigger map[string]time.Time
 	bot         *Bot
 	messages    [AverageMessageWindow]int
-	lastMinute  int
 	mu          sync.Mutex
 	startTime   time.Time
 }
@@ -106,7 +105,7 @@ func (m *BotTimerModule) runTimers() {
 			defer m.mu.Unlock()
 			for name, timer := range m.Config.Timers {
 				// Must be enabled
-				if timer.Enabled != true {
+				if !timer.Enabled {
 					continue
 				}
 				// Check if enough time has passed

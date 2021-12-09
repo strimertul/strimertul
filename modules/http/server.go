@@ -39,7 +39,17 @@ func NewServer(manager *modules.Manager) (*Server, error) {
 	}
 	err := db.GetJSON(ServerConfigKey, &server.Config)
 	if err != nil {
-		return nil, err
+		// Initialize with default config
+		server.Config = ServerConfig{
+			Bind:               "localhost:4337",
+			EnableStaticServer: false,
+			KVPassword:         "",
+		}
+		// Save
+		err = db.PutJSON(ServerConfigKey, server.Config)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	server.hub, err = kv.NewHub(db.Client(), kv.HubOptions{

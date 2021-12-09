@@ -25,8 +25,6 @@ import (
 	_ "net/http/pprof"
 )
 
-const AppTitle = "strimertül"
-
 const AppHeader = `
      _       _               _   O  O _ 
   __| |_ _ _(_)_ __  ___ _ _| |_ _  _| | 
@@ -34,8 +32,6 @@ const AppHeader = `
  /__/\__|_| |_|_|_|_\___|_|  \__|\_,_|_| `
 
 var appVersion = "v0.0.0-UNKNOWN"
-
-const DefaultBind = "localhost:4337"
 
 //go:embed frontend/dist/*
 var frontend embed.FS
@@ -100,7 +96,11 @@ func main() {
 	// Loading routine
 	db, err := database.Open(badger.DefaultOptions(*dbdir), manager)
 	failOnError(err, "Could not open DB")
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.WithError(err).Error("Could not close DB")
+		}
+	}()
 
 	if *cleanup {
 		// Run DB garbage collection until it's done
@@ -133,7 +133,11 @@ func main() {
 	// Create logger and endpoints
 	httpServer, err := http.NewServer(manager)
 	failOnError(err, "Could not initialize http server")
-	defer httpServer.Close()
+	defer func() {
+		if err := httpServer.Close(); err != nil {
+			log.WithError(err).Error("Could not close DB")
+		}
+	}()
 
 	fedir, _ := fs.Sub(frontend, "frontend/dist")
 	httpServer.SetFrontend(fedir)
