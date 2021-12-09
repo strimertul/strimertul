@@ -1,9 +1,7 @@
 package main
 
 import (
-	"context"
 	"embed"
-	"errors"
 	"flag"
 	"fmt"
 	"io/fs"
@@ -12,6 +10,7 @@ import (
 	"time"
 
 	"github.com/strimertul/strimertul/modules"
+
 	"github.com/strimertul/strimertul/modules/database"
 	"github.com/strimertul/strimertul/modules/http"
 	"github.com/strimertul/strimertul/modules/loyalty"
@@ -60,11 +59,20 @@ func parseLogLevel(level string) logrus.Level {
 	}
 }
 
+type ModuleConstructor = func(manager *modules.Manager) error
+
+var moduleList = map[modules.ModuleID]ModuleConstructor{
+	modules.ModuleTwitch:  twitch.Register,
+	modules.ModuleStulbe:  stulbe.Register,
+	modules.ModuleLoyalty: loyalty.Register,
+}
+
 func main() {
 	// Get cmd line parameters
 	noheader := flag.Bool("noheader", false, "Do not print the app header")
 	dbdir := flag.String("dbdir", "data", "Path to strimertül database dir")
 	loglevel := flag.String("loglevel", "info", "Logging level (debug, info, warn, error)")
+	cleanup := flag.Bool("run-gc", false, "Run garbage collection and exit immediately after")
 	flag.Parse()
 
 	rand.Seed(time.Now().UnixNano())
@@ -94,60 +102,31 @@ func main() {
 	failOnError(err, "Could not open DB")
 	defer db.Close()
 
+	if *cleanup {
+		// Run DB garbage collection until it's done
+		var err error
+		for err == nil {
+			err = db.Client().RunValueLogGC(0.5)
+		}
+		return
+	}
+
 	// Set meta keys
 	_ = db.PutKey("stul-meta/version", []byte(appVersion))
 
-	// Check if onboarding was completed
-	var moduleConfig modules.ModuleConfig
-	err = db.GetJSON(modules.ModuleConfigKey, &moduleConfig)
-	if err != nil {
-		if errors.Is(err, badger.ErrKeyNotFound) {
-			moduleConfig = modules.ModuleConfig{CompletedOnboarding: false}
-		} else {
-			fatalError(err, "Could not read from DB")
-		}
-	}
+	runMigrations(db)
 
-	// Bootstrap if needed
-	if !moduleConfig.CompletedOnboarding {
-		// Initialize DB as empty and default endpoint
-		failOnError(db.PutJSON(http.ServerConfigKey, http.ServerConfig{
-			Bind: DefaultBind,
-		}), "could not save http config")
-
-		failOnError(db.PutJSON(modules.ModuleConfigKey, modules.ModuleConfig{
-			EnableTwitch:        false,
-			EnableStulbe:        false,
-			CompletedOnboarding: true,
-		}), "could not save onboarding config")
-		fmt.Printf("It appears this is your first time running %s! Please go to http://%s and make sure to configure anything you want!\n\n", AppTitle, DefaultBind)
-	}
-
-	if moduleConfig.EnableStulbe {
-		stulbeManager, err := stulbe.Initialize(manager)
+	for module, constructor := range moduleList {
+		err := constructor(manager)
 		if err != nil {
-			log.WithError(err).Error("Stulbe initialization failed!")
+			log.WithError(err).WithField("module", module).Error("Could not register module")
 		} else {
-			defer stulbeManager.Close()
-		}
-	}
-
-	if moduleConfig.EnableLoyalty {
-		loyaltyManager, err := loyalty.NewManager(manager)
-		if err != nil {
-			log.WithError(err).Error("Loyalty initialization failed!")
-		} else {
-			defer loyaltyManager.Close()
-		}
-	}
-
-	if moduleConfig.EnableTwitch {
-		// Create Twitch client
-		twitchModule, err := twitch.NewClient(manager)
-		if err != nil {
-			log.WithError(err).Error("Twitch initialization failed!")
-		} else {
-			defer twitchModule.Close()
+			//goland:noinspection GoDeferInLoop
+			defer func() {
+				if err := manager.Modules[module].Close(); err != nil {
+					log.WithError(err).WithField("module", module).Error("Could not close module")
+				}
+			}()
 		}
 	}
 
@@ -166,18 +145,6 @@ func main() {
 		if err != nil {
 			log.WithError(err).Warnf("could not open browser, dashboard URL available at: %s", dashboardURL)
 		}
-	}()
-
-	go func() {
-		err := db.Subscribe(context.Background(), func(changed []database.ModifiedKV) error {
-			for _, pair := range changed {
-				if pair.Key == modules.ModuleConfigKey {
-					//TODO Enable/disable modules
-				}
-			}
-			return nil
-		}, modules.ModuleConfigKey)
-		log.WithError(err).Error("Error while listening to module config changes")
 	}()
 
 	// Run garbage collection every once in a while

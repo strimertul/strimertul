@@ -12,15 +12,14 @@ export default function LoyaltySettingPage(
   props: RouteComponentProps<unknown>,
 ): React.ReactElement {
   const [loyaltyConfig, setLoyaltyConfig] = useModule(modules.loyaltyConfig);
-  const [moduleConfig, setModuleConfig] = useModule(modules.moduleConfig);
   const [twitchConfig] = useModule(modules.twitchConfig);
 
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
-  const twitchActive = moduleConfig?.twitch ?? false;
+  const twitchActive = twitchConfig?.enabled ?? false;
   const twitchBotActive = twitchConfig?.enable_bot ?? false;
-  const loyaltyEnabled = moduleConfig?.loyalty ?? false;
+  const loyaltyEnabled = loyaltyConfig?.enabled ?? false;
   const active = twitchActive && twitchBotActive && loyaltyEnabled;
 
   const [interval, setInterval] = useState(
@@ -50,9 +49,9 @@ export default function LoyaltySettingPage(
             checked={active}
             onChange={(ev) =>
               dispatch(
-                setModuleConfig({
-                  ...moduleConfig,
-                  loyalty: ev.target.checked,
+                apiReducer.actions.loyaltyConfigChanged({
+                  ...loyaltyConfig,
+                  enabled: ev.target.checked,
                 }),
               )
             }

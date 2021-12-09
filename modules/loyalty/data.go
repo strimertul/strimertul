@@ -5,6 +5,7 @@ import "time"
 const ConfigKey = "loyalty/config"
 
 type Config struct {
+	Enabled  bool   `json:"enabled"`
 	Currency string `json:"currency"`
 	Points   struct {
 		Interval      int64 `json:"interval"` // in seconds!

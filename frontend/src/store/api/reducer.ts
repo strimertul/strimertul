@@ -127,13 +127,6 @@ export const setUserPoints = createAsyncThunk(
 );
 
 export const modules = {
-  moduleConfig: makeModule(
-    'stul-meta/modules',
-    (state) => state.moduleConfigs?.moduleConfig,
-    (state, { payload }) => {
-      state.moduleConfigs.moduleConfig = payload;
-    },
-  ),
   httpConfig: makeModule(
     'http/config',
     (state) => state.moduleConfigs?.httpConfig,
@@ -256,7 +249,6 @@ const initialState: APIState = {
     alerts: null,
   },
   moduleConfigs: {
-    moduleConfig: null,
     httpConfig: null,
     twitchConfig: null,
     twitchBotConfig: null,

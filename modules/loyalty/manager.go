@@ -34,10 +34,10 @@ type Manager struct {
 	cooldowns map[string]time.Time
 }
 
-func NewManager(manager *modules.Manager) (*Manager, error) {
+func Register(manager *modules.Manager) error {
 	db, ok := manager.Modules["db"].(*database.DB)
 	if !ok {
-		return nil, errors.New("db module not found")
+		return errors.New("db module not found")
 	}
 
 	log := manager.Logger(modules.ModuleLoyalty)
@@ -46,7 +46,7 @@ func NewManager(manager *modules.Manager) (*Manager, error) {
 	// TODO Remove this in the future
 	err := migratePoints(db, log)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	loyalty := &Manager{
@@ -60,24 +60,24 @@ func NewManager(manager *modules.Manager) (*Manager, error) {
 		if errors.Is(err, badger.ErrKeyNotFound) {
 			log.Warn("missing configuration for loyalty (but it's enabled). Please make sure to set it up properly!")
 		} else {
-			return nil, err
+			return err
 		}
 	}
 
 	// Retrieve configs
 	if err := db.GetJSON(RewardsKey, &loyalty.rewards); err != nil {
 		if !errors.Is(err, badger.ErrKeyNotFound) {
-			return nil, err
+			return err
 		}
 	}
 	if err := db.GetJSON(GoalsKey, &loyalty.goals); err != nil {
 		if !errors.Is(err, badger.ErrKeyNotFound) {
-			return nil, err
+			return err
 		}
 	}
 	if err := db.GetJSON(QueueKey, &loyalty.queue); err != nil {
 		if !errors.Is(err, badger.ErrKeyNotFound) {
-			return nil, err
+			return err
 		}
 	}
 
@@ -85,7 +85,7 @@ func NewManager(manager *modules.Manager) (*Manager, error) {
 	points, err := db.GetAll(PointsPrefix)
 	if err != nil {
 		if !errors.Is(err, badger.ErrKeyNotFound) {
-			return nil, err
+			return err
 		}
 		points = make(map[string]string)
 	}
@@ -94,7 +94,7 @@ func NewManager(manager *modules.Manager) (*Manager, error) {
 		var entry PointsEntry
 		err := jsoniter.ConfigFastest.UnmarshalFromString(v, &entry)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		loyalty.points[k] = entry
 	}
@@ -102,9 +102,6 @@ func NewManager(manager *modules.Manager) (*Manager, error) {
 	// Subscribe for changes
 	go db.Subscribe(context.Background(), loyalty.update, "loyalty/")
 	go db.Subscribe(context.Background(), loyalty.handleRemote, "stulbe/loyalty/")
-
-	// Register module
-	manager.Modules[modules.ModuleLoyalty] = loyalty
 
 	// Replicate keys on stulbe if available
 	if stulbeManager, ok := manager.Modules["stulbe"].(*stulbe.Manager); ok {
@@ -121,10 +118,19 @@ func NewManager(manager *modules.Manager) (*Manager, error) {
 		}()
 	}
 
-	return loyalty, nil
+	// Register module
+	manager.Modules[modules.ModuleLoyalty] = loyalty
+
+	return nil
 }
 
 func (m *Manager) Status() modules.ModuleStatus {
+	if !m.config.Enabled {
+		return modules.ModuleStatus{
+			Enabled: false,
+		}
+	}
+
 	return modules.ModuleStatus{
 		Enabled:      true,
 		Working:      true,

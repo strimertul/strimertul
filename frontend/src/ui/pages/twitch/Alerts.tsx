@@ -13,7 +13,7 @@ export default function TwitchBotAlertsPage(
   props: RouteComponentProps<unknown>,
 ): React.ReactElement {
   const [twitchConfig] = useModule(modules.twitchConfig);
-  const [moduleConfig] = useModule(modules.moduleConfig);
+  const [stulbeConfig] = useModule(modules.stulbeConfig);
   const [twitchBotAlerts, setTwitchBotAlerts] = useModule(
     modules.twitchBotAlerts,
   );
@@ -21,7 +21,7 @@ export default function TwitchBotAlertsPage(
   const dispatch = useDispatch();
 
   const botActive = twitchConfig?.enable_bot ?? false;
-  const stulbeActive = moduleConfig?.stulbe ?? false;
+  const stulbeActive = stulbeConfig?.enabled ?? false;
 
   if (!botActive) {
     return (

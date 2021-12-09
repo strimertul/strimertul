@@ -16,6 +16,7 @@ import (
 )
 
 type Client struct {
+	Config Config
 	Bot    *Bot
 	db     *database.DB
 	API    *helix.Client
@@ -24,10 +25,10 @@ type Client struct {
 	restart chan bool
 }
 
-func NewClient(manager *modules.Manager) (*Client, error) {
+func Register(manager *modules.Manager) error {
 	db, ok := manager.Modules["db"].(*database.DB)
 	if !ok {
-		return nil, errors.New("db module not found")
+		return errors.New("db module not found")
 	}
 
 	log := manager.Logger(modules.ModuleTwitch)
@@ -36,16 +37,17 @@ func NewClient(manager *modules.Manager) (*Client, error) {
 	var config Config
 	err := db.GetJSON(ConfigKey, &config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get twitch config: %w", err)
+		return fmt.Errorf("failed to get twitch config: %w", err)
 	}
 
 	// Create Twitch client
 	api, err := getHelixAPI(config.APIClientID, config.APIClientSecret)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create twitch client: %w", err)
+		return fmt.Errorf("failed to create twitch client: %w", err)
 	}
 
 	client := &Client{
+		Config:  config,
 		db:      db,
 		API:     api,
 		logger:  log,
@@ -56,7 +58,7 @@ func NewClient(manager *modules.Manager) (*Client, error) {
 	var twitchBotConfig BotConfig
 	err = db.GetJSON(BotConfigKey, &twitchBotConfig)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get bot config: %w", err)
+		return fmt.Errorf("failed to get bot config: %w", err)
 	}
 
 	// Create and run IRC bot
@@ -76,8 +78,6 @@ func NewClient(manager *modules.Manager) (*Client, error) {
 	if loyaltyManager, ok := manager.Modules[modules.ModuleLoyalty].(*loyalty.Manager); ok && client.Bot != nil {
 		client.Bot.SetupLoyalty(loyaltyManager)
 	}
-
-	manager.Modules[modules.ModuleTwitch] = client
 
 	// Listen for config changes
 	go db.Subscribe(context.Background(), func(changed []database.ModifiedKV) error {
@@ -114,7 +114,9 @@ func NewClient(manager *modules.Manager) (*Client, error) {
 		return nil
 	}, ConfigKey, BotConfigKey)
 
-	return client, nil
+	manager.Modules[modules.ModuleTwitch] = client
+
+	return nil
 }
 
 func getHelixAPI(clientID string, clientSecret string) (*helix.Client, error) {
@@ -152,6 +154,12 @@ func (c *Client) RunBot() error {
 }
 
 func (c *Client) Status() modules.ModuleStatus {
+	if !c.Config.Enabled {
+		return modules.ModuleStatus{
+			Enabled: false,
+		}
+	}
+
 	return modules.ModuleStatus{
 		Enabled:      true,
 		Working:      c.Bot != nil && c.Bot.Client != nil,

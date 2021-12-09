@@ -3,6 +3,7 @@ package twitch
 const ConfigKey = "twitch/config"
 
 type Config struct {
+	Enabled         bool   `json:"enabled"`
 	EnableBot       bool   `json:"enable_bot"`
 	APIClientID     string `json:"api_client_id"`
 	APIClientSecret string `json:"api_client_secret"`

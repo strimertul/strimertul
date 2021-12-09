@@ -10,7 +10,6 @@ export default function TwitchBotSettingsPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   params: RouteComponentProps<unknown>,
 ): React.ReactElement {
-  const [moduleConfig, setModuleConfig] = useModule(modules.moduleConfig);
   const [twitchConfig, setTwitchConfig] = useModule(modules.twitchConfig);
   const [twitchBotConfig, setTwitchBotConfig] = useModule(
     modules.twitchBotConfig,
@@ -18,8 +17,8 @@ export default function TwitchBotSettingsPage(
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const busy = moduleConfig === null;
-  const twitchActive = moduleConfig?.twitch ?? false;
+  const busy = twitchConfig === null;
+  const twitchActive = twitchConfig?.enabled ?? false;
   const botActive = twitchConfig?.enable_bot ?? false;
   const active = twitchActive && botActive;
 
@@ -161,7 +160,6 @@ export default function TwitchBotSettingsPage(
       <button
         className="button"
         onClick={() => {
-          dispatch(setModuleConfig(moduleConfig));
           dispatch(setTwitchConfig(twitchConfig));
           dispatch(setTwitchBotConfig(twitchBotConfig));
         }}

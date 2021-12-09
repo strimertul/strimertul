@@ -274,13 +274,14 @@ export default function LoyaltyGoalsPage(
   props: RouteComponentProps<unknown>,
 ): React.ReactElement {
   const [goals, setGoals] = useModule(modules.loyaltyGoals);
-  const [moduleConfig] = useModule(modules.moduleConfig);
+  const [twitchConfig] = useModule(modules.twitchConfig);
+  const [loyaltyConfig] = useModule(modules.loyaltyConfig);
 
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const twitchActive = moduleConfig?.twitch ?? false;
-  const loyaltyEnabled = moduleConfig?.loyalty ?? false;
+  const twitchActive = twitchConfig?.enabled ?? false;
+  const loyaltyEnabled = loyaltyConfig?.enabled ?? false;
   const active = twitchActive && loyaltyEnabled;
 
   const [goalFilter, setGoalFilter] = useState('');

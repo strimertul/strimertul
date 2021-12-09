@@ -12,6 +12,7 @@ import (
 )
 
 type Manager struct {
+	Config Config
 	Client *stulbe.Client
 	db     *database.DB
 	logger logrus.FieldLogger
@@ -19,10 +20,10 @@ type Manager struct {
 	restart chan bool
 }
 
-func Initialize(manager *modules.Manager) (*Manager, error) {
+func Register(manager *modules.Manager) error {
 	db, ok := manager.Modules["db"].(*database.DB)
 	if !ok {
-		return nil, errors.New("db module not found")
+		return errors.New("db module not found")
 	}
 
 	logger := manager.Logger(modules.ModuleStulbe)
@@ -30,7 +31,7 @@ func Initialize(manager *modules.Manager) (*Manager, error) {
 	var config Config
 	err := db.GetJSON(ConfigKey, &config)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Create client
@@ -41,19 +42,17 @@ func Initialize(manager *modules.Manager) (*Manager, error) {
 		Logger:   logger,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Create manager
 	stulbeManager := &Manager{
+		Config:  config,
 		Client:  stulbeClient,
 		db:      db,
 		logger:  logger,
 		restart: make(chan bool),
 	}
-
-	// Register module
-	manager.Modules[modules.ModuleStulbe] = stulbeManager
 
 	// Receive key updates
 	go func() {
@@ -97,7 +96,10 @@ func Initialize(manager *modules.Manager) (*Manager, error) {
 		return nil
 	}, ConfigKey)
 
-	return stulbeManager, nil
+	// Register module
+	manager.Modules[modules.ModuleStulbe] = stulbeManager
+
+	return nil
 }
 
 func (m *Manager) ReceiveEvents() error {
@@ -119,6 +121,12 @@ func (m *Manager) ReceiveEvents() error {
 }
 
 func (m *Manager) Status() modules.ModuleStatus {
+	if !m.Config.Enabled {
+		return modules.ModuleStatus{
+			Enabled: false,
+		}
+	}
+
 	return modules.ModuleStatus{
 		Enabled:      true,
 		Working:      m.Client != nil,

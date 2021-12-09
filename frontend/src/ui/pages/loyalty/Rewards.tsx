@@ -315,13 +315,14 @@ export default function LoyaltyRewardsPage(
   props: RouteComponentProps<unknown>,
 ): React.ReactElement {
   const [rewards, setRewards] = useModule(modules.loyaltyRewards);
-  const [moduleConfig] = useModule(modules.moduleConfig);
+  const [twitchConfig] = useModule(modules.twitchConfig);
+  const [loyaltyConfig] = useModule(modules.loyaltyConfig);
 
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
-  const twitchActive = moduleConfig?.twitch ?? false;
-  const loyaltyEnabled = moduleConfig?.loyalty ?? false;
+  const twitchActive = twitchConfig?.enabled ?? false;
+  const loyaltyEnabled = loyaltyConfig?.enabled ?? false;
   const active = twitchActive && loyaltyEnabled;
 
   const [rewardFilter, setRewardFilter] = useState('');

@@ -3,13 +3,6 @@
 import KilovoltWS from '@strimertul/kilovolt-client';
 import { kvError } from '@strimertul/kilovolt-client/lib/messages';
 
-interface ModuleConfig {
-  configured: boolean;
-  twitch: boolean;
-  stulbe: boolean;
-  loyalty: boolean;
-}
-
 interface HTTPConfig {
   bind: string;
   enable_static_server: boolean;
@@ -18,6 +11,7 @@ interface HTTPConfig {
 }
 
 interface TwitchConfig {
+  enabled: boolean;
   enable_bot: boolean;
   api_client_id: string;
   api_client_secret: string;
@@ -48,12 +42,14 @@ export interface TwitchBotCustomCommand {
 type TwitchBotCustomCommands = Record<string, TwitchBotCustomCommand>;
 
 interface StulbeConfig {
+  enabled: boolean;
   endpoint: string;
   username: string;
   auth_key: string;
 }
 
 interface LoyaltyConfig {
+  enabled: boolean;
   currency: string;
   points: {
     interval: number;
@@ -175,7 +171,6 @@ export interface APIState {
     alerts: TwitchBotAlertsConfig;
   };
   moduleConfigs: {
-    moduleConfig: ModuleConfig;
     httpConfig: HTTPConfig;
     twitchConfig: TwitchConfig;
     twitchBotConfig: TwitchBotConfig;

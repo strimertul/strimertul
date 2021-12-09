@@ -57,7 +57,6 @@ export default function StulbeWebhooksPage(
 ): React.ReactElement {
   const { t } = useTranslation();
   const kv = useSelector((state: RootState) => state.api.client);
-  const [moduleConfig] = useModule(modules.moduleConfig);
   const [stulbeConfig] = useModule(modules.stulbeConfig);
   const [userStatus, setUserStatus] = useState<UserData | SyncError>(null);
   const [client, setClient] = useState<Stulbe>(null);
@@ -110,9 +109,8 @@ export default function StulbeWebhooksPage(
       // Get user info
       getUserInfo();
     } else if (
-      moduleConfig &&
-      moduleConfig.stulbe &&
       stulbeConfig &&
+      stulbeConfig.enabled &&
       stulbeConfig.endpoint &&
       stulbeConfig.auth_key &&
       stulbeConfig.username
@@ -125,9 +123,9 @@ export default function StulbeWebhooksPage(
       };
       tryAuth();
     }
-  }, [moduleConfig, stulbeConfig, client]);
+  }, [stulbeConfig, client]);
 
-  if (!moduleConfig || !moduleConfig.stulbe) {
+  if (!stulbeConfig.enabled) {
     return (
       <>
         <h1 className="title is-4">{t('backend.webhook.err-not-enabled')}</h1>

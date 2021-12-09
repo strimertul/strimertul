@@ -11,12 +11,11 @@ export default function TwitchBotSettingsPage(
   params: RouteComponentProps<unknown>,
 ): React.ReactElement {
   const { t } = useTranslation();
-  const [moduleConfig, setModuleConfig] = useModule(modules.moduleConfig);
   const [twitchConfig, setTwitchConfig] = useModule(modules.twitchConfig);
   const dispatch = useDispatch();
 
-  const busy = moduleConfig === null;
-  const active = moduleConfig?.twitch ?? false;
+  const busy = twitchConfig === null;
+  const active = twitchConfig?.enabled ?? false;
 
   return (
     <>
@@ -29,9 +28,9 @@ export default function TwitchBotSettingsPage(
             disabled={busy}
             onChange={(ev) =>
               dispatch(
-                apiReducer.actions.moduleConfigChanged({
-                  ...moduleConfig,
-                  twitch: ev.target.checked,
+                apiReducer.actions.twitchConfigChanged({
+                  ...twitchConfig,
+                  enabled: ev.target.checked,
                 }),
               )
             }
@@ -106,7 +105,6 @@ export default function TwitchBotSettingsPage(
       <button
         className="button"
         onClick={() => {
-          dispatch(setModuleConfig(moduleConfig));
           dispatch(setTwitchConfig(twitchConfig));
         }}
       >

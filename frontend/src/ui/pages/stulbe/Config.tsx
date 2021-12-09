@@ -12,13 +12,12 @@ export default function StulbeConfigPage(
   params: RouteComponentProps<unknown>,
 ): React.ReactElement {
   const { t } = useTranslation();
-  const [moduleConfig, setModuleConfig] = useModule(modules.moduleConfig);
   const [stulbeConfig, setStulbeConfig] = useModule(modules.stulbeConfig);
   const [testResult, setTestResult] = useState<string>(null);
   const dispatch = useDispatch();
 
-  const busy = moduleConfig === null;
-  const active = moduleConfig?.stulbe ?? false;
+  const busy = stulbeConfig === null;
+  const active = stulbeConfig?.enabled ?? false;
 
   const test = async () => {
     try {
@@ -41,9 +40,9 @@ export default function StulbeConfigPage(
             disabled={busy}
             onChange={(ev) =>
               dispatch(
-                apiReducer.actions.moduleConfigChanged({
-                  ...moduleConfig,
-                  stulbe: ev.target.checked,
+                apiReducer.actions.stulbeConfigChanged({
+                  ...stulbeConfig,
+                  enabled: ev.target.checked,
                 }),
               )
             }
@@ -111,7 +110,6 @@ export default function StulbeConfigPage(
       <button
         className="button"
         onClick={() => {
-          dispatch(setModuleConfig(moduleConfig));
           dispatch(setStulbeConfig(stulbeConfig));
         }}
       >
