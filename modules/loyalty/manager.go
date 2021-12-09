@@ -124,6 +124,15 @@ func NewManager(manager *modules.Manager) (*Manager, error) {
 	return loyalty, nil
 }
 
+func (m *Manager) Status() modules.ModuleStatus {
+	return modules.ModuleStatus{
+		Enabled:      true,
+		Working:      true,
+		Data:         struct{}{},
+		StatusString: "",
+	}
+}
+
 func (m *Manager) Close() error {
 	//TODO Stop subscriptions?
 	return nil

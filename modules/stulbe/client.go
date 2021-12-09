@@ -115,7 +115,15 @@ func (m *Manager) ReceiveEvents() error {
 		case <-m.restart:
 			return nil
 		}
+	}
+}
 
+func (m *Manager) Status() modules.ModuleStatus {
+	return modules.ModuleStatus{
+		Enabled:      true,
+		Working:      m.Client != nil,
+		Data:         struct{}{},
+		StatusString: "",
 	}
 }
 

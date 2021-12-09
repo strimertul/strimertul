@@ -151,6 +151,15 @@ func (c *Client) RunBot() error {
 	}
 }
 
+func (c *Client) Status() modules.ModuleStatus {
+	return modules.ModuleStatus{
+		Enabled:      true,
+		Working:      c.Bot != nil && c.Bot.Client != nil,
+		Data:         struct{}{},
+		StatusString: "",
+	}
+}
+
 func (c *Client) Close() error {
 	return c.Bot.Client.Disconnect()
 }

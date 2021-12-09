@@ -56,6 +56,19 @@ func NewServer(manager *modules.Manager) (*Server, error) {
 	return server, nil
 }
 
+func (s *Server) Status() modules.ModuleStatus {
+	return modules.ModuleStatus{
+		Enabled: true,
+		Working: s.server != nil,
+		Data: struct {
+			Bind string
+		}{
+			s.server.Addr,
+		},
+		StatusString: s.server.Addr,
+	}
+}
+
 func (s *Server) Close() error {
 	return s.server.Close()
 }

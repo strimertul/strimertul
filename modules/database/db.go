@@ -56,6 +56,22 @@ func (db *DB) Client() *badger.DB {
 	return db.client
 }
 
+func (db *DB) Status() modules.ModuleStatus {
+	lsm, vlog := db.client.Size()
+	return modules.ModuleStatus{
+		Enabled: true,
+		Working: !db.client.IsClosed(),
+		Data: struct {
+			LSMSize  int64
+			VlogSize int64
+		}{
+			lsm,
+			vlog,
+		},
+		StatusString: db.client.LevelsToString(),
+	}
+}
+
 func (db *DB) Close() error {
 	return db.client.Close()
 }

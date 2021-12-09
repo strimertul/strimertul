@@ -2,7 +2,19 @@ package modules
 
 import "github.com/sirupsen/logrus"
 
+type ModuleStatus struct {
+	Enabled      bool
+	Working      bool
+	Data         interface{}
+	StatusString string
+}
+
+func (m ModuleStatus) String() string {
+	return m.StatusString
+}
+
 type Module interface {
+	Status() ModuleStatus
 	Close() error
 }
 
