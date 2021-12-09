@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"math/rand"
 	"sync"
 	"text/template"
@@ -66,19 +65,41 @@ type BotAlertsConfig struct {
 	} `json:"cheer"`
 }
 
+type templateCache struct {
+	follow struct {
+		messages map[int]*template.Template
+	}
+	subscription struct {
+		messages   map[int]*template.Template
+		variations map[int]map[int]*template.Template
+	}
+	gift struct {
+		messages   map[int]*template.Template
+		variations map[int]map[int]*template.Template
+	}
+	raid struct {
+		messages   map[int]*template.Template
+		variations map[int]map[int]*template.Template
+	}
+	cheer struct {
+		messages   map[int]*template.Template
+		variations map[int]map[int]*template.Template
+	}
+}
+
 type BotAlertsModule struct {
 	Config BotAlertsConfig
 
 	bot       *Bot
 	mu        sync.Mutex
-	templates map[string]*template.Template
+	templates templateCache
 }
 
 func SetupAlerts(bot *Bot) *BotAlertsModule {
 	mod := &BotAlertsModule{
 		bot:       bot,
 		mu:        sync.Mutex{},
-		templates: make(map[string]*template.Template),
+		templates: templateCache{},
 	}
 
 	// Load config from database
@@ -125,7 +146,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 		}
 		// Assign random message
 		messageID := rand.Intn(len(mod.Config.Subscription.Messages))
-		tpl, ok := mod.templates[fmt.Sprintf("sub-%d", messageID)]
+		tpl, ok := mod.templates.subscription.messages[messageID]
 		// If template is broken, write it as is (soft fail, plus we raise attention I guess?)
 		if !ok {
 			mod.bot.WriteMessage(mod.Config.Subscription.Messages[messageID])
@@ -136,9 +157,11 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			for variationIndex, variation := range mod.Config.Subscription.Variations {
 				if variation.IsGifted != nil && *variation.IsGifted {
 					// Make sure template is valid
-					if temp, ok := mod.templates[fmt.Sprintf("sub-v%d-%d", variationIndex, messageID)]; ok {
-						tpl = temp
-						break
+					if varTemplates, ok := mod.templates.subscription.variations[variationIndex]; ok {
+						if temp, ok := varTemplates[messageID]; ok {
+							tpl = temp
+							break
+						}
 					}
 				}
 			}
@@ -147,9 +170,11 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			for variationIndex, variation := range mod.Config.Subscription.Variations {
 				if variation.MinStreak != nil && sub.DurationMonths >= *variation.MinStreak && sub.DurationMonths >= minMonths {
 					// Make sure template is valid
-					if temp, ok := mod.templates[fmt.Sprintf("sub-v%d-%d", variationIndex, messageID)]; ok {
-						tpl = temp
-						minMonths = *variation.MinStreak
+					if varTemplates, ok := mod.templates.subscription.variations[variationIndex]; ok {
+						if temp, ok := varTemplates[messageID]; ok {
+							tpl = temp
+							minMonths = *variation.MinStreak
+						}
 					}
 				}
 			}
@@ -157,9 +182,8 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 		writeTemplate(bot, tpl, sub)
 	}
 	addPendingSub := func(ev interface{}) {
-		switch ev.(type) {
+		switch sub := ev.(type) {
 		case helix.EventSubChannelSubscribeEvent:
-			sub := ev.(helix.EventSubChannelSubscribeEvent)
 			pendingMux.Lock()
 			defer pendingMux.Unlock()
 			if ev, ok := pendingSubs[sub.UserID]; ok {
@@ -184,7 +208,6 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 				processPendingSub(sub.UserID)
 			}()
 		case helix.EventSubChannelSubscriptionMessageEvent:
-			sub := ev.(helix.EventSubChannelSubscriptionMessageEvent)
 			pendingMux.Lock()
 			defer pendingMux.Unlock()
 			if ev, ok := pendingSubs[sub.UserID]; ok {
@@ -241,7 +264,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 					// Pick a random message
 					messageID := rand.Intn(len(mod.Config.Follow.Messages))
 					// Pick compiled template or fallback to plain text
-					if tpl, ok := mod.templates[fmt.Sprintf("follow-%d", messageID)]; ok {
+					if tpl, ok := mod.templates.follow.messages[messageID]; ok {
 						writeTemplate(bot, tpl, &followEv)
 					} else {
 						bot.WriteMessage(mod.Config.Follow.Messages[messageID])
@@ -261,7 +284,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 					}
 					// Pick a random message from base set
 					messageID := rand.Intn(len(mod.Config.Raid.Messages))
-					tpl, ok := mod.templates[fmt.Sprintf("raid-%d", messageID)]
+					tpl, ok := mod.templates.raid.messages[messageID]
 					if !ok {
 						// Broken template!
 						mod.bot.WriteMessage(mod.Config.Raid.Messages[messageID])
@@ -273,9 +296,11 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 						for variationIndex, variation := range mod.Config.Raid.Variations {
 							if variation.MinViewers != nil && *variation.MinViewers > minViewers && raidEv.Viewers >= *variation.MinViewers {
 								// Make sure the template is valid
-								if varTemplate, ok := mod.templates[fmt.Sprintf("raid-v%d-%d", variationIndex, messageID)]; ok {
-									tpl = varTemplate
-									minViewers = *variation.MinViewers
+								if varTemplates, ok := mod.templates.raid.variations[variationIndex]; ok {
+									if temp, ok := varTemplates[messageID]; ok {
+										tpl = temp
+										minViewers = *variation.MinViewers
+									}
 								}
 							}
 						}
@@ -296,7 +321,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 					}
 					// Pick a random message from base set
 					messageID := rand.Intn(len(mod.Config.Cheer.Messages))
-					tpl, ok := mod.templates[fmt.Sprintf("cheer-%d", messageID)]
+					tpl, ok := mod.templates.cheer.messages[messageID]
 					if !ok {
 						// Broken template!
 						mod.bot.WriteMessage(mod.Config.Raid.Messages[messageID])
@@ -308,9 +333,11 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 						for variationIndex, variation := range mod.Config.Cheer.Variations {
 							if variation.MinAmount != nil && *variation.MinAmount > minAmount && cheerEv.Bits >= *variation.MinAmount {
 								// Make sure the template is valid
-								if varTemplate, ok := mod.templates[fmt.Sprintf("cheer-v%d-%d", variationIndex, messageID)]; ok {
-									tpl = varTemplate
-									minAmount = *variation.MinAmount
+								if varTemplates, ok := mod.templates.cheer.variations[variationIndex]; ok {
+									if temp, ok := varTemplates[messageID]; ok {
+										tpl = temp
+										minAmount = *variation.MinAmount
+									}
 								}
 							}
 						}
@@ -357,7 +384,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 					}
 					// Pick a random message from base set
 					messageID := rand.Intn(len(mod.Config.GiftSub.Messages))
-					tpl, ok := mod.templates[fmt.Sprintf("gift-%d", messageID)]
+					tpl, ok := mod.templates.gift.messages[messageID]
 					if !ok {
 						// Broken template!
 						mod.bot.WriteMessage(mod.Config.GiftSub.Messages[messageID])
@@ -369,9 +396,11 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 							for variationIndex, variation := range mod.Config.GiftSub.Variations {
 								if variation.IsAnonymous != nil && *variation.IsAnonymous {
 									// Make sure template is valid
-									if temp, ok := mod.templates[fmt.Sprintf("gift-v%d-%d", variationIndex, messageID)]; ok {
-										tpl = temp
-										break
+									if varTemplates, ok := mod.templates.gift.variations[variationIndex]; ok {
+										if temp, ok := varTemplates[messageID]; ok {
+											tpl = temp
+											break
+										}
 									}
 								}
 							}
@@ -379,10 +408,12 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 							minCumulative := -1
 							for variationIndex, variation := range mod.Config.GiftSub.Variations {
 								if variation.MinCumulative != nil && *variation.MinCumulative > minCumulative && giftEv.CumulativeTotal >= *variation.MinCumulative {
-									// Make sure template is valid
-									if temp, ok := mod.templates[fmt.Sprintf("gift-v%d-%d", variationIndex, messageID)]; ok {
-										tpl = temp
-										minCumulative = *variation.MinCumulative
+									// Make sure the template is valid
+									if varTemplates, ok := mod.templates.gift.variations[variationIndex]; ok {
+										if temp, ok := varTemplates[messageID]; ok {
+											tpl = temp
+											minCumulative = *variation.MinCumulative
+										}
 									}
 								}
 							}
@@ -402,51 +433,63 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 }
 
 func (m *BotAlertsModule) compileTemplates() {
-	m.templates = make(map[string]*template.Template)
 	for index, msg := range m.Config.Follow.Messages {
-		m.addTemplate(fmt.Sprintf("follow-%d", index), msg)
+		m.templates.follow.messages = make(map[int]*template.Template)
+		m.addTemplate(m.templates.follow.messages, index, msg)
 	}
 	for index, msg := range m.Config.Subscription.Messages {
-		m.addTemplate(fmt.Sprintf("sub-%d", index), msg)
+		m.templates.subscription.messages = make(map[int]*template.Template)
+		m.addTemplate(m.templates.subscription.messages, index, msg)
 	}
 	for varIndex, variation := range m.Config.Subscription.Variations {
+		m.templates.subscription.variations = make(map[int]map[int]*template.Template)
 		for index, msg := range variation.Messages {
-			m.addTemplate(fmt.Sprintf("sub-v%d-%d", varIndex, index), msg)
+			m.templates.subscription.variations[varIndex] = make(map[int]*template.Template)
+			m.addTemplate(m.templates.subscription.variations[varIndex], index, msg)
 		}
 	}
 	for index, msg := range m.Config.Raid.Messages {
-		m.addTemplate(fmt.Sprintf("raid-%d", index), msg)
+		m.templates.raid.messages = make(map[int]*template.Template)
+		m.addTemplate(m.templates.raid.messages, index, msg)
 	}
 	for varIndex, variation := range m.Config.Raid.Variations {
+		m.templates.raid.variations = make(map[int]map[int]*template.Template)
 		for index, msg := range variation.Messages {
-			m.addTemplate(fmt.Sprintf("raid-v%d-%d", varIndex, index), msg)
+			m.templates.raid.variations[varIndex] = make(map[int]*template.Template)
+			m.addTemplate(m.templates.raid.variations[varIndex], index, msg)
 		}
 	}
 	for index, msg := range m.Config.Cheer.Messages {
-		m.addTemplate(fmt.Sprintf("cheer-%d", index), msg)
+		m.templates.cheer.messages = make(map[int]*template.Template)
+		m.addTemplate(m.templates.cheer.messages, index, msg)
 	}
 	for varIndex, variation := range m.Config.Cheer.Variations {
+		m.templates.cheer.variations = make(map[int]map[int]*template.Template)
 		for index, msg := range variation.Messages {
-			m.addTemplate(fmt.Sprintf("cheer-v%d-%d", varIndex, index), msg)
+			m.templates.cheer.variations[varIndex] = make(map[int]*template.Template)
+			m.addTemplate(m.templates.cheer.variations[varIndex], index, msg)
 		}
 	}
 	for index, msg := range m.Config.GiftSub.Messages {
-		m.addTemplate(fmt.Sprintf("gift-%d", index), msg)
+		m.templates.gift.messages = make(map[int]*template.Template)
+		m.addTemplate(m.templates.gift.messages, index, msg)
 	}
 	for varIndex, variation := range m.Config.GiftSub.Variations {
+		m.templates.gift.variations = make(map[int]map[int]*template.Template)
 		for index, msg := range variation.Messages {
-			m.addTemplate(fmt.Sprintf("gift-v%d-%d", varIndex, index), msg)
+			m.templates.gift.variations[varIndex] = make(map[int]*template.Template)
+			m.addTemplate(m.templates.gift.variations[varIndex], index, msg)
 		}
 	}
 }
 
-func (m *BotAlertsModule) addTemplate(id string, msg string) {
+func (m *BotAlertsModule) addTemplate(templateList map[int]*template.Template, id int, msg string) {
 	tpl, err := template.New("").Funcs(sprig.TxtFuncMap()).Parse(msg)
 	if err != nil {
 		m.bot.logger.WithError(err).Error("error compiling template")
 		return
 	}
-	m.templates[id] = tpl
+	templateList[id] = tpl
 }
 
 func writeTemplate(bot *Bot, tpl *template.Template, data interface{}) {
