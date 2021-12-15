@@ -283,6 +283,11 @@ const apiReducer = createSlice({
     ) {
       state.loyalty.users[user] = entry;
     },
+    requestKeysRemoved(state, { payload }: PayloadAction<string[]>) {
+      payload.forEach((key) => {
+        delete state.requestStatus[key];
+      });
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(createWSClient.fulfilled, (state, { payload }) => {
@@ -294,25 +299,43 @@ const apiReducer = createSlice({
     });
     Object.values(modules).forEach((mod) => {
       builder.addCase(mod.getter.pending, (state) => {
-        state.requestStatus[`load-${mod.key}`] = 'pending';
+        state.requestStatus[`load-${mod.key}`] = {
+          type: 'pending',
+          updated: new Date(),
+        };
       });
       builder.addCase(mod.getter.fulfilled, (state, action) => {
-        state.requestStatus[`load-${mod.key}`] = 'success';
+        state.requestStatus[`load-${mod.key}`] = {
+          type: 'success',
+          updated: new Date(),
+        };
         mod.stateSetter(state, action);
       });
-      builder.addCase(mod.getter.rejected, (state) => {
-        state.requestStatus[`load-${mod.key}`] = 'error';
-        // TODO Report error
+      builder.addCase(mod.getter.rejected, (state, { error }) => {
+        state.requestStatus[`load-${mod.key}`] = {
+          type: 'error',
+          error: error.message,
+          updated: new Date(),
+        };
       });
       builder.addCase(mod.setter.pending, (state) => {
-        state.requestStatus[`save-${mod.key}`] = 'pending';
+        state.requestStatus[`save-${mod.key}`] = {
+          type: 'pending',
+          updated: new Date(),
+        };
       });
-      builder.addCase(mod.setter.fulfilled, (state, action) => {
-        state.requestStatus[`save-${mod.key}`] = 'success';
+      builder.addCase(mod.setter.fulfilled, (state) => {
+        state.requestStatus[`save-${mod.key}`] = {
+          type: 'success',
+          updated: new Date(),
+        };
       });
-      builder.addCase(mod.setter.rejected, (state) => {
-        state.requestStatus[`save-${mod.key}`] = 'error';
-        // TODO Report error
+      builder.addCase(mod.setter.rejected, (state, { error }) => {
+        state.requestStatus[`save-${mod.key}`] = {
+          type: 'error',
+          error: error.message,
+          updated: new Date(),
+        };
       });
       builder.addCase(mod.asyncSetter, mod.stateSetter);
     });

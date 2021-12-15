@@ -1,4 +1,10 @@
-import { grayDark, tealDark, yellowDark } from '@radix-ui/colors';
+import {
+  grassDark,
+  grayDark,
+  redDark,
+  tealDark,
+  yellowDark,
+} from '@radix-ui/colors';
 import { createStitches } from '@stitches/react';
 import * as UnstyledLabel from '@radix-ui/react-label';
 
@@ -8,6 +14,8 @@ export const { styled, theme } = createStitches({
       ...grayDark,
       ...tealDark,
       ...yellowDark,
+      ...grassDark,
+      ...redDark,
     },
   },
 });
@@ -68,6 +76,16 @@ export const InputBox = styled('input', {
     borderColor: '$teal7',
     backgroundColor: '$gray3',
   },
+  '&:disabled': {
+    backgroundColor: '$gray4',
+    borderColor: '$gray5',
+    color: '$gray8',
+  },
+});
+
+export const ButtonGroup = styled('div', {
+  display: 'flex',
+  gap: '0.5rem',
 });
 
 export const Button = styled('button', {
@@ -84,6 +102,31 @@ export const Button = styled('button', {
   },
   '&:active': {
     background: '$teal6',
+  },
+  transition: 'all 0.2s',
+  variants: {
+    variation: {
+      success: {
+        border: '1px solid $grass6',
+        backgroundColor: '$grass4',
+        '&:hover': {
+          backgroundColor: '$grass5',
+        },
+        '&:active': {
+          background: '$grass6',
+        },
+      },
+      error: {
+        border: '1px solid $red6',
+        backgroundColor: '$red4',
+        '&:hover': {
+          backgroundColor: '$red5',
+        },
+        '&:active': {
+          background: '$red6',
+        },
+      },
+    },
   },
 });
 

@@ -37,11 +37,23 @@
       "bind-help": "Every application that uses strimertul will need to be updated, your browser will be redirected to the new URL automatically.",
       "static-path": "Static assets (leave empty to disable)",
       "static-placeholder": "Absolute path to static assets",
-      "static-help": "Will be served at the following URL: {{url}}"
+      "static-help": "Will be served at the following URL: {{url}}",
+      "saving": "Saving webserver settings..."
+    },
+    "stulbe": {
+      "title": "Back-end integration",
+      "test-success": "Connection test was successful!",
+      "test-button": "Test connection",
+      "endpoint": "Back-end endpoint",
+      "auth-key": "Authorization key",
+      "username": "User name",
+      "subtitle": "Optional back-end integration (using <1>stulbe</1> or any Kilovolt compatible endpoint) for syncing keys and obtaining webhook events",
+      "bind-placeholder": "HTTP endpoint, leave empty to disable integration"
     }
   },
   "form-actions": {
     "save": "Save",
+    "saving": "Saving...",
     "saved": "Saved",
     "error": "Error"
   },

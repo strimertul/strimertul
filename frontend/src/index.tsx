@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import 'inter-ui/inter.css';
 import 'normalize.css/normalize.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 import './locale/setup';
 import './style.css';

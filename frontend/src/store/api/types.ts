@@ -154,7 +154,10 @@ export enum ConnectionStatus {
   Connected,
 }
 
-export type RequestStatus = 'pending' | 'success' | 'error';
+export type RequestStatus =
+  | { type: 'pending'; updated: Date }
+  | { type: 'success'; updated: Date }
+  | { type: 'error'; updated: Date; error: string };
 
 export interface APIState {
   client: KilovoltWS;

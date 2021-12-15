@@ -21,3 +21,8 @@ html {
     font-family: 'Inter var', 'system-ui';
   }
 }
+
+a,
+a:visited {
+  color: var(--teal11);
+}

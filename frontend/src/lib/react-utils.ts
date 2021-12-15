@@ -1,5 +1,5 @@
 import { ActionCreatorWithOptionalPayload, AsyncThunk } from '@reduxjs/toolkit';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   KilovoltMessage,
@@ -8,6 +8,11 @@ import {
 import { RootState } from '../store';
 import apiReducer, { getUserPoints } from '../store/api/reducer';
 import { APIState, LoyaltyStorage, RequestStatus } from '../store/api/types';
+
+interface LoadStatus {
+  load: RequestStatus;
+  save: RequestStatus;
+}
 
 export function useModule<T>({
   key,
@@ -27,7 +32,7 @@ export function useModule<T>({
   T,
   // eslint-disable-next-line @typescript-eslint/ban-types
   AsyncThunk<KilovoltMessage, T, {}>,
-  { load: RequestStatus; save: RequestStatus },
+  LoadStatus,
 ] {
   const client = useSelector((state: RootState) => state.api.client);
   const data = useSelector((state: RootState) => selector(state.api));
@@ -46,6 +51,9 @@ export function useModule<T>({
     client.subscribeKey(key, subscriber);
     return () => {
       client.unsubscribeKey(key, subscriber);
+      dispatch(
+        apiReducer.actions.requestKeysRemoved([`save-${key}`, `load-${key}`]),
+      );
     };
   }, []);
   return [
@@ -56,6 +64,25 @@ export function useModule<T>({
       save: saveStatus,
     },
   ];
+}
+
+export function useStatus(
+  status: RequestStatus | null,
+  interval = 5000,
+): RequestStatus | null {
+  const [localStatus, setlocalStatus] = useState(status);
+  const maxTime = Date.now() - interval;
+  useEffect(() => {
+    const remaining = status?.updated.getTime() - maxTime;
+    if (remaining) {
+      setTimeout(() => {
+        setlocalStatus(null);
+      }, remaining);
+    }
+    setlocalStatus(status);
+  }, [status]);
+
+  return status?.updated.getTime() > maxTime ? localStatus : null;
 }
 
 export function useUserPoints(): LoyaltyStorage {
@@ -72,7 +99,7 @@ export function useUserPoints(): LoyaltyStorage {
     };
     client.subscribePrefix(prefix, subscriber);
     return () => {
-      client.subscribePrefix(prefix, subscriber);
+      client.unsubscribePrefix(prefix, subscriber);
     };
   }, []);
   return data;
@@ -80,5 +107,6 @@ export function useUserPoints(): LoyaltyStorage {
 
 export default {
   useModule,
+  useStatus,
   useUserPoints,
 };

@@ -9,6 +9,7 @@ module.exports = {
     'no-shadow': 'off',
     '@typescript-eslint/no-use-before-define': ['error'],
     '@typescript-eslint/no-shadow': ['error'],
+    'default-case': 'off',
   },
   settings: {
     'import/resolver': {

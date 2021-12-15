@@ -12,6 +12,11 @@ import {
   TimerIcon,
 } from '@radix-ui/react-icons';
 import { Route, Routes } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+
+import Dashboard from './pages/Dashboard';
+import Sidebar, { RouteSection } from './components/Sidebar';
+import ServerSettingsPage from './pages/ServerSettings';
 import { RootState } from '../store';
 import { createWSClient } from '../store/api/reducer';
 import { ConnectionStatus } from '../store/api/types';
@@ -19,9 +24,7 @@ import { styled } from './theme';
 
 // @ts-expect-error Asset import
 import spinner from '../assets/icon-loading.svg';
-import Dashboard from './pages/Dashboard';
-import Sidebar, { RouteSection } from './components/Sidebar';
-import ServerSettingsPage from './pages/ServerSettings';
+import BackendIntegrationPage from './pages/BackendIntegration';
 
 function Loading() {
   const LoadingDiv = styled('div', {
@@ -74,7 +77,7 @@ const sections: RouteSection[] = [
       },
       {
         title: 'menu.pages.strimertul.stulbe',
-        url: '/stulbe',
+        url: '/backend',
         icon: <Link2Icon />,
       },
     ],
@@ -167,7 +170,9 @@ export default function App(): JSX.Element {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/http" element={<ServerSettingsPage />} />
+        <Route path="/backend" element={<BackendIntegrationPage />} />
       </Routes>
+      <ToastContainer position="bottom-center" autoClose={5000} theme="dark" />
     </Container>
   );
 }
