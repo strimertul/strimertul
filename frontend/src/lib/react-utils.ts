@@ -7,7 +7,7 @@ import {
 } from '@strimertul/kilovolt-client';
 import { RootState } from '../store';
 import apiReducer, { getUserPoints } from '../store/api/reducer';
-import { APIState, LoyaltyStorage } from '../store/api/types';
+import { APIState, LoyaltyStorage, RequestStatus } from '../store/api/types';
 
 export function useModule<T>({
   key,
@@ -23,10 +23,20 @@ export function useModule<T>({
   // eslint-disable-next-line @typescript-eslint/ban-types
   setter: AsyncThunk<KilovoltMessage, T, {}>;
   asyncSetter: ActionCreatorWithOptionalPayload<T, string>;
+}): [
+  T,
   // eslint-disable-next-line @typescript-eslint/ban-types
-}): [T, AsyncThunk<KilovoltMessage, T, {}>] {
+  AsyncThunk<KilovoltMessage, T, {}>,
+  { load: RequestStatus; save: RequestStatus },
+] {
   const client = useSelector((state: RootState) => state.api.client);
   const data = useSelector((state: RootState) => selector(state.api));
+  const loadStatus = useSelector(
+    (state: RootState) => state.api.requestStatus[`load-${key}`],
+  );
+  const saveStatus = useSelector(
+    (state: RootState) => state.api.requestStatus[`save-${key}`],
+  );
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getter());
@@ -38,7 +48,14 @@ export function useModule<T>({
       client.unsubscribeKey(key, subscriber);
     };
   }, []);
-  return [data, setter];
+  return [
+    data,
+    setter,
+    {
+      load: loadStatus,
+      save: saveStatus,
+    },
+  ];
 }
 
 export function useUserPoints(): LoyaltyStorage {

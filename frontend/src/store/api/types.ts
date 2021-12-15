@@ -154,6 +154,8 @@ export enum ConnectionStatus {
   Connected,
 }
 
+export type RequestStatus = 'pending' | 'success' | 'error';
+
 export interface APIState {
   client: KilovoltWS;
   connectionStatus: ConnectionStatus;
@@ -177,4 +179,5 @@ export interface APIState {
     stulbeConfig: StulbeConfig;
     loyaltyConfig: LoyaltyConfig;
   };
+  requestStatus: Record<string, RequestStatus>;
 }

@@ -255,6 +255,7 @@ const initialState: APIState = {
     stulbeConfig: null,
     loyaltyConfig: null,
   },
+  requestStatus: {},
 };
 
 const apiReducer = createSlice({
@@ -292,7 +293,27 @@ const apiReducer = createSlice({
       state.loyalty.users = payload;
     });
     Object.values(modules).forEach((mod) => {
-      builder.addCase(mod.getter.fulfilled, mod.stateSetter);
+      builder.addCase(mod.getter.pending, (state) => {
+        state.requestStatus[`load-${mod.key}`] = 'pending';
+      });
+      builder.addCase(mod.getter.fulfilled, (state, action) => {
+        state.requestStatus[`load-${mod.key}`] = 'success';
+        mod.stateSetter(state, action);
+      });
+      builder.addCase(mod.getter.rejected, (state) => {
+        state.requestStatus[`load-${mod.key}`] = 'error';
+        // TODO Report error
+      });
+      builder.addCase(mod.setter.pending, (state) => {
+        state.requestStatus[`save-${mod.key}`] = 'pending';
+      });
+      builder.addCase(mod.setter.fulfilled, (state, action) => {
+        state.requestStatus[`save-${mod.key}`] = 'success';
+      });
+      builder.addCase(mod.setter.rejected, (state) => {
+        state.requestStatus[`save-${mod.key}`] = 'error';
+        // TODO Report error
+      });
       builder.addCase(mod.asyncSetter, mod.stateSetter);
     });
   },

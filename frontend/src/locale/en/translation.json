@@ -1,1 +1,51 @@
-{}
+{
+  "menu": {
+    "sections": {
+      "monitor": "Monitor",
+      "strimertul": "strimertul",
+      "twitch": "Twitch",
+      "loyalty": "Loyalty system"
+    },
+    "pages": {
+      "monitor": {
+        "dashboard": "Dashboard"
+      },
+      "strimertul": {
+        "settings": "Server settings",
+        "stulbe": "Back-end integration"
+      },
+      "twitch": {
+        "configuration": "Configuration",
+        "bot-commands": "Chat commands",
+        "bot-timers": "Chat timers",
+        "bot-alerts": "Chat alerts"
+      },
+      "loyalty": {
+        "configuration": "Configuration",
+        "points": "Points and redeems",
+        "rewards": "Rewards and goals"
+      }
+    }
+  },
+  "pages": {
+    "http": {
+      "title": "Server settings",
+      "bind-placeholder": "address:port",
+      "bind": "Webserver Bind",
+      "kilovolt-password": "Kilovolt password",
+      "kilovolt-placeholder": "Leave empty to disable authentication",
+      "bind-help": "Every application that uses strimertul will need to be updated, your browser will be redirected to the new URL automatically.",
+      "static-path": "Static assets (leave empty to disable)",
+      "static-placeholder": "Absolute path to static assets",
+      "static-help": "Will be served at the following URL: {{url}}"
+    }
+  },
+  "form-actions": {
+    "save": "Save",
+    "saved": "Saved",
+    "error": "Error"
+  },
+  "debug": {
+    "dev-build": "Development build"
+  }
+}
