@@ -3,8 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Link, useMatch, useResolvedPath } from 'react-router-dom';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import { RootState } from '../../store';
-import { APPNAME, APPREPO } from '../brand';
+import { APPNAME, APPREPO } from '../theme';
 
 export interface RouteSection {
   title: string;
@@ -22,11 +23,8 @@ interface SidebarProps {
 }
 
 const Container = styled('section', {
-  display: 'flex',
-  flexDirection: 'column',
-  minHeight: '100vh',
+  background: '$gray1',
   maxWidth: '220px',
-  flexShrink: 0,
   borderRight: '1px solid $gray6',
 });
 
@@ -77,7 +75,7 @@ const MenuHeader = styled('header', {
   color: '$teal9',
 });
 const MenuLink = styled(Link, {
-  color: '$teal13',
+  color: '$teal13 !important',
   display: 'flex',
   alignItems: 'center',
   textDecoration: 'none',
@@ -88,7 +86,7 @@ const MenuLink = styled(Link, {
   variants: {
     status: {
       selected: {
-        color: '$teal13',
+        color: '$teal13 !important',
         backgroundColor: '$teal5',
       },
       clickable: {
@@ -165,24 +163,30 @@ export default function Sidebar({
 
   return (
     <Container>
-      <Header>
-        <AppName>{APPNAME}</AppName>
-
-        <VersionLabel>
-          {version && !dev ? version : t('debug.dev-build')}
-        </VersionLabel>
-        {!dev && lastVersion && !version.startsWith(lastVersion.name) && (
-          <UpdateButton href={lastVersion.url}>UPDATE AVAILABLE</UpdateButton>
-        )}
-      </Header>
-      {sections.map(({ title: sectionTitle, links }) => (
-        <MenuSection key={sectionTitle}>
-          <MenuHeader>{t(sectionTitle)}</MenuHeader>
-          {links.map((route) => (
-            <SidebarLink route={route} key={`${route.title}-${route.url}`} />
-          ))}
-        </MenuSection>
-      ))}
+      <OverlayScrollbarsComponent
+        style={{ maxHeight: '100vh' }}
+        options={{ scrollbars: { autoHide: 'scroll' } }}
+      >
+        <Header>
+          <AppName>{APPNAME}</AppName>
+          <VersionLabel>
+            {version && !dev ? version : t('debug.dev-build')}
+          </VersionLabel>
+          {!dev && lastVersion && !version.startsWith(lastVersion.name) && (
+            <UpdateButton href={lastVersion.url}>
+              {t('menu.messages.update-available')}
+            </UpdateButton>
+          )}
+        </Header>
+        {sections.map(({ title: sectionTitle, links }) => (
+          <MenuSection key={sectionTitle}>
+            <MenuHeader>{t(sectionTitle)}</MenuHeader>
+            {links.map((route) => (
+              <SidebarLink route={route} key={`${route.title}-${route.url}`} />
+            ))}
+          </MenuSection>
+        ))}
+      </OverlayScrollbarsComponent>
     </Container>
   );
 }

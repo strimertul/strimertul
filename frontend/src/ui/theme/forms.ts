@@ -1,45 +1,11 @@
-import {
-  grassDark,
-  grayDark,
-  redDark,
-  tealDark,
-  yellowDark,
-} from '@radix-ui/colors';
-import { createStitches } from '@stitches/react';
 import * as UnstyledLabel from '@radix-ui/react-label';
+import { styled } from './theme';
 
-export const { styled, theme } = createStitches({
-  theme: {
-    colors: {
-      ...grayDark,
-      ...tealDark,
-      ...yellowDark,
-      ...grassDark,
-      ...redDark,
-    },
-  },
-});
-
-export const PageContainer = styled('div', {
-  padding: '2rem',
-  maxWidth: '1000px',
-  width: '100%',
-  margin: '0 auto',
-});
-
-export const PageHeader = styled('header', {
-  marginBottom: '3rem',
-});
-
-export const PageTitle = styled('h1', {
-  fontSize: '25pt',
-  fontWeight: '600',
-  marginBottom: '0.5rem',
-});
-
-export const Field = styled('div', {
+export const Field = styled('fieldset', {
+  all: 'unset',
   marginBottom: '2rem',
   display: 'flex',
+  justifyContent: 'flex-start',
   variants: {
     size: {
       fullWidth: {
@@ -129,5 +95,3 @@ export const Button = styled('button', {
     },
   },
 });
-
-export default { styled, theme };

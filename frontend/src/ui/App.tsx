@@ -26,18 +26,18 @@ import { styled } from './theme';
 import spinner from '../assets/icon-loading.svg';
 import BackendIntegrationPage from './pages/BackendIntegration';
 
+const LoadingDiv = styled('div', {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  minHeight: '100vh',
+});
+
+const Spinner = styled('img', {
+  maxWidth: '100px',
+});
+
 function Loading() {
-  const LoadingDiv = styled('div', {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-  });
-
-  const Spinner = styled('img', {
-    maxWidth: '100px',
-  });
-
   return (
     <LoadingDiv>
       <Spinner src={spinner} alt="Loading..." />
@@ -129,6 +129,19 @@ const sections: RouteSection[] = [
   },
 ];
 
+const Container = styled('div', {
+  display: 'flex',
+  flexDirection: 'row',
+  minHeight: '100vh',
+});
+
+const PageContent = styled('main', {
+  display: 'flex',
+  flexDirection: 'row',
+  flex: 1,
+  overflow: 'auto',
+});
+
 export default function App(): JSX.Element {
   const client = useSelector((state: RootState) => state.api.client);
   const connected = useSelector(
@@ -158,20 +171,16 @@ export default function App(): JSX.Element {
     return <AuthDialog />;
   }
 
-  const Container = styled('main', {
-    display: 'flex',
-    flexDirection: 'row',
-    minHeight: '100vh',
-  });
-
   return (
     <Container>
       <Sidebar sections={sections} />
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/http" element={<ServerSettingsPage />} />
-        <Route path="/backend" element={<BackendIntegrationPage />} />
-      </Routes>
+      <PageContent>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/http" element={<ServerSettingsPage />} />
+          <Route path="/backend" element={<BackendIntegrationPage />} />
+        </Routes>
+      </PageContent>
       <ToastContainer position="bottom-center" autoClose={5000} theme="dark" />
     </Container>
   );
