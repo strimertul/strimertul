@@ -1,4 +1,5 @@
 import * as UnstyledLabel from '@radix-ui/react-label';
+import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { styled } from './theme';
 
 export const Field = styled('fieldset', {
@@ -6,11 +7,17 @@ export const Field = styled('fieldset', {
   marginBottom: '2rem',
   display: 'flex',
   justifyContent: 'flex-start',
+  alignItems: 'center',
+  gap: '0.5rem',
   variants: {
     size: {
       fullWidth: {
         flexDirection: 'column',
-        gap: '0.5rem',
+        alignItems: 'stretch',
+      },
+      vertical: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
       },
     },
   },
@@ -94,4 +101,34 @@ export const Button = styled('button', {
       },
     },
   },
+});
+
+export const Checkbox = styled(CheckboxPrimitive.Root, {
+  all: 'unset',
+  width: 25,
+  height: 25,
+  borderRadius: 4,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '1px solid $teal6',
+  backgroundColor: '$teal4',
+  '&:hover': {
+    backgroundColor: '$teal5',
+  },
+  '&:active': {
+    background: '$teal6',
+  },
+  '&:disabled': {
+    backgroundColor: '$gray4',
+    borderColor: '$gray5',
+    color: '$gray8',
+  },
+});
+
+export const CheckboxIndicator = styled(CheckboxPrimitive.Indicator, {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: '$teal11',
 });

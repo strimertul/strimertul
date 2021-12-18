@@ -72,6 +72,33 @@
       "auth-button": "Authenticate as Twitch",
       "auth-message": "Click the following button to authenticate the back-end with your Twitch account:",
       "current-status": "Current status"
+    },
+    "twitch-settings": {
+      "title": "Twitch configuration",
+      "enable": "Enable Twitch integration",
+      "apiguide-1": "You will need to create an application, here's how:",
+      "apiguide-2": "Go to <1>https://dev.twitch.tv/console/apps/create</1>",
+      "apiguide-3": "Use the following data for the required fields:",
+      "oauth-redir-uri": "OAuth Redirect URLs",
+      "apiguide-4": "Once made, create a <1>New Secret</1>, then copy both fields below and save!",
+      "app-client-id": "App Client ID",
+      "app-client-secret": "App Client Secret",
+      "subtitle": "Twitch integration with streams including chat bot and API access. If you stream on Twitch, you definitely want this on.",
+      "api-subheader": "Application info",
+      "api-configuration": "API access",
+      "bot-settings": "Bot settings",
+      "enable-bot": "Enable Twitch bot",
+      "bot-channel": "Twitch channel",
+      "bot-username": "Twitch account username",
+      "bot-oauth": "Authorization token",
+      "bot-oauth-note": "You can get this by logging in with the bot account and going here: <1>https://twitchapps.com/tmi/</1>",
+      "bot-info-header": "Bot account info",
+      "bot-settings-copy": "A bot can interact with chat messages and provide extra events for the platform (chat events, some notifications) but requires access to a Twitch account. You can use your own or make a new one (if enabled on your main account, you can re-use the same email for your second account!)",
+      "bot-chat-header": "Chat logging",
+      "bot-chat-keys": "Enable chat logging",
+      "bot-chat-history": "How many messages to keep in history",
+      "bot-chat-history-suffix": "messages",
+      "bot-chat-history-desc": "Chat logging allows for pages and modules to read messages from chat. It's recommended to keep chat logging enabled with a reasonable history size (eg. 6)"
     }
   },
   "form-actions": {

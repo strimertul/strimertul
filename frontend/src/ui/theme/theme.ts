@@ -8,6 +8,7 @@ import {
 import { globalCss, createStitches } from '@stitches/react';
 
 export const globalStyles = globalCss({
+  '*': { boxSizing: 'border-box' },
   body: { margin: 0, padding: 0, backgroundColor: '$gray1', color: '$teal12' },
   html: {
     margin: 0,

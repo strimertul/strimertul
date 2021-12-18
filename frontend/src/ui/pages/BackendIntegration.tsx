@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import * as Tabs from '@radix-ui/react-tabs';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
 import { useModule, useStatus } from '../../lib/react-utils';
 import Stulbe from '../../lib/stulbe-lib';
@@ -20,8 +19,10 @@ import {
   SectionHeader,
   styled,
   TabButton,
+  TabContainer,
   TabContent,
   TabList,
+  TextBlock,
 } from '../theme';
 import eventsubTests from '../../data/eventsub-tests';
 import { RootState } from '../../store';
@@ -299,15 +300,15 @@ export default function BackendIntegrationPage(): React.ReactElement {
     <PageContainer>
       <PageHeader>
         <PageTitle>{t('pages.stulbe.title')}</PageTitle>
-        <p>
+        <TextBlock>
           <Trans i18nKey="pages.stulbe.subtitle">
             {' '}
             <a href="https://github.com/strimertul/stulbe/">stulbe</a>
           </Trans>
-        </p>
+        </TextBlock>
       </PageHeader>
 
-      <Tabs.Root defaultValue="configuration">
+      <TabContainer defaultValue="configuration">
         <TabList>
           <TabButton value="configuration">
             {t('pages.stulbe.configuration')}
@@ -322,7 +323,7 @@ export default function BackendIntegrationPage(): React.ReactElement {
         <TabContent value="webhook">
           <WebhookIntegration />
         </TabContent>
-      </Tabs.Root>
+      </TabContainer>
     </PageContainer>
   );
 }

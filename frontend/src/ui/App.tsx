@@ -25,6 +25,7 @@ import { styled } from './theme';
 // @ts-expect-error Asset import
 import spinner from '../assets/icon-loading.svg';
 import BackendIntegrationPage from './pages/BackendIntegration';
+import TwitchSettingsPage from './pages/TwitchSettings';
 
 const LoadingDiv = styled('div', {
   display: 'flex',
@@ -130,16 +131,23 @@ const sections: RouteSection[] = [
 ];
 
 const Container = styled('div', {
+  position: 'relative',
   display: 'flex',
   flexDirection: 'row',
-  minHeight: '100vh',
+  overflow: 'hidden',
+  height: '100vh',
 });
 
 const PageContent = styled('main', {
+  flex: 1,
+  overflow: 'auto',
+});
+
+const PageWrapper = styled('div', {
   display: 'flex',
   flexDirection: 'row',
   flex: 1,
-  overflow: 'auto',
+  overflow: 'hidden',
 });
 
 export default function App(): JSX.Element {
@@ -175,11 +183,14 @@ export default function App(): JSX.Element {
     <Container>
       <Sidebar sections={sections} />
       <PageContent>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/http" element={<ServerSettingsPage />} />
-          <Route path="/backend" element={<BackendIntegrationPage />} />
-        </Routes>
+        <PageWrapper role="main">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/http" element={<ServerSettingsPage />} />
+            <Route path="/backend" element={<BackendIntegrationPage />} />
+            <Route path="/twitch/settings" element={<TwitchSettingsPage />} />
+          </Routes>
+        </PageWrapper>
       </PageContent>
       <ToastContainer position="bottom-center" autoClose={5000} theme="dark" />
     </Container>
