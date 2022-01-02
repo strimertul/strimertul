@@ -12,6 +12,7 @@ The Twitch integration can be configured via `twitch/config` using a JSON object
 
 ```js
 {
+	"enabled": bool,             // Enable Twitch module (required)
 	"enable_bot": bool,          // Enable IRC bot
 	"api_client_id": string,     // Twitch App Client ID
 	"api_client_secret": string  // Twitch App Client Secret
