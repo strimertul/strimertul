@@ -3,6 +3,7 @@
 *.db.lock
 rice-box.go
 /data/
+/backups/
 .vscode
 .idea
 strimertul_*
