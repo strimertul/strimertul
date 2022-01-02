@@ -9,10 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **New UI**: Strimertul now features a more slick and better organized UI.
+- **Database operations**: You can now export and import the entire database as JSON files
+- **Database backups**: The database will periodically save optimized copies of itself in a backup directory, directory and intervals are both configurable, though for the time being you might need to periodically clean it before it becomes too large.
 - **Manual garbage collection**: You can now launch strimertul with `--run-gc` to manually trigger garbage collection for the database. This will launch strimertul, execute a round of garbage collection and exit.
 
 ### Changed
 
+- A lot of the command line parameters have changed syntax (eg. from -noheader to -no-header), please check the new formats using `-h` if you rely on them.
 - Database schema has slightly changed, strimertul will auto-migrate to the new format if it detects old schema in use.
 
 ## [1.7.0] - 2021-12-07
@@ -81,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Stulbe integration for alerts
 
-[CURRENT]: https://github.com/strimertul/strimertul/compare/v1.7.0...HEAD
+[current]: https://github.com/strimertul/strimertul/compare/v1.7.0...HEAD
 [1.7.0]: https://github.com/strimertul/strimertul/compare/v1.6.3...v1.7.0
 [1.6.3]: https://github.com/strimertul/strimertul/compare/v1.6.2...v1.6.3
 [1.6.2]: https://github.com/strimertul/strimertul/compare/v1.6.1...v1.6.2
