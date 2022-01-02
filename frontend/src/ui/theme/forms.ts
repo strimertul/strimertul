@@ -70,6 +70,9 @@ export const Button = styled('button', {
   fontSize: '1.1rem',
   border: '1px solid $teal6',
   backgroundColor: '$teal4',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem',
   '&:hover': {
     backgroundColor: '$teal5',
   },

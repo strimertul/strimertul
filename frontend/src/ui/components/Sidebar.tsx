@@ -7,6 +7,9 @@ import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import { RootState } from '../../store';
 import { APPNAME, APPREPO } from '../theme';
 
+// @ts-expect-error Asset import
+import logo from '../../assets/icon-logo.svg';
+
 export interface RouteSection {
   title: string;
   links: Route[];
@@ -33,8 +36,12 @@ const Header = styled('div', {
 });
 
 const AppName = styled('h1', {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.2rem',
   fontSize: '1.4rem',
-  margin: '0.5rem 0 0.2rem 0',
+  margin: '0.5rem 0 0.5rem 0',
+  fontWeight: 300,
 });
 
 const VersionLabel = styled('div', {
@@ -42,6 +49,7 @@ const VersionLabel = styled('div', {
   fontSize: '0.75rem',
   fontWeight: 'bold',
   color: '$teal8',
+  paddingLeft: '12px',
 });
 
 const UpdateButton = styled('a', {
@@ -168,7 +176,10 @@ export default function Sidebar({
         options={{ scrollbars: { autoHide: 'scroll' } }}
       >
         <Header>
-          <AppName>{APPNAME}</AppName>
+          <AppName>
+            <img src={logo} style={{ height: '28px', marginBottom: '-2px' }} />
+            {APPNAME}
+          </AppName>
           <VersionLabel>
             {version && !dev ? version : t('debug.dev-build')}
           </VersionLabel>

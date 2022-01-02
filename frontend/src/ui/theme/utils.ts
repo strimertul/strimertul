@@ -11,5 +11,10 @@ export const FlexRow = styled('div', {
         gap: '0.5rem',
       },
     },
+    align: {
+      left: {
+        justifyContent: 'flex-start',
+      },
+    },
   },
 });

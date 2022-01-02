@@ -26,6 +26,7 @@ import { styled } from './theme';
 import spinner from '../assets/icon-loading.svg';
 import BackendIntegrationPage from './pages/BackendIntegration';
 import TwitchSettingsPage from './pages/TwitchSettings';
+import TwitchBotCommandsPage from './pages/BotCommands';
 
 const LoadingDiv = styled('div', {
   display: 'flex',
@@ -189,6 +190,10 @@ export default function App(): JSX.Element {
             <Route path="/http" element={<ServerSettingsPage />} />
             <Route path="/backend" element={<BackendIntegrationPage />} />
             <Route path="/twitch/settings" element={<TwitchSettingsPage />} />
+            <Route
+              path="/twitch/bot/commands"
+              element={<TwitchBotCommandsPage />}
+            />
           </Routes>
         </PageWrapper>
       </PageContent>
