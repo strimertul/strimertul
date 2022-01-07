@@ -1,8 +1,12 @@
 package database
 
 import (
+	"bufio"
 	"context"
+	"encoding/binary"
+	"io"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/strimertul/strimertul/modules"
 
 	"github.com/dgraph-io/badger/v3"
@@ -185,4 +189,40 @@ func (db *DB) RemoveKey(key string) error {
 	return db.client.Update(func(t *badger.Txn) error {
 		return t.Delete([]byte(key))
 	})
+}
+
+func (db *DB) RestoreOverwrite(r io.Reader) error {
+	br := bufio.NewReaderSize(r, 16<<10)
+	unmarshalBuf := make([]byte, 1<<10)
+
+	for {
+		var sz uint64
+		err := binary.Read(br, binary.LittleEndian, &sz)
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return err
+		}
+
+		if cap(unmarshalBuf) < int(sz) {
+			unmarshalBuf = make([]byte, sz)
+		}
+
+		if _, err = io.ReadFull(br, unmarshalBuf[:sz]); err != nil {
+			return err
+		}
+
+		list := &pb.KVList{}
+		if err := proto.Unmarshal(unmarshalBuf[:sz], list); err != nil {
+			return err
+		}
+
+		for _, kv := range list.Kv {
+			if err := db.PutKey(string(kv.Key), kv.Value); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

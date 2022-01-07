@@ -6,6 +6,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/dgraph-io/badger/v3 v3.2103.2
 	github.com/gempir/go-twitch-irc/v2 v2.5.0
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/json-iterator/go v1.1.12
 	github.com/mattn/go-colorable v0.1.12
 	github.com/nicklaw5/helix/v2 v2.2.1

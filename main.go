@@ -142,6 +142,7 @@ func main() {
 				imported += 1
 			}
 		}
+		_ = db.Client().Sync()
 		log.WithFields(logrus.Fields{
 			"imported": imported,
 			"errors":   errors,
@@ -151,8 +152,9 @@ func main() {
 	if *restoreDB != "" {
 		file, err := os.Open(*restoreDB)
 		failOnError(err, "Could not open backup")
-		err = db.Client().Load(file, 16)
+		err = db.RestoreOverwrite(file)
 		failOnError(err, "Could not restore database")
+		_ = db.Client().Sync()
 		log.Info("Restored database from backup")
 	}
 
