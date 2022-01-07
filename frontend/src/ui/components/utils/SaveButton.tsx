@@ -27,7 +27,7 @@ function SaveButton(
         </Button>
       );
     default:
-      return <Button>{t('form-actions.save')}</Button>;
+      return <Button variation="primary">{t('form-actions.save')}</Button>;
   }
 }
 

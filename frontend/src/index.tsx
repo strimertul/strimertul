@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 
 import 'inter-ui/inter.css';
+import '@fontsource/space-mono/index.css';
 import 'normalize.css/normalize.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'overlayscrollbars/css/OverlayScrollbars.css';

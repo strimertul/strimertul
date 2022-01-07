@@ -104,14 +104,40 @@
       "title": "Bot commands",
       "desc": "Define custom chat commands to set up autoresponders, counters, etc.",
       "add-button": "New command",
-      "search-placeholder": "Search command by name"
+      "search-placeholder": "Search command by name",
+      "command-header-new": "New command",
+      "command-header-edit": "Edit command",
+      "command-name": "Command name",
+      "command-name-placeholder": "!command",
+      "command-desc": "Description (optional)",
+      "command-desc-placeholder": "This command does something",
+      "command-response": "Response",
+      "command-response-placeholder": "Hello {0}!",
+      "command-acl": "Access level",
+      "command-acl-help": "This specifies the minimum level, eg. if you choose VIPs, moderators and streamer can still use the command",
+      "command-action-new": "Create",
+      "command-action-edit": "Edit",
+      "acl": {
+        "everyone": "Everyone",
+        "subscribers": "Subscribers",
+        "vip": "VIPs",
+        "moderators": "Moderators",
+        "streamer": "Streamer only"
+      },
+      "remove-command-title": "Remove command {{name}}?"
     }
   },
   "form-actions": {
     "save": "Save",
     "saving": "Saving...",
     "saved": "Saved",
-    "error": "Error"
+    "error": "Error",
+    "edit": "Edit",
+    "enable": "Enable",
+    "disable": "Disable",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "ok": "OK"
   },
   "debug": {
     "dev-build": "Development build"

@@ -10,6 +10,11 @@ export const Field = styled('fieldset', {
   alignItems: 'center',
   gap: '0.5rem',
   variants: {
+    spacing: {
+      narrow: {
+        marginBottom: '1rem',
+      },
+    },
     size: {
       fullWidth: {
         flexDirection: 'column',
@@ -56,6 +61,27 @@ export const InputBox = styled('input', {
   },
 });
 
+export const Textarea = styled('textarea', {
+  all: 'unset',
+  fontWeight: '300',
+  border: '1px solid $gray6',
+  padding: '0.5rem',
+  borderRadius: '0.3rem',
+  backgroundColor: '$gray2',
+  '&:hover': {
+    borderColor: '$teal7',
+  },
+  '&:focus': {
+    borderColor: '$teal7',
+    backgroundColor: '$gray3',
+  },
+  '&:disabled': {
+    backgroundColor: '$gray4',
+    borderColor: '$gray5',
+    color: '$gray8',
+  },
+});
+
 export const ButtonGroup = styled('div', {
   display: 'flex',
   gap: '0.5rem',
@@ -68,25 +94,52 @@ export const Button = styled('button', {
   padding: '0.5rem 1rem',
   borderRadius: '0.3rem',
   fontSize: '1.1rem',
-  border: '1px solid $teal6',
-  backgroundColor: '$teal4',
+  border: '1px solid $gray6',
+  backgroundColor: '$gray4',
   display: 'flex',
   alignItems: 'center',
   gap: '0.5rem',
   '&:hover': {
-    backgroundColor: '$teal5',
+    backgroundColor: '$gray5',
+    borderColor: '$gray8',
   },
   '&:active': {
-    background: '$teal6',
+    background: '$gray6',
   },
   transition: 'all 0.2s',
   variants: {
+    styling: {
+      link: {
+        backgroundColor: 'transparent',
+        border: 'none',
+        color: '$teal11',
+        textDecoration: 'underline',
+      },
+    },
+    size: {
+      small: {
+        padding: '0.3rem 0.5rem',
+        fontSize: '0.9rem',
+      },
+    },
     variation: {
+      primary: {
+        border: '1px solid $teal6',
+        backgroundColor: '$teal4',
+        '&:hover': {
+          backgroundColor: '$teal5',
+          borderColor: '$teal8',
+        },
+        '&:active': {
+          background: '$teal6',
+        },
+      },
       success: {
         border: '1px solid $grass6',
         backgroundColor: '$grass4',
         '&:hover': {
           backgroundColor: '$grass5',
+          borderColor: '$grass8',
         },
         '&:active': {
           background: '$grass6',
@@ -97,12 +150,46 @@ export const Button = styled('button', {
         backgroundColor: '$red4',
         '&:hover': {
           backgroundColor: '$red5',
+          borderColor: '$red8',
+        },
+        '&:active': {
+          background: '$red6',
+        },
+      },
+      danger: {
+        border: '1px solid $red6',
+        backgroundColor: '$red4',
+        '&:hover': {
+          backgroundColor: '$red5',
+          borderColor: '$red8',
         },
         '&:active': {
           background: '$red6',
         },
       },
     },
+  },
+});
+
+export const ComboBox = styled('select', {
+  margin: 0,
+  color: '$teal13',
+  fontWeight: '300',
+  border: '1px solid $gray6',
+  padding: '0.5rem',
+  borderRadius: '0.3rem',
+  backgroundColor: '$gray2',
+  '&:hover': {
+    borderColor: '$teal7',
+  },
+  '&:focus': {
+    borderColor: '$teal7',
+    backgroundColor: '$gray3',
+  },
+  '&:disabled': {
+    backgroundColor: '$gray4',
+    borderColor: '$gray5',
+    color: '$gray8',
   },
 });
 

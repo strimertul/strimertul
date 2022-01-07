@@ -183,7 +183,7 @@ function WebhookIntegration() {
   return (
     <>
       <p>{t('pages.stulbe.auth-message')}</p>
-      <Button onClick={startAuthFlow} disabled={!client}>
+      <Button variation="primary" onClick={startAuthFlow} disabled={!client}>
         <ExternalLinkIcon /> {t('pages.stulbe.auth-button')}
       </Button>
       <SectionHeader>{t('pages.stulbe.current-status')}</SectionHeader>
@@ -191,7 +191,7 @@ function WebhookIntegration() {
       <SectionHeader>{t('pages.stulbe.sim-events')}</SectionHeader>
       <ButtonGroup>
         {Object.keys(eventSubTestFn).map((ev: keyof typeof eventsubTests) => (
-          <Button onClick={() => sendFakeEvent(ev)}>
+          <Button key={ev} onClick={() => sendFakeEvent(ev)}>
             {t(`pages.stulbe.sim.${ev}`, { defaultValue: ev })}
           </Button>
         ))}

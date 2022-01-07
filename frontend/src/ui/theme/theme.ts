@@ -4,6 +4,7 @@ import {
   yellowDark,
   grassDark,
   redDark,
+  blackA,
 } from '@radix-ui/colors';
 import { globalCss, createStitches } from '@stitches/react';
 
@@ -34,6 +35,7 @@ export const { styled, theme } = createStitches({
       ...yellowDark,
       ...grassDark,
       ...redDark,
+      ...blackA,
     },
   },
 });

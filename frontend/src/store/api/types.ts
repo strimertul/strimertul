@@ -25,12 +25,15 @@ interface TwitchBotConfig {
   chat_history: number;
 }
 
-export type AccessLevelType =
-  | 'everyone'
-  | 'subscribers'
-  | 'vip'
-  | 'moderators'
-  | 'streamer';
+export const accessLevels = [
+  'everyone',
+  'subscribers',
+  'vip',
+  'moderators',
+  'streamer',
+] as const;
+
+export type AccessLevelType = typeof accessLevels[number];
 
 export interface TwitchBotCustomCommand {
   description: string;

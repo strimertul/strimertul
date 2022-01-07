@@ -1,18 +1,330 @@
 import { PlusIcon } from '@radix-ui/react-icons';
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
+import { useModule } from '../../lib/react-utils';
+import { modules } from '../../store/api/reducer';
+import {
+  accessLevels,
+  AccessLevelType,
+  TwitchBotCustomCommand,
+} from '../../store/api/types';
+import AlertContent from '../components/AlertContent';
+import DialogContent from '../components/DialogContent';
 import {
   Button,
+  ComboBox,
+  Dialog,
+  DialogActions,
+  DialogClose,
+  Field,
+  FieldNote,
   FlexRow,
   InputBox,
+  Label,
   PageContainer,
   PageHeader,
   PageTitle,
+  styled,
+  Textarea,
   TextBlock,
 } from '../theme';
+import { Alert, AlertTrigger } from '../theme/alert';
+
+const CommandList = styled('div', { marginTop: '1rem' });
+const CommandItemContainer = styled('article', {
+  backgroundColor: '$gray2',
+  margin: '0.5rem 0',
+  padding: '0.5rem',
+  borderLeft: '5px solid $teal8',
+  borderRadius: '0.25rem',
+  borderBottom: '1px solid $gray4',
+  transition: 'all 50ms',
+  '&:hover': {
+    backgroundColor: '$gray3',
+  },
+  variants: {
+    status: {
+      enabled: {},
+      disabled: {
+        borderLeftColor: '$red7',
+        backgroundColor: '$gray3',
+        color: '$gray10',
+      },
+    },
+  },
+});
+const CommandHeader = styled('header', {
+  display: 'flex',
+  gap: '0.5rem',
+  alignItems: 'center',
+  marginBottom: '0.4rem',
+});
+const CommandName = styled('span', {
+  color: '$teal10',
+  fontWeight: 'bold',
+  variants: {
+    status: {
+      enabled: {},
+      disabled: {
+        color: '$gray10',
+      },
+    },
+  },
+});
+const CommandDescription = styled('span', {
+  flex: 1,
+});
+const CommandActions = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.25rem',
+});
+const CommandText = styled('div', {
+  fontFamily: 'Space Mono',
+  fontSize: '10pt',
+  margin: '-0.5rem',
+  marginTop: '0',
+  padding: '0.5rem',
+  backgroundColor: '$gray4',
+  lineHeight: '1.2rem',
+});
+const ACLIndicator = styled('span', {
+  fontFamily: 'Space Mono',
+  fontSize: '10pt',
+  marginRight: '0.5rem',
+});
+
+interface CommandItemProps {
+  name: string;
+  item: TwitchBotCustomCommand;
+  onToggle?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+}
+
+function CommandItemEl({
+  name,
+  item,
+  onToggle,
+  onEdit,
+  onDelete,
+}: CommandItemProps): React.ReactElement {
+  const { t } = useTranslation();
+
+  return (
+    <CommandItemContainer status={item.enabled ? 'enabled' : 'disabled'}>
+      <CommandHeader>
+        <CommandName status={item.enabled ? 'enabled' : 'disabled'}>
+          {name}
+        </CommandName>
+        <CommandDescription>{item.description}</CommandDescription>
+        <CommandActions>
+          {item.access_level !== 'everyone' && (
+            <ACLIndicator>
+              {t(`pages.botcommands.acl.${item.access_level}`)}
+              {item.access_level !== 'streamer' && '+'}
+            </ACLIndicator>
+          )}
+          <Button
+            styling="link"
+            size="small"
+            onClick={() => (onToggle ? onToggle() : null)}
+          >
+            {t(item.enabled ? 'form-actions.disable' : 'form-actions.enable')}
+          </Button>
+          <Button
+            styling="link"
+            size="small"
+            onClick={() => (onEdit ? onEdit() : null)}
+          >
+            {t('form-actions.edit')}
+          </Button>
+          <Alert>
+            <AlertTrigger asChild>
+              <Button styling="link" size="small">
+                {t('form-actions.delete')}
+              </Button>
+            </AlertTrigger>
+            <AlertContent
+              variation="danger"
+              title={t('pages.botcommands.remove-command-title', { name })}
+              description="This cannot be undone"
+              actionText="Delete"
+              actionButtonProps={{ variation: 'danger' }}
+              showCancel={true}
+              onAction={() => (onDelete ? onDelete() : null)}
+            />
+          </Alert>
+        </CommandActions>
+      </CommandHeader>
+      <CommandText>{item.response}</CommandText>
+    </CommandItemContainer>
+  );
+}
+
+const CommandItem = React.memo(CommandItemEl);
+
+type DialogPrompt =
+  | { kind: 'new' }
+  | { kind: 'edit'; name: string; item: TwitchBotCustomCommand };
+
+function CommandDialog({
+  kind,
+  name,
+  item,
+  onSubmit,
+}: {
+  kind: 'new' | 'edit';
+  name?: string;
+  item?: TwitchBotCustomCommand;
+  onSubmit?: (name: string, item: TwitchBotCustomCommand) => void;
+}) {
+  const [commandName, setCommandName] = useState(name ?? '');
+  const [description, setDescription] = useState(item?.description ?? '');
+  const [response, setResponse] = useState(item?.response ?? '');
+  const [accessLevel, setAccessLevel] = useState(
+    item?.access_level ?? 'everyone',
+  );
+  const { t } = useTranslation();
+
+  return (
+    <DialogContent title={t(`pages.botcommands.command-header-${kind}`)}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (onSubmit) {
+            onSubmit(commandName, {
+              ...item,
+              description,
+              response,
+              access_level: accessLevel as AccessLevelType,
+            });
+          }
+        }}
+      >
+        <Field spacing="narrow" size="fullWidth">
+          <Label htmlFor="command-name">
+            {t('pages.botcommands.command-name')}
+          </Label>
+          <InputBox
+            id="command-name"
+            value={commandName}
+            onChange={(e) => setCommandName(e.target.value)}
+            placeholder={t('pages.botcommands.command-name-placeholder')}
+          />
+        </Field>
+        <Field spacing="narrow" size="fullWidth">
+          <Label htmlFor="command-description">
+            {t('pages.botcommands.command-desc')}
+          </Label>
+          <InputBox
+            id="command-description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder={t('pages.botcommands.command-desc-placeholder')}
+          />
+        </Field>
+        <Field spacing="narrow" size="fullWidth">
+          <Label htmlFor="command-response">
+            {t('pages.botcommands.command-response')}
+          </Label>
+          <Textarea
+            value={response}
+            onChange={(e) => setResponse(e.target.value)}
+            id="command-response"
+            placeholder={t('pages.botcommands.command-response-placeholder')}
+          >
+            {item?.response}
+          </Textarea>
+        </Field>
+        <Field spacing="narrow" size="fullWidth">
+          <Label htmlFor="command-acl">
+            {t('pages.botcommands.command-acl')}
+          </Label>
+          <ComboBox
+            id="command-acl"
+            value={accessLevel}
+            onChange={(e) => setAccessLevel(e.target.value as AccessLevelType)}
+          >
+            {accessLevels.map((level) => (
+              <option key={level} value={level}>
+                {t(`pages.botcommands.acl.${level}`)}
+              </option>
+            ))}
+          </ComboBox>
+          <FieldNote>{t('pages.botcommands.command-acl-help')}</FieldNote>
+        </Field>
+        <DialogActions>
+          <Button variation="primary">
+            {t(`pages.botcommands.command-action-${kind}`)}
+          </Button>
+          <DialogClose asChild>
+            <Button type="button">{t('form-actions.cancel')}</Button>
+          </DialogClose>
+        </DialogActions>
+      </form>
+    </DialogContent>
+  );
+}
 
 export default function TwitchBotCommandsPage(): React.ReactElement {
+  const [botCommands, setBotCommands] = useModule(modules.twitchBotCommands);
+  const [commandFilter, setCommandFilter] = useState('');
+  const [activeDialog, setActiveDialog] = useState<DialogPrompt>(null);
   const { t } = useTranslation();
+  const dispatch = useDispatch();
+
+  const commandFilterLC = commandFilter.toLowerCase();
+
+  const setCommand = (newName: string, data: TwitchBotCustomCommand): void => {
+    switch (activeDialog.kind) {
+      case 'new':
+        dispatch(
+          setBotCommands({
+            ...botCommands,
+            [newName]: {
+              ...data,
+              enabled: true,
+            },
+          }),
+        );
+        break;
+      case 'edit': {
+        const oldName = activeDialog.name;
+        dispatch(
+          setBotCommands({
+            ...botCommands,
+            [oldName]: undefined,
+            [newName]: data,
+          }),
+        );
+        break;
+      }
+    }
+    setActiveDialog(null);
+  };
+
+  const deleteCommand = (cmd: string): void => {
+    dispatch(
+      setBotCommands({
+        ...botCommands,
+        [cmd]: undefined,
+      }),
+    );
+  };
+
+  const toggleCommand = (cmd: string): void => {
+    dispatch(
+      setBotCommands({
+        ...botCommands,
+        [cmd]: {
+          ...botCommands[cmd],
+          enabled: !botCommands[cmd].enabled,
+        },
+      }),
+    );
+  };
 
   return (
     <PageContainer>
@@ -22,14 +334,58 @@ export default function TwitchBotCommandsPage(): React.ReactElement {
       </PageHeader>
 
       <FlexRow spacing="1" align="left">
-        <Button>
+        <Button
+          variation="primary"
+          onClick={() => setActiveDialog({ kind: 'new' })}
+        >
           <PlusIcon /> {t('pages.botcommands.add-button')}
         </Button>
+
         <InputBox
           css={{ flex: 1 }}
           placeholder={t('pages.botcommands.search-placeholder')}
+          value={commandFilter}
+          onChange={(e) => setCommandFilter(e.target.value)}
         />
       </FlexRow>
+      <CommandList>
+        {Object.keys(botCommands ?? {})
+          ?.filter((cmd) => cmd.toLowerCase().includes(commandFilterLC))
+          .sort()
+          .map((cmd) => (
+            <CommandItem
+              key={cmd}
+              name={cmd}
+              item={botCommands[cmd]}
+              onToggle={() => toggleCommand(cmd)}
+              onEdit={() =>
+                setActiveDialog({
+                  kind: 'edit',
+                  name: cmd,
+                  item: botCommands[cmd],
+                })
+              }
+              onDelete={() => deleteCommand(cmd)}
+            />
+          ))}
+      </CommandList>
+
+      <Dialog
+        open={!!activeDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            // Reset dialog status on dialog close
+            setActiveDialog(null);
+          }
+        }}
+      >
+        {activeDialog && (
+          <CommandDialog
+            {...activeDialog}
+            onSubmit={(name, data) => setCommand(name, data)}
+          />
+        )}
+      </Dialog>
     </PageContainer>
   );
 }
