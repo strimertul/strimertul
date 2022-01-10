@@ -120,7 +120,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 				if err != nil {
 					bot.logger.WithError(err).Debug("error reloading timer config")
 				} else {
-					bot.logger.Info("reloaded timer config")
+					bot.logger.Info("reloaded alert config")
 				}
 				mod.compileTemplates()
 			}

@@ -29,6 +29,7 @@ import TwitchSettingsPage from './pages/TwitchSettings';
 import TwitchBotCommandsPage from './pages/BotCommands';
 import TwitchBotTimersPage from './pages/BotTimers';
 import AuthDialog from './pages/AuthDialog';
+import ChatAlertsPage from './pages/ChatAlerts';
 
 const LoadingDiv = styled('div', {
   display: 'flex',
@@ -188,6 +189,7 @@ export default function App(): JSX.Element {
               path="/twitch/bot/timers"
               element={<TwitchBotTimersPage />}
             />
+            <Route path="/twitch/bot/alerts" element={<ChatAlertsPage />} />
           </Routes>
         </PageWrapper>
       </PageContent>

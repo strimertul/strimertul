@@ -150,6 +150,17 @@
       "no-pwd-note": " If the database has no password (for example, it was recently changed from having one to none), leave the field empty.",
       "password": "Password",
       "submit": "Authenticate"
+    },
+    "alerts": {
+      "title": "Chat alerts",
+      "desc": "Send chat messages when your viewers follow, subscribe and other events",
+      "follow-enable": "Enable new follow message",
+      "messages": "Messages",
+      "msg-info": "If multiple messages are present, one will be picked at random",
+      "subscription-enable": "Enable subscription message",
+      "gift_sub-enable": "Enable gifted subscription message",
+      "raid-enable": "Enable raid message",
+      "cheer-enable": "Enable cheering message"
     }
   },
   "form-actions": {

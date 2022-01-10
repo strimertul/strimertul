@@ -3,19 +3,21 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, FlexRow, Textarea } from '../theme';
 
-export interface MessageArrayProps {
+export interface MultiInputProps {
   placeholder?: string;
   value: string[];
   required?: boolean;
+  disabled?: boolean;
   onChange: (value: string[]) => void;
 }
 
-function MessageArray({
+function MultiInput({
   value,
   placeholder,
   onChange,
   required,
-}: MessageArrayProps) {
+  disabled,
+}: MultiInputProps) {
   const { t } = useTranslation();
 
   return (
@@ -27,6 +29,7 @@ function MessageArray({
         >
           <FlexRow border="form" css={{ flex: 1, alignItems: 'stretch' }}>
             <Textarea
+              disabled={disabled}
               border="none"
               required={required}
               placeholder={placeholder}
@@ -50,6 +53,7 @@ function MessageArray({
             </Textarea>
             {value.length > 1 && (
               <Button
+                disabled={disabled}
                 type="button"
                 variation="danger"
                 styling="form"
@@ -71,6 +75,7 @@ function MessageArray({
       ))}
       <FlexRow align="left">
         <Button
+          disabled={disabled}
           size="small"
           styling="link"
           type="button"
@@ -86,4 +91,4 @@ function MessageArray({
   );
 }
 
-export default React.memo(MessageArray);
+export default React.memo(MultiInput);
