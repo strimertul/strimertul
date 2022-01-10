@@ -6,25 +6,36 @@ import { Button, FlexRow, Textarea } from '../theme';
 export interface MessageArrayProps {
   placeholder?: string;
   value: string[];
+  required?: boolean;
   onChange: (value: string[]) => void;
 }
 
-function MessageArray({ value, placeholder, onChange }: MessageArrayProps) {
+function MessageArray({
+  value,
+  placeholder,
+  onChange,
+  required,
+}: MessageArrayProps) {
   const { t } = useTranslation();
 
   return (
     <>
       {value.map((message, index) => (
-        <FlexRow key={message + index} css={{ marginTop: '0.5rem', flex: 1 }}>
+        <FlexRow
+          key={`${value.length}-${index}`}
+          css={{ marginTop: '0.5rem', flex: 1 }}
+        >
           <FlexRow border="form" css={{ flex: 1, alignItems: 'stretch' }}>
             <Textarea
               border="none"
+              required={required}
               placeholder={placeholder}
               onChange={(ev) => {
                 const newMessages = [...value];
                 newMessages[index] = ev.target.value;
                 onChange(newMessages);
               }}
+              value={message}
               className={message !== '' ? 'input' : 'input is-danger'}
               css={
                 value.length > 1

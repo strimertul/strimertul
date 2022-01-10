@@ -204,6 +204,9 @@ function TimerDialog({
     <DialogContent title={t(`pages.bottimers.timer-header-${kind}`)}>
       <form
         onSubmit={(e) => {
+          if (!(e.target as HTMLFormElement).checkValidity()) {
+            return;
+          }
           e.preventDefault();
           if (onSubmit) {
             onSubmit(timerName, {
@@ -222,6 +225,7 @@ function TimerDialog({
             value={timerName}
             onChange={(e) => setName(e.target.value)}
             placeholder={t('pages.bottimers.timer-name-placeholder')}
+            required={true}
           />
         </Field>
         <Field spacing="narrow" size="fullWidth">
@@ -236,6 +240,7 @@ function TimerDialog({
               active={true}
               min={60}
               units={[minutes, hours]}
+              required={true}
             />
           </FlexRow>
         </Field>
@@ -251,6 +256,7 @@ function TimerDialog({
               css={{
                 width: '5rem',
               }}
+              required={true}
               onChange={(ev) => {
                 const intNum = parseInt(ev.target.value, 10);
                 if (Number.isNaN(intNum)) {
@@ -266,7 +272,7 @@ function TimerDialog({
 
         <Field spacing="narrow" size="fullWidth">
           <Label>{t('pages.bottimers.timer-messages')}</Label>
-          <MultiInput value={messages} onChange={setMessages} />
+          <MultiInput required={true} value={messages} onChange={setMessages} />
         </Field>
 
         <DialogActions>

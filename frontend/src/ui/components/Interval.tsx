@@ -18,10 +18,19 @@ export interface IntervalProps {
   id?: string;
   min?: number;
   units?: TimeUnit[];
+  required?: boolean;
   onChange?: (value: number) => void;
 }
 
-function Interval({ id, active, value, min, units, onChange }: IntervalProps) {
+function Interval({
+  id,
+  active,
+  value,
+  min,
+  units,
+  onChange,
+  required,
+}: IntervalProps) {
   const { t } = useTranslation();
 
   const timeUnits = units ?? [seconds, minutes, hours];
@@ -47,6 +56,7 @@ function Interval({ id, active, value, min, units, onChange }: IntervalProps) {
           id={id}
           type="number"
           border="none"
+          required={required}
           css={{
             maxWidth: '5rem',
             borderRightWidth: '1px',

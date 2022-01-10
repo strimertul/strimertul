@@ -193,6 +193,9 @@ function CommandDialog({
     <DialogContent title={t(`pages.botcommands.command-header-${kind}`)}>
       <form
         onSubmit={(e) => {
+          if (!(e.target as HTMLFormElement).checkValidity()) {
+            return;
+          }
           e.preventDefault();
           if (onSubmit) {
             onSubmit(commandName, {
@@ -211,6 +214,7 @@ function CommandDialog({
           <InputBox
             id="command-name"
             value={commandName}
+            required={true}
             onChange={(e) => setCommandName(e.target.value)}
             placeholder={t('pages.botcommands.command-name-placeholder')}
           />
@@ -232,6 +236,7 @@ function CommandDialog({
           </Label>
           <Textarea
             value={response}
+            required={true}
             onChange={(e) => setResponse(e.target.value)}
             id="command-response"
             placeholder={t('pages.botcommands.command-response-placeholder')}
