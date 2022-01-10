@@ -1,7 +1,7 @@
 import { Cross2Icon } from '@radix-ui/react-icons';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, FlexRow, InputBox, Textarea } from '../theme';
+import { Button, FlexRow, Textarea } from '../theme';
 
 export interface MessageArrayProps {
   placeholder?: string;

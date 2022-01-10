@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   ChatBubbleIcon,
@@ -20,17 +20,7 @@ import ServerSettingsPage from './pages/ServerSettings';
 import { RootState } from '../store';
 import { createWSClient } from '../store/api/reducer';
 import { ConnectionStatus } from '../store/api/types';
-import {
-  Button,
-  Dialog,
-  DialogContainer,
-  FlexRow,
-  InputBox,
-  PageHeader,
-  PageTitle,
-  styled,
-  TextBlock,
-} from './theme';
+import { styled } from './theme';
 
 // @ts-expect-error Asset import
 import spinner from '../assets/icon-loading.svg';
@@ -38,8 +28,6 @@ import BackendIntegrationPage from './pages/BackendIntegration';
 import TwitchSettingsPage from './pages/TwitchSettings';
 import TwitchBotCommandsPage from './pages/BotCommands';
 import TwitchBotTimersPage from './pages/BotTimers';
-import { useTranslation } from 'react-i18next';
-import DialogContent from './components/DialogContent';
 import AuthDialog from './pages/AuthDialog';
 
 const LoadingDiv = styled('div', {

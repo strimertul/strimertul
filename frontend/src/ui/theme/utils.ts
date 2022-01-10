@@ -1,3 +1,5 @@
+/* eslint-disable import/prefer-default-export */
+
 import { theme } from '.';
 import { styled } from './theme';
 
