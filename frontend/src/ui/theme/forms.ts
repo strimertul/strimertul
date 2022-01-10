@@ -1,6 +1,7 @@
 import * as UnstyledLabel from '@radix-ui/react-label';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { styled } from './theme';
+import { theme } from '.';
 
 export const Field = styled('fieldset', {
   all: 'unset',
@@ -45,7 +46,7 @@ export const InputBox = styled('input', {
   fontWeight: '300',
   border: '1px solid $gray6',
   padding: '0.5rem',
-  borderRadius: '0.3rem',
+  borderRadius: theme.borderRadius.form,
   backgroundColor: '$gray2',
   '&:hover': {
     borderColor: '$teal7',
@@ -58,6 +59,13 @@ export const InputBox = styled('input', {
     backgroundColor: '$gray4',
     borderColor: '$gray5',
     color: '$gray8',
+  },
+  variants: {
+    border: {
+      none: {
+        borderWidth: '0',
+      },
+    },
   },
 });
 
@@ -66,7 +74,7 @@ export const Textarea = styled('textarea', {
   fontWeight: '300',
   border: '1px solid $gray6',
   padding: '0.5rem',
-  borderRadius: '0.3rem',
+  borderRadius: theme.borderRadius.form,
   backgroundColor: '$gray2',
   '&:hover': {
     borderColor: '$teal7',
@@ -80,6 +88,13 @@ export const Textarea = styled('textarea', {
     borderColor: '$gray5',
     color: '$gray8',
   },
+  variants: {
+    border: {
+      none: {
+        borderWidth: '0',
+      },
+    },
+  },
 });
 
 export const ButtonGroup = styled('div', {
@@ -87,12 +102,17 @@ export const ButtonGroup = styled('div', {
   gap: '0.5rem',
 });
 
+export const MultiButton = styled('div', {
+  display: 'flex',
+});
+
 export const Button = styled('button', {
   all: 'unset',
   cursor: 'pointer',
+  color: '$gray12',
   fontWeight: '300',
   padding: '0.5rem 1rem',
-  borderRadius: '0.3rem',
+  borderRadius: theme.borderRadius.form,
   fontSize: '1.1rem',
   border: '1px solid $gray6',
   backgroundColor: '$gray4',
@@ -108,12 +128,33 @@ export const Button = styled('button', {
   },
   transition: 'all 0.2s',
   variants: {
+    border: {
+      none: {
+        borderWidth: '0',
+      },
+    },
     styling: {
+      form: {
+        padding: '0.65rem',
+      },
       link: {
         backgroundColor: 'transparent',
         border: 'none',
         color: '$teal11',
         textDecoration: 'underline',
+      },
+      multi: {
+        borderRadius: '0',
+        margin: '0 -1px',
+        '&:first-child': {
+          borderRadius: `$borderRadius$form 0 0 $borderRadius$form`,
+        },
+        '&:last-child': {
+          borderRadius: `0 $borderRadius$form $borderRadius$form 0`,
+        },
+        '&:hover': {
+          zIndex: '1',
+        },
       },
     },
     size: {
@@ -177,7 +218,7 @@ export const ComboBox = styled('select', {
   fontWeight: '300',
   border: '1px solid $gray6',
   padding: '0.5rem',
-  borderRadius: '0.3rem',
+  borderRadius: theme.borderRadius.form,
   backgroundColor: '$gray2',
   '&:hover': {
     borderColor: '$teal7',
@@ -190,6 +231,13 @@ export const ComboBox = styled('select', {
     backgroundColor: '$gray4',
     borderColor: '$gray5',
     color: '$gray8',
+  },
+  variants: {
+    border: {
+      none: {
+        borderWidth: '0',
+      },
+    },
   },
 });
 

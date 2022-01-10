@@ -31,4 +31,11 @@ export const SectionHeader = styled('h2', {
 
 export const TextBlock = styled('p', {
   lineHeight: '1.5',
+  variants: {
+    spacing: {
+      none: {
+        margin: '0',
+      },
+    },
+  },
 });

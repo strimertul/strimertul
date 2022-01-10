@@ -22,6 +22,7 @@ import {
   FlexRow,
   InputBox,
   Label,
+  MultiButton,
   PageContainer,
   PageHeader,
   PageTitle,
@@ -103,7 +104,7 @@ interface CommandItemProps {
   onDelete?: () => void;
 }
 
-function CommandItemEl({
+function CommandItem({
   name,
   item,
   onToggle,
@@ -126,44 +127,44 @@ function CommandItemEl({
               {item.access_level !== 'streamer' && '+'}
             </ACLIndicator>
           )}
-          <Button
-            styling="link"
-            size="small"
-            onClick={() => (onToggle ? onToggle() : null)}
-          >
-            {t(item.enabled ? 'form-actions.disable' : 'form-actions.enable')}
-          </Button>
-          <Button
-            styling="link"
-            size="small"
-            onClick={() => (onEdit ? onEdit() : null)}
-          >
-            {t('form-actions.edit')}
-          </Button>
-          <Alert>
-            <AlertTrigger asChild>
-              <Button styling="link" size="small">
-                {t('form-actions.delete')}
-              </Button>
-            </AlertTrigger>
-            <AlertContent
-              variation="danger"
-              title={t('pages.botcommands.remove-command-title', { name })}
-              description="This cannot be undone"
-              actionText="Delete"
-              actionButtonProps={{ variation: 'danger' }}
-              showCancel={true}
-              onAction={() => (onDelete ? onDelete() : null)}
-            />
-          </Alert>
+          <MultiButton>
+            <Button
+              styling="multi"
+              size="small"
+              onClick={() => (onToggle ? onToggle() : null)}
+            >
+              {t(item.enabled ? 'form-actions.disable' : 'form-actions.enable')}
+            </Button>
+            <Button
+              styling="multi"
+              size="small"
+              onClick={() => (onEdit ? onEdit() : null)}
+            >
+              {t('form-actions.edit')}
+            </Button>
+            <Alert>
+              <AlertTrigger asChild>
+                <Button styling="multi" size="small">
+                  {t('form-actions.delete')}
+                </Button>
+              </AlertTrigger>
+              <AlertContent
+                variation="danger"
+                title={t('pages.botcommands.remove-command-title', { name })}
+                description="This cannot be undone"
+                actionText="Delete"
+                actionButtonProps={{ variation: 'danger' }}
+                showCancel={true}
+                onAction={() => (onDelete ? onDelete() : null)}
+              />
+            </Alert>
+          </MultiButton>
         </CommandActions>
       </CommandHeader>
       <CommandText>{item.response}</CommandText>
     </CommandItemContainer>
   );
 }
-
-const CommandItem = React.memo(CommandItemEl);
 
 type DialogPrompt =
   | { kind: 'new' }
@@ -269,20 +270,20 @@ function CommandDialog({
 }
 
 export default function TwitchBotCommandsPage(): React.ReactElement {
-  const [botCommands, setBotCommands] = useModule(modules.twitchBotCommands);
-  const [commandFilter, setCommandFilter] = useState('');
+  const [commands, setCommands] = useModule(modules.twitchBotCommands);
+  const [filter, setFilter] = useState('');
   const [activeDialog, setActiveDialog] = useState<DialogPrompt>(null);
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const commandFilterLC = commandFilter.toLowerCase();
+  const filterLC = filter.toLowerCase();
 
   const setCommand = (newName: string, data: TwitchBotCustomCommand): void => {
     switch (activeDialog.kind) {
       case 'new':
         dispatch(
-          setBotCommands({
-            ...botCommands,
+          setCommands({
+            ...commands,
             [newName]: {
               ...data,
               enabled: true,
@@ -293,8 +294,8 @@ export default function TwitchBotCommandsPage(): React.ReactElement {
       case 'edit': {
         const oldName = activeDialog.name;
         dispatch(
-          setBotCommands({
-            ...botCommands,
+          setCommands({
+            ...commands,
             [oldName]: undefined,
             [newName]: data,
           }),
@@ -307,8 +308,8 @@ export default function TwitchBotCommandsPage(): React.ReactElement {
 
   const deleteCommand = (cmd: string): void => {
     dispatch(
-      setBotCommands({
-        ...botCommands,
+      setCommands({
+        ...commands,
         [cmd]: undefined,
       }),
     );
@@ -316,11 +317,11 @@ export default function TwitchBotCommandsPage(): React.ReactElement {
 
   const toggleCommand = (cmd: string): void => {
     dispatch(
-      setBotCommands({
-        ...botCommands,
+      setCommands({
+        ...commands,
         [cmd]: {
-          ...botCommands[cmd],
-          enabled: !botCommands[cmd].enabled,
+          ...commands[cmd],
+          enabled: !commands[cmd].enabled,
         },
       }),
     );
@@ -344,25 +345,25 @@ export default function TwitchBotCommandsPage(): React.ReactElement {
         <InputBox
           css={{ flex: 1 }}
           placeholder={t('pages.botcommands.search-placeholder')}
-          value={commandFilter}
-          onChange={(e) => setCommandFilter(e.target.value)}
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
         />
       </FlexRow>
       <CommandList>
-        {Object.keys(botCommands ?? {})
-          ?.filter((cmd) => cmd.toLowerCase().includes(commandFilterLC))
+        {Object.keys(commands ?? {})
+          ?.filter((cmd) => cmd.toLowerCase().includes(filterLC))
           .sort()
           .map((cmd) => (
             <CommandItem
               key={cmd}
               name={cmd}
-              item={botCommands[cmd]}
+              item={commands[cmd]}
               onToggle={() => toggleCommand(cmd)}
               onEdit={() =>
                 setActiveDialog({
                   kind: 'edit',
                   name: cmd,
-                  item: botCommands[cmd],
+                  item: commands[cmd],
                 })
               }
               onDelete={() => deleteCommand(cmd)}

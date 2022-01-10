@@ -125,6 +125,31 @@
         "streamer": "Streamer only"
       },
       "remove-command-title": "Remove command {{name}}?"
+    },
+    "bottimers": {
+      "title": "Bot timers",
+      "desc": "Define reminders such as checking out your social media or ongoing events",
+      "add-button": "New timer",
+      "search-placeholder": "Search timer by name",
+      "timer-header-new": "New timer",
+      "timer-header-edit": "Edit timer",
+      "timer-name": "Timer name",
+      "timer-name-placeholder": "my-timer",
+      "timer-action-new": "Create",
+      "timer-action-edit": "Edit",
+      "remove-timer-title": "Remove timer {{name}}?",
+      "timer-parameters": "every {{time}}, ≥ {{messages}} messages in the last {{interval}}",
+      "timer-interval": "Minimul interval",
+      "timer-activity": "Minimul chat activity (0 to disable)",
+      "timer-activity-desc": "messages in the last 5 minutes",
+      "timer-messages": "Messages"
+    },
+    "auth": {
+      "title": "Authentication required",
+      "desc": "The installation of strimertül you are trying to reach is protected with a password. Please write the password below to access the control panel.",
+      "no-pwd-note": " If the database has no password (for example, it was recently changed from having one to none), leave the field empty.",
+      "password": "Password",
+      "submit": "Authenticate"
     }
   },
   "form-actions": {
@@ -137,9 +162,18 @@
     "disable": "Disable",
     "delete": "Delete",
     "cancel": "Cancel",
-    "ok": "OK"
+    "ok": "OK",
+    "add": "Add"
   },
   "debug": {
     "dev-build": "Development build"
+  },
+  "time": {
+    "x-hours": "{{time}} hrs",
+    "x-minutes": "{{time}} min",
+    "x-seconds": "{{time}} sec",
+    "hours": "hours",
+    "minutes": "minutes",
+    "seconds": "seconds"
   }
 }

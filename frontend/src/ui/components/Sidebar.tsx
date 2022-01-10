@@ -38,10 +38,12 @@ const Header = styled('div', {
 const AppName = styled('h1', {
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'center',
   gap: '0.2rem',
   fontSize: '1.4rem',
   margin: '0.5rem 0 0.5rem 0',
   fontWeight: 300,
+  paddingRight: '0.5rem',
 });
 
 const VersionLabel = styled('div', {
@@ -49,7 +51,7 @@ const VersionLabel = styled('div', {
   fontSize: '0.75rem',
   fontWeight: 'bold',
   color: '$teal8',
-  paddingLeft: '12px',
+  textAlign: 'center',
 });
 
 const UpdateButton = styled('a', {

@@ -1,3 +1,4 @@
+import { theme } from '.';
 import { styled } from './theme';
 
 export const FlexRow = styled('div', {
@@ -6,6 +7,12 @@ export const FlexRow = styled('div', {
   alignItems: 'center',
   justifyContent: 'center',
   variants: {
+    border: {
+      form: {
+        border: '1px solid $gray6',
+        borderRadius: theme.borderRadius.form,
+      },
+    },
     spacing: {
       '1': {
         gap: '0.5rem',

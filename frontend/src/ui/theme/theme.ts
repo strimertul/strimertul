@@ -37,5 +37,8 @@ export const { styled, theme } = createStitches({
       ...redDark,
       ...blackA,
     },
+    borderRadius: {
+      form: '0.3rem',
+    },
   },
 });
