@@ -161,6 +161,19 @@
       "gift_sub-enable": "Enable gifted subscription message",
       "raid-enable": "Enable raid message",
       "cheer-enable": "Enable cheering message"
+    },
+    "loyalty-settings": {
+      "title": "Loyalty system configuration",
+      "subtitle": "Loyalty system allowing viewers to accrue points and spend them on rewards and goals",
+      "enable": "Enable loyalty system",
+      "currency-placeholder": "points",
+      "currency-name": "Currency name",
+      "currency-name-hint": "This will be appended like this: \"user has X yourcurrency\" so choose a lowercase plural name",
+      "bonus-points": "Bonus points for active users",
+      "bonus-points-hint": "Extra amount of points awarded to people who have been chatting in the last set interval",
+      "note": "Note: Unlike platform-native systems (eg. Twitch channel points), this relies on chat activity rather than actual viewing status.",
+      "every": "every",
+      "reward": "How often to give {{currency}}"
     }
   },
   "form-actions": {

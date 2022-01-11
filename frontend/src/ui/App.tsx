@@ -30,6 +30,7 @@ import TwitchBotCommandsPage from './pages/BotCommands';
 import TwitchBotTimersPage from './pages/BotTimers';
 import AuthDialog from './pages/AuthDialog';
 import ChatAlertsPage from './pages/ChatAlerts';
+import LoyaltyConfigPage from './pages/LoyaltyConfig';
 
 const LoadingDiv = styled('div', {
   display: 'flex',
@@ -190,6 +191,7 @@ export default function App(): JSX.Element {
               element={<TwitchBotTimersPage />}
             />
             <Route path="/twitch/bot/alerts" element={<ChatAlertsPage />} />
+            <Route path="/loyalty/settings" element={<LoyaltyConfigPage />} />
           </Routes>
         </PageWrapper>
       </PageContent>

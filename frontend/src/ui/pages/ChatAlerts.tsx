@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { CheckIcon } from '@radix-ui/react-icons';
 import { useModule, useStatus } from '../../lib/react-utils';
-import { modules } from '../../store/api/reducer';
+import apiReducer, { modules } from '../../store/api/reducer';
 import MultiInput from '../components/MultiInput';
 import {
   Checkbox,
@@ -20,11 +20,13 @@ import {
   TabList,
   TextBlock,
 } from '../theme';
+import SaveButton from '../components/utils/SaveButton';
 
 export default function ChatAlertsPage(): React.ReactElement {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const [alerts, setAlerts] = useModule(modules.twitchBotAlerts);
+  const [alerts, setAlerts, loadStatus] = useModule(modules.twitchBotAlerts);
+  const status = useStatus(loadStatus.save);
 
   return (
     <PageContainer>
@@ -53,7 +55,7 @@ export default function ChatAlertsPage(): React.ReactElement {
                   checked={alerts?.follow?.enabled ?? false}
                   onCheckedChange={(ev) =>
                     dispatch(
-                      setAlerts({
+                      apiReducer.actions.twitchBotAlertsChanged({
                         ...alerts,
                         follow: {
                           ...alerts.follow,
@@ -83,7 +85,7 @@ export default function ChatAlertsPage(): React.ReactElement {
                 required={alerts?.follow?.enabled ?? false}
                 onChange={(messages) => {
                   dispatch(
-                    setAlerts({
+                    apiReducer.actions.twitchBotAlertsChanged({
                       ...alerts,
                       follow: { ...alerts.follow, messages },
                     }),
@@ -99,7 +101,7 @@ export default function ChatAlertsPage(): React.ReactElement {
                   checked={alerts?.subscription?.enabled ?? false}
                   onCheckedChange={(ev) =>
                     dispatch(
-                      setAlerts({
+                      apiReducer.actions.twitchBotAlertsChanged({
                         ...alerts,
                         subscription: {
                           ...alerts.subscription,
@@ -129,7 +131,7 @@ export default function ChatAlertsPage(): React.ReactElement {
                 required={alerts?.subscription?.enabled ?? false}
                 onChange={(messages) => {
                   dispatch(
-                    setAlerts({
+                    apiReducer.actions.twitchBotAlertsChanged({
                       ...alerts,
                       subscription: { ...alerts.subscription, messages },
                     }),
@@ -146,7 +148,7 @@ export default function ChatAlertsPage(): React.ReactElement {
                   checked={alerts?.gift_sub?.enabled ?? false}
                   onCheckedChange={(ev) =>
                     dispatch(
-                      setAlerts({
+                      apiReducer.actions.twitchBotAlertsChanged({
                         ...alerts,
                         gift_sub: {
                           ...alerts.gift_sub,
@@ -176,7 +178,7 @@ export default function ChatAlertsPage(): React.ReactElement {
                 required={alerts?.gift_sub?.enabled ?? false}
                 onChange={(messages) => {
                   dispatch(
-                    setAlerts({
+                    apiReducer.actions.twitchBotAlertsChanged({
                       ...alerts,
                       gift_sub: { ...alerts.gift_sub, messages },
                     }),
@@ -193,7 +195,7 @@ export default function ChatAlertsPage(): React.ReactElement {
                   checked={alerts?.raid?.enabled ?? false}
                   onCheckedChange={(ev) =>
                     dispatch(
-                      setAlerts({
+                      apiReducer.actions.twitchBotAlertsChanged({
                         ...alerts,
                         raid: {
                           ...alerts.raid,
@@ -223,7 +225,7 @@ export default function ChatAlertsPage(): React.ReactElement {
                 required={alerts?.raid?.enabled ?? false}
                 onChange={(messages) => {
                   dispatch(
-                    setAlerts({
+                    apiReducer.actions.twitchBotAlertsChanged({
                       ...alerts,
                       raid: { ...alerts.raid, messages },
                     }),
@@ -240,7 +242,7 @@ export default function ChatAlertsPage(): React.ReactElement {
                   checked={alerts?.cheer?.enabled ?? false}
                   onCheckedChange={(ev) =>
                     dispatch(
-                      setAlerts({
+                      apiReducer.actions.twitchBotAlertsChanged({
                         ...alerts,
                         cheer: {
                           ...alerts.cheer,
@@ -270,7 +272,7 @@ export default function ChatAlertsPage(): React.ReactElement {
                 required={alerts?.cheer?.enabled ?? false}
                 onChange={(messages) => {
                   dispatch(
-                    setAlerts({
+                    apiReducer.actions.twitchBotAlertsChanged({
                       ...alerts,
                       cheer: { ...alerts.cheer, messages },
                     }),
@@ -280,6 +282,7 @@ export default function ChatAlertsPage(): React.ReactElement {
             </Field>
           </TabContent>
         </TabContainer>
+        <SaveButton status={status} type="submit" />
       </form>
     </PageContainer>
   );

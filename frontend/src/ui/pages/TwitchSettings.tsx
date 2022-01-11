@@ -330,7 +330,7 @@ export default function TwitchSettingsPage(): React.ReactElement {
       <PageHeader>
         <PageTitle>{t('pages.twitch-settings.title')}</PageTitle>
         <TextBlock>{t('pages.twitch-settings.subtitle')}</TextBlock>
-        <Field>
+        <Field css={{ paddingTop: '1rem' }}>
           <FlexRow spacing={1}>
             <Checkbox
               checked={active}
