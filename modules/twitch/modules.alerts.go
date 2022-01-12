@@ -484,7 +484,7 @@ func (m *BotAlertsModule) compileTemplates() {
 }
 
 func (m *BotAlertsModule) addTemplate(templateList map[int]*template.Template, id int, msg string) {
-	tpl, err := template.New("").Funcs(sprig.TxtFuncMap()).Parse(msg)
+	tpl, err := template.New("").Funcs(m.bot.customFunctions).Funcs(sprig.TxtFuncMap()).Parse(msg)
 	if err != nil {
 		m.bot.logger.WithError(err).Error("error compiling template")
 		return
