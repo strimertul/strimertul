@@ -22,24 +22,28 @@ func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
 		Usage:       "!redeem <reward-id> [request text]",
 		AccessLevel: ALTEveryone,
 		Handler:     cmdRedeemReward,
+		Enabled:     true,
 	}
 	b.commands["!balance"] = BotCommand{
 		Description: "See your current point balance",
 		Usage:       "!balance",
 		AccessLevel: ALTEveryone,
 		Handler:     cmdBalance,
+		Enabled:     true,
 	}
 	b.commands["!goals"] = BotCommand{
 		Description: "Check currently active community goals",
 		Usage:       "!goals",
 		AccessLevel: ALTEveryone,
 		Handler:     cmdGoalList,
+		Enabled:     true,
 	}
 	b.commands["!contribute"] = BotCommand{
 		Description: "Contribute points to a community goal",
 		Usage:       "!contribute <points> [<goal-id>]",
 		AccessLevel: ALTEveryone,
 		Handler:     cmdContributeGoal,
+		Enabled:     true,
 	}
 
 	// Setup handler for adding points over time

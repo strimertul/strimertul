@@ -78,10 +78,15 @@ func NewBot(api *Client, config BotConfig) *Bot {
 				if !data.Enabled {
 					continue
 				}
-				if strings.HasPrefix(lcmessage, cmd) {
-					go data.Handler(bot, message)
-					bot.lastMessage = time.Now()
+				if !strings.HasPrefix(lcmessage, cmd) {
+					continue
 				}
+				parts := strings.SplitN(lcmessage, " ", 2)
+				if parts[0] != cmd {
+					continue
+				}
+				go data.Handler(bot, message)
+				bot.lastMessage = time.Now()
 			}
 		}
 

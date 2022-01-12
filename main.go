@@ -61,9 +61,9 @@ func parseLogLevel(level string) logrus.Level {
 type ModuleConstructor = func(manager *modules.Manager) error
 
 var moduleList = map[modules.ModuleID]ModuleConstructor{
-	modules.ModuleTwitch:  twitch.Register,
 	modules.ModuleStulbe:  stulbe.Register,
 	modules.ModuleLoyalty: loyalty.Register,
+	modules.ModuleTwitch:  twitch.Register,
 }
 
 func main() {
