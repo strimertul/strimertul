@@ -39,6 +39,12 @@ export const { styled, theme } = createStitches({
     },
     borderRadius: {
       form: '0.3rem',
+      toolbar: '0.5rem',
     },
+  },
+  media: {
+    mobile: '(min-width: 640px)',
+    medium: '(min-width: 768px)',
+    wide: '(min-width: 1024px)',
   },
 });

@@ -57,6 +57,7 @@ function Interval({
           type="number"
           border="none"
           required={required}
+          disabled={!active}
           css={{
             maxWidth: '5rem',
             borderRightWidth: '1px',

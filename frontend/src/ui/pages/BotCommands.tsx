@@ -48,7 +48,7 @@ const CommandItemContainer = styled('article', {
     status: {
       enabled: {},
       disabled: {
-        borderLeftColor: '$red7',
+        borderLeftColor: '$red6',
         backgroundColor: '$gray3',
         color: '$gray10',
       },
@@ -68,7 +68,7 @@ const CommandName = styled('span', {
     status: {
       enabled: {},
       disabled: {
-        color: '$gray10',
+        color: '$gray9',
       },
     },
   },
