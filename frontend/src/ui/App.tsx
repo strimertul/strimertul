@@ -32,6 +32,7 @@ import AuthDialog from './pages/AuthDialog';
 import ChatAlertsPage from './pages/ChatAlerts';
 import LoyaltyConfigPage from './pages/LoyaltyConfig';
 import LoyaltyQueuePage from './pages/LoyaltyQueue';
+import StrimertulPage from './pages/Strimertul';
 
 const LoadingDiv = styled('div', {
   display: 'flex',
@@ -180,6 +181,7 @@ export default function App(): JSX.Element {
         <PageWrapper role="main">
           <Routes>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/about" element={<StrimertulPage />} />
             <Route path="/http" element={<ServerSettingsPage />} />
             <Route path="/backend" element={<BackendIntegrationPage />} />
             <Route path="/twitch/settings" element={<TwitchSettingsPage />} />

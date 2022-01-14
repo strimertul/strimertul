@@ -33,6 +33,7 @@ const Container = styled('section', {
 
 const Header = styled('div', {
   padding: '0.8rem 1rem 1rem 0.8rem',
+  textAlign: 'center',
 });
 
 const AppName = styled('h1', {
@@ -46,19 +47,40 @@ const AppName = styled('h1', {
   paddingRight: '0.5rem',
 });
 
+const AppLink = styled(Link, {
+  all: 'unset',
+  cursor: 'pointer',
+  color: '$teal12',
+  '&:visited': {
+    color: '$teal12',
+  },
+  display: 'flex',
+  flexDirection: 'column',
+  variants: {
+    status: {
+      active: {
+        backgroundColor: '$teal4',
+        borderRadius: '0.5rem',
+      },
+      default: {},
+    },
+  },
+});
+
 const VersionLabel = styled('div', {
   textTransform: 'uppercase',
   fontSize: '0.75rem',
   fontWeight: 'bold',
   color: '$teal8',
   textAlign: 'center',
+  paddingBottom: '0.4rem',
 });
 
 const UpdateButton = styled('a', {
   textTransform: 'uppercase',
   fontSize: '0.75rem',
   fontWeight: 'bold',
-  color: '$yellow12',
+  color: '$yellow12 !important',
   border: '1px solid $yellow7',
   padding: '0.2rem 0.4rem',
   marginTop: '0.5rem',
@@ -129,6 +151,8 @@ export default function Sidebar({
   sections,
 }: SidebarProps): React.ReactElement {
   const { t } = useTranslation();
+  const resolved = useResolvedPath('/about');
+  const matchApp = useMatch({ path: resolved.pathname, end: true });
   const client = useSelector((state: RootState) => state.api.client);
   const [version, setVersion] = useState<string>(null);
   const [lastVersion, setLastVersion] =
@@ -178,13 +202,18 @@ export default function Sidebar({
         options={{ scrollbars: { autoHide: 'scroll' } }}
       >
         <Header>
-          <AppName>
-            <img src={logo} style={{ height: '28px', marginBottom: '-2px' }} />
-            {APPNAME}
-          </AppName>
-          <VersionLabel>
-            {version && !dev ? version : t('debug.dev-build')}
-          </VersionLabel>
+          <AppLink to={'/about'} status={matchApp ? 'active' : 'default'}>
+            <AppName>
+              <img
+                src={logo}
+                style={{ height: '28px', marginBottom: '-2px' }}
+              />
+              {APPNAME}
+            </AppName>
+            <VersionLabel>
+              {version && !dev ? version : t('debug.dev-build')}
+            </VersionLabel>
+          </AppLink>
           {!dev && lastVersion && !version.startsWith(lastVersion.name) && (
             <UpdateButton href={lastVersion.url}>
               {t('menu.messages.update-available')}
