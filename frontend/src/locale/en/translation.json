@@ -182,7 +182,14 @@
       "users-tab": "Manage points",
       "username": "Viewer",
       "points": "Points",
-      "username-filter": "Search by username"
+      "username-filter": "Search by username",
+      "modify-balance-dialog": "Modify balance",
+      "give-points-dialog": "Give points",
+      "reward": "Reward",
+      "date": "Date",
+      "request": "Request",
+      "no-redeems": "No pending redeems",
+      "no-users": "No viewers found"
     }
   },
   "form-actions": {

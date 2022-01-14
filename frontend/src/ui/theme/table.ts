@@ -1,7 +1,6 @@
 import { theme, styled } from './theme';
 
 export const Table = styled('table', {
-  border: '1px solid $gray3',
   borderCollapse: 'collapse',
 });
 
@@ -24,8 +23,9 @@ export const TableHeader = styled('th', {
   height: '2rem',
   verticalAlign: 'middle',
   textAlign: 'left',
-  backgroundColor: '$gray3',
+  borderBottom: '3px solid $gray3',
   fontWeight: 'bold',
+  color: '$teal11',
 });
 
 export const TableCell = styled('td', {

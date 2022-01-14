@@ -146,7 +146,7 @@ export interface LoyaltyGoal {
 export interface LoyaltyRedeem {
   username: string;
   display_name: string;
-  when: Date;
+  when: string | Date;
   reward: LoyaltyReward;
   request_text: string;
 }

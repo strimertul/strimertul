@@ -147,6 +147,7 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	})
 
 	bot.Client.Join(config.Channel)
+	bot.setupFunctions()
 
 	// Load modules
 	err := bot.LoadModules()
@@ -155,7 +156,6 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	}
 
 	// Load custom commands
-	bot.setupFunctions()
 	api.db.GetJSON(CustomCommandsKey, &bot.customCommands)
 	err = bot.updateTemplates()
 	if err != nil {

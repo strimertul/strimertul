@@ -215,7 +215,7 @@ export const createRedeem = createAsyncThunk(
 );
 
 export const removeRedeem = createAsyncThunk(
-  'api/createRedeem',
+  'api/removeRedeem',
   async (redeem: LoyaltyRedeem, { getState }) => {
     const { api } = getState() as { api: APIState };
     return api.client.putJSON(loyaltyRemoveRedeemKey, redeem);

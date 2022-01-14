@@ -1,5 +1,6 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import React, { useState } from 'react';
+import { SortFunction } from '../../lib/type-utils';
 import { styled } from '../theme';
 import { Table, TableHeader } from '../theme/table';
 import PageList from './PageList';
@@ -13,20 +14,20 @@ export interface DataTableProps<T> {
   data: T[];
   columns: ({
     title: string;
-  } & React.HTMLAttributes<HTMLTableCellElement> &
-    (
-      | {
-          sortable: true;
-          key: Extract<keyof T, string>;
-        }
-      | {
-          sortable: false;
-          key: string;
-        }
-    ))[];
+    attr?: React.HTMLAttributes<HTMLTableCellElement>;
+  } & (
+    | {
+        sortable: true;
+        key: Extract<keyof T, string>;
+      }
+    | {
+        sortable: false;
+        key: string;
+      }
+  ))[];
   defaultSort: SortingOrder<T>;
   view: (data: T) => React.ReactNode;
-  sort: (key: keyof T) => (a: T, b: T) => number;
+  sort: (key: keyof T) => SortFunction<T>;
 }
 
 const Sortable = styled('div', {
@@ -93,23 +94,25 @@ export function DataTable<T>({
       />
       <Table>
         <thead>
-          {columns.map((props) => (
-            <TableHeader {...props} key={props.key}>
-              {props.sortable ? (
-                <Sortable onClick={() => changeSort(props.key)}>
-                  {props.title}
-                  {sorting.key === props.key &&
-                    (sorting.order === 'asc' ? (
-                      <ChevronUpIcon />
-                    ) : (
-                      <ChevronDownIcon />
-                    ))}
-                </Sortable>
-              ) : (
-                props.title
-              )}
-            </TableHeader>
-          ))}
+          <tr>
+            {columns.map(({ key, sortable, title, attr }) => (
+              <TableHeader {...(attr || {})} key={key}>
+                {sortable ? (
+                  <Sortable onClick={() => changeSort(key as keyof T)}>
+                    {title}
+                    {sorting.key === key &&
+                      (sorting.order === 'asc' ? (
+                        <ChevronUpIcon />
+                      ) : (
+                        <ChevronDownIcon />
+                      ))}
+                  </Sortable>
+                ) : (
+                  title
+                )}
+              </TableHeader>
+            ))}
+          </tr>
         </thead>
         <tbody>{paged.map(view)}</tbody>
       </Table>
