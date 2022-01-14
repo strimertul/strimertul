@@ -1,5 +1,72 @@
 import React from 'react';
+import { keyframes } from '@stitches/react';
+import { APPNAME, PageContainer, PageHeader, styled } from '../theme';
+
+// @ts-expect-error Asset import
+import logo from '../../assets/icon-logo.svg';
+
+const gradientAnimation = keyframes({
+  '0%': {
+    backgroundPosition: '0% 50%',
+  },
+  '50%': {
+    backgroundPosition: '100% 50%',
+  },
+  '100%': {
+    backgroundPosition: '0% 50%',
+  },
+});
+
+const LogoPic = styled('div', {
+  minHeight: '170px',
+  width: '270px',
+  maskImage: `url(${logo})`,
+  maskRepeat: 'no-repeat',
+  maskPosition: 'center',
+  animation: `${gradientAnimation} 12s ease infinite`,
+  backgroundSize: '400% 400%',
+  backgroundImage: `linear-gradient(
+	45deg,
+	hsl(240deg 100% 20%) 0%,
+	hsl(289deg 100% 21%) 11%,
+	hsl(315deg 100% 27%) 22%,
+	hsl(329deg 100% 36%) 33%,
+	hsl(337deg 100% 43%) 44%,
+	hsl(357deg 91% 59%) 56%,
+	hsl(17deg 100% 59%) 67%,
+	hsl(34deg 100% 53%) 78%,
+	hsl(45deg 100% 50%) 89%,
+	hsl(55deg 100% 50%) 100%
+      )`,
+});
+
+const LogoName = styled('h1', {
+  fontSize: '40pt',
+  fontWeight: 200,
+  textAlign: 'center',
+  '@medium': {
+    fontSize: '80pt',
+  },
+  paddingBottom: '0.5rem',
+});
 
 export default function StrimertulPage(): React.ReactElement {
-  return <div></div>;
+  return (
+    <PageContainer>
+      <PageHeader
+        css={{
+          display: 'flex',
+          alignItems: 'center',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          '@medium': {
+            flexDirection: 'row',
+          },
+        }}
+      >
+        <LogoPic />
+        <LogoName>{APPNAME}</LogoName>
+      </PageHeader>
+    </PageContainer>
+  );
 }
