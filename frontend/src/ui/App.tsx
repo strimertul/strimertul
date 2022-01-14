@@ -33,6 +33,8 @@ import ChatAlertsPage from './pages/ChatAlerts';
 import LoyaltyConfigPage from './pages/LoyaltyConfig';
 import LoyaltyQueuePage from './pages/LoyaltyQueue';
 import StrimertulPage from './pages/Strimertul';
+import DebugPage from './pages/Debug';
+import LoyaltyRewardsPage from './pages/LoyaltyRewards';
 
 const LoadingDiv = styled('div', {
   display: 'flex',
@@ -182,6 +184,7 @@ export default function App(): JSX.Element {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/about" element={<StrimertulPage />} />
+            <Route path="/debug" element={<DebugPage />} />
             <Route path="/http" element={<ServerSettingsPage />} />
             <Route path="/backend" element={<BackendIntegrationPage />} />
             <Route path="/twitch/settings" element={<TwitchSettingsPage />} />
@@ -196,6 +199,7 @@ export default function App(): JSX.Element {
             <Route path="/twitch/bot/alerts" element={<ChatAlertsPage />} />
             <Route path="/loyalty/settings" element={<LoyaltyConfigPage />} />
             <Route path="/loyalty/users" element={<LoyaltyQueuePage />} />
+            <Route path="/loyalty/rewards" element={<LoyaltyRewardsPage />} />
           </Routes>
         </PageWrapper>
       </PageContent>

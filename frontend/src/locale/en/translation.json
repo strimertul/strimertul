@@ -190,6 +190,20 @@
       "request": "Request",
       "no-redeems": "No pending redeems",
       "no-users": "No viewers found"
+    },
+    "debug": {
+      "dismiss-warning": "I am not afraid! ...well ok maybe a little",
+      "big-ass-warning": "Using this page can severely wreck your database. Please make sure you know what you're doing!",
+      "disclaimer-header": "Big scary disclaimer"
+    },
+    "loyalty-rewards": {
+      "title": "Rewards and goals"
+    },
+    "strimertul": {
+      "need-help": "Need help?",
+      "need-help-p1": "If you need help, want to report a bug or have suggestions on how to make {{APPNAME}} better, please reach out via any of the following channels:",
+      "license-header": "License",
+      "license-notice-strimertul": "{{APPNAME}} is licensed under <license>GNU Affero General Public License v3.0</license>"
     }
   },
   "form-actions": {
@@ -203,7 +217,8 @@
     "delete": "Delete",
     "cancel": "Cancel",
     "ok": "OK",
-    "add": "Add"
+    "add": "Add",
+    "warning-delete": "This cannot be undone"
   },
   "debug": {
     "dev-build": "Development build"
