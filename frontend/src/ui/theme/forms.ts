@@ -15,6 +15,9 @@ export const Field = styled('fieldset', {
       narrow: {
         marginBottom: '1rem',
       },
+      none: {
+        marginBottom: 0,
+      },
     },
     size: {
       fullWidth: {
@@ -109,6 +112,7 @@ export const MultiButton = styled('div', {
 export const Button = styled('button', {
   all: 'unset',
   cursor: 'pointer',
+  userSelect: 'none',
   color: '$gray12',
   fontWeight: '300',
   padding: '0.5rem 1rem',

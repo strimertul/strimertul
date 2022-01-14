@@ -3,8 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { useModule, useUserPoints } from '../../lib/react-utils';
 import { modules } from '../../store/api/reducer';
-import PageList from '../components/PageList';
+import { DataTable } from '../components/DataTable';
 import {
+  Button,
+  Field,
+  InputBox,
   PageContainer,
   PageHeader,
   PageTitle,
@@ -14,6 +17,7 @@ import {
   TabList,
   TextBlock,
 } from '../theme';
+import { TableCell, TableRow } from '../theme/table';
 
 interface UserSortingOrder {
   key: 'user' | 'points';
@@ -36,80 +40,75 @@ function UserList() {
   const users = useUserPoints();
   const dispatch = useDispatch();
 
-  const [entriesPerPage, setEntriesPerPage] = useState(15);
-  const [page, setPage] = useState(0);
+  const [config] = useModule(modules.loyaltyConfig);
   const [usernameFilter, setUsernameFilter] = useState('');
-  const [sorting, setSorting] = useState<UserSortingOrder>({
-    key: 'points',
-    order: 'desc',
-  });
+  const filtered = Object.entries(users ?? [])
+    .filter(([user]) => user.includes(usernameFilter))
+    .map(([username, data]) => ({
+      username,
+      ...data,
+    }));
+  type UserEntry = typeof filtered[0];
 
-  const changeSort = (key: 'user' | 'points') => {
-    if (sorting.key === key) {
-      // Same key, swap sorting order
-      setSorting({
-        ...sorting,
-        order: sorting.order === 'asc' ? 'desc' : 'asc',
-      });
-    } else {
-      // Different key, change to sort that key
-      setSorting({ ...sorting, key, order: 'asc' });
+  type SortFn = (a: UserEntry, b: UserEntry) => number;
+
+  const sortfn = (key: keyof UserEntry): SortFn => {
+    switch (key) {
+      case 'username': {
+        return (a, b) => a.username.localeCompare(b.username);
+      }
+      case 'points': {
+        return (a: UserEntry, b: UserEntry) => a.points - b.points;
+      }
     }
   };
 
-  const rawEntries = Object.entries(users ?? []);
-  const filtered = rawEntries.filter(([user]) => user.includes(usernameFilter));
-
-  const sortedEntries = filtered;
-  switch (sorting.key) {
-    case 'user':
-      if (sorting.order === 'asc') {
-        sortedEntries.sort(([userA], [userB]) => (userA > userB ? 1 : -1));
-      } else {
-        sortedEntries.sort(([userA], [userB]) => (userA < userB ? 1 : -1));
-      }
-      break;
-    case 'points':
-      if (sorting.order === 'asc') {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        sortedEntries.sort(([_a, a], [_b, b]) => a.points - b.points);
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        sortedEntries.sort(([_a, a], [_b, b]) => b.points - a.points);
-      }
-      break;
-    default:
-    // unreacheable
-  }
-
-  const offset = page * entriesPerPage;
-  const paged = sortedEntries.slice(offset, offset + entriesPerPage);
-  const totalPages = Math.floor(sortedEntries.length / entriesPerPage);
-
   return (
     <>
-      <PageList
-        current={page + 1}
-        min={1}
-        max={totalPages + 1}
-        itemsPerPage={entriesPerPage}
-        onSelectChange={(em) => setEntriesPerPage(em)}
-        onPageChange={(p) => setPage(p - 1)}
-      />
-
-      {paged.map(([user, { points }]) => (
-        <article key={user}>
-          {user} - {points}
-        </article>
-      ))}
-
-      <PageList
-        current={page + 1}
-        min={1}
-        max={totalPages + 1}
-        itemsPerPage={entriesPerPage}
-        onSelectChange={(em) => setEntriesPerPage(em)}
-        onPageChange={(p) => setPage(p - 1)}
+      <Field size="fullWidth" spacing="none">
+        <InputBox
+          placeholder={t('pages.loyalty-queue.username-filter')}
+          value={usernameFilter}
+          onChange={(e) => setUsernameFilter(e.target.value)}
+        />
+      </Field>
+      <DataTable
+        sort={sortfn}
+        data={filtered}
+        columns={[
+          {
+            key: 'username',
+            title: t('pages.loyalty-queue.username'),
+            sortable: true,
+            style: {
+              width: '100%',
+              textAlign: 'left',
+            },
+          },
+          {
+            key: 'points',
+            title: config?.currency || t('pages.loyalty-queue.points'),
+            sortable: true,
+            style: {
+              textTransform: 'capitalize',
+            },
+          },
+          {
+            key: 'actions',
+            title: '',
+            sortable: false,
+          },
+        ]}
+        defaultSort={{ key: 'points', order: 'desc' }}
+        view={({ username, points }) => (
+          <TableRow key="username">
+            <TableCell css={{ width: '100%' }}>{username}</TableCell>
+            <TableCell>{points}</TableCell>
+            <TableCell>
+              <Button size="small">Edit</Button>
+            </TableCell>
+          </TableRow>
+        )}
       />
     </>
   );

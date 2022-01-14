@@ -86,6 +86,7 @@ function PageList({
         </ToolbarComboBox>
       </ToolbarSection>
       <ToolbarSection>
+        <div style={{ padding: '0 0.25rem' }}>{t('pagination.page')}</div>
         {current > min ? (
           <ToolbarButton
             className="button pagination-link"

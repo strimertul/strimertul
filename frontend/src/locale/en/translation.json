@@ -179,7 +179,10 @@
       "title": "Points and redeems",
       "subtitle": "User leaderboard and pending reward redeems",
       "queue-tab": "Redeem queue",
-      "users-tab": "Manage points"
+      "users-tab": "Manage points",
+      "username": "Viewer",
+      "points": "Points",
+      "username-filter": "Search by username"
     }
   },
   "form-actions": {
