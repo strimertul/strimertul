@@ -10,6 +10,9 @@ module.exports = {
     '@typescript-eslint/no-use-before-define': ['error'],
     '@typescript-eslint/no-shadow': ['error'],
     'default-case': 'off',
+    'consistent-return': 'off',
+    '@typescript-eslint/no-unsafe-return': ['error'],
+    '@typescript-eslint/switch-exhaustiveness-check': ['error'],
   },
   settings: {
     'import/resolver': {

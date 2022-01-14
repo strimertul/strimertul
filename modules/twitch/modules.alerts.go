@@ -492,6 +492,7 @@ func (m *BotAlertsModule) addTemplate(templateList map[int]*template.Template, i
 	templateList[id] = tpl
 }
 
+// writeTemplate renders the template and sends the message to the channel
 func writeTemplate(bot *Bot, tpl *template.Template, data interface{}) {
 	var buf bytes.Buffer
 	err := tpl.Execute(&buf, data)
