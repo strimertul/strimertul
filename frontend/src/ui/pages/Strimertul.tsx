@@ -1,9 +1,11 @@
 import React from 'react';
 import { keyframes } from '@stitches/react';
+import { Trans, useTranslation } from 'react-i18next';
 import { APPNAME, PageContainer, PageHeader, styled } from '../theme';
 
 // @ts-expect-error Asset import
 import logo from '../../assets/icon-logo.svg';
+import { GitHubLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
 
 const gradientAnimation = keyframes({
   '0%': {
@@ -50,7 +52,32 @@ const LogoName = styled('h1', {
   paddingBottom: '0.5rem',
 });
 
+const Section = styled('section', {});
+const SectionHeader = styled('h2', {});
+const SectionParagraph = styled('p', {
+  lineHeight: '1.5',
+  paddingBottom: '1rem',
+});
+const ChannelList = styled('ul', { listStyle: 'none', padding: 0, margin: 0 });
+const Channel = styled('li', {
+  marginBottom: '1rem',
+  fontSize: '1.5rem',
+});
+const ChannelLink = styled('a', {
+  textDecoration: 'none',
+  color: 'inherit',
+  display: 'inline-flex',
+  flexDirection: 'row',
+  gap: '0.5rem',
+  alignItems: 'center',
+  '&:hover': {
+    textDecoration: 'underline',
+    color: 'inherit',
+  },
+});
+
 export default function StrimertulPage(): React.ReactElement {
+  const { t } = useTranslation();
   return (
     <PageContainer>
       <PageHeader
@@ -67,6 +94,43 @@ export default function StrimertulPage(): React.ReactElement {
         <LogoPic />
         <LogoName>{APPNAME}</LogoName>
       </PageHeader>
+      <Section>
+        <SectionHeader>{t('pages.strimertul.need-help')}</SectionHeader>
+        <SectionParagraph>
+          {t('pages.strimertul.need-help-p1', { APPNAME })}
+        </SectionParagraph>
+        <ChannelList>
+          <Channel>
+            <ChannelLink href="https://github.com/strimertul/strimertul/issues">
+              <GitHubLogoIcon width={32} height={32} />
+              github.com/strimertul/strimertul/issues
+            </ChannelLink>
+          </Channel>
+          <Channel>
+            <ChannelLink href="https://twitter.com/ashkeelvt">
+              <TwitterLogoIcon width={32} height={32} />
+              twitter.com/AshKeelVT
+            </ChannelLink>
+          </Channel>
+        </ChannelList>
+      </Section>
+      <Section>
+        <SectionHeader>{t('pages.strimertul.license-header')}</SectionHeader>
+        <SectionParagraph>
+          <Trans
+            t={t}
+            i18nKey="pages.strimertul.license-notice-strimertul"
+            values={{ APPNAME }}
+            components={{
+              license: (
+                <a href="https://github.com/strimertul/strimertul/blob/master/LICENSE">
+                  GNU Affero General Public License v3.0
+                </a>
+              ),
+            }}
+          />
+        </SectionParagraph>
+      </Section>
     </PageContainer>
   );
 }
