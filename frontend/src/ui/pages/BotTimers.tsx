@@ -160,8 +160,8 @@ function TimerItem({
               <AlertContent
                 variation="danger"
                 title={t('pages.bottimers.remove-timer-title', { name })}
-                description="This cannot be undone"
-                actionText="Delete"
+                description={t('form-actions.warning-delete')}
+                actionText={t('form-actions.delete')}
                 actionButtonProps={{ variation: 'danger' }}
                 showCancel={true}
                 onAction={() => (onDelete ? onDelete() : null)}

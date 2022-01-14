@@ -151,8 +151,8 @@ function CommandItem({
               <AlertContent
                 variation="danger"
                 title={t('pages.botcommands.remove-command-title', { name })}
-                description="This cannot be undone"
-                actionText="Delete"
+                description={t('form-actions.warning-delete')}
+                actionText={t('form-actions.delete')}
                 actionButtonProps={{ variation: 'danger' }}
                 showCancel={true}
                 onAction={() => (onDelete ? onDelete() : null)}
