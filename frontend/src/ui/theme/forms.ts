@@ -259,18 +259,33 @@ export const Checkbox = styled(CheckboxPrimitive.Root, {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  border: '1px solid $teal6',
-  backgroundColor: '$teal4',
+  border: '1px solid $gray6',
+  backgroundColor: '$gray4',
   '&:hover': {
-    backgroundColor: '$teal5',
+    borderColor: '$teal6',
+    backgroundColor: '$gray5',
   },
   '&:active': {
-    background: '$teal6',
+    background: '$gray6',
   },
   '&:disabled': {
     backgroundColor: '$gray4',
     borderColor: '$gray5',
     color: '$gray8',
+  },
+  variants: {
+    variation: {
+      primary: {
+        border: '1px solid $teal6',
+        backgroundColor: '$teal4',
+        '&:hover': {
+          backgroundColor: '$teal5',
+        },
+        '&:active': {
+          background: '$teal6',
+        },
+      },
+    },
   },
 });
 
