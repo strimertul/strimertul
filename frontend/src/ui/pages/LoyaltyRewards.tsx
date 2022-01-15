@@ -1,4 +1,4 @@
-import { PlusIcon } from '@radix-ui/react-icons';
+import { CheckIcon, PlusIcon } from '@radix-ui/react-icons';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -6,11 +6,15 @@ import { useModule } from '../../lib/react-utils';
 import { modules } from '../../store/api/reducer';
 import { LoyaltyReward } from '../../store/api/types';
 import DialogContent from '../components/DialogContent';
+import Interval from '../components/Interval';
 import {
   Button,
+  Checkbox,
+  CheckboxIndicator,
   Dialog,
   DialogActions,
   Field,
+  FieldNote,
   FlexRow,
   InputBox,
   Label,
@@ -21,6 +25,7 @@ import {
   TabContainer,
   TabContent,
   TabList,
+  Textarea,
   TextBlock,
 } from '../theme';
 
@@ -34,6 +39,10 @@ function RewardsPage() {
     new: boolean;
     reward: LoyaltyReward;
   }>({ open: false, new: false, reward: null });
+  const [requiredInfo, setRequiredInfo] = useState({
+    enabled: false,
+    text: '',
+  });
 
   return (
     <>
@@ -43,7 +52,14 @@ function RewardsPage() {
           setDialogReward({ ...dialogReward, open: state })
         }
       >
-        <DialogContent title={t('pages.loyalty-rewards.create-reward')}>
+        <DialogContent
+          title={
+            dialogReward.new
+              ? t('pages.loyalty-rewards.create-reward')
+              : t('pages.loyalty-rewards.edit-reward')
+          }
+          closeButton={true}
+        >
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -51,6 +67,9 @@ function RewardsPage() {
                 return;
               }
               const reward = dialogReward.reward;
+              if (requiredInfo.enabled) {
+                reward.required_info = requiredInfo.text;
+              }
               const index = rewards.findIndex((t) => t.id == reward.id);
               if (index >= 0) {
                 const newRewards = rewards.slice(0);
@@ -77,7 +96,10 @@ function RewardsPage() {
                     ...dialogReward,
                     reward: {
                       ...dialogReward?.reward,
-                      id: e.target.value,
+                      id:
+                        e.target.value
+                          ?.toLowerCase()
+                          .replace(/[^a-zA-Z0-9]/gi, '-') ?? '',
                     },
                   });
                   if (
@@ -92,6 +114,7 @@ function RewardsPage() {
                   }
                 }}
               />
+              <FieldNote>{t('pages.loyalty-rewards.reward-id-hint')}</FieldNote>
             </Field>
             <Field size="fullWidth" spacing="narrow">
               <Label htmlFor="reward-name">
@@ -101,7 +124,7 @@ function RewardsPage() {
                 id="reward-name"
                 type="text"
                 required
-                value={dialogReward?.reward?.name}
+                value={dialogReward?.reward?.name ?? ''}
                 onChange={(e) => {
                   setDialogReward({
                     ...dialogReward,
@@ -112,10 +135,128 @@ function RewardsPage() {
                   });
                 }}
               />
+              <FieldNote>
+                {t('pages.loyalty-rewards.reward-name-hint')}
+              </FieldNote>
+            </Field>
+            <Field size="fullWidth" spacing="narrow">
+              <Label htmlFor="reward-icon">
+                {t('pages.loyalty-rewards.reward-icon')}
+              </Label>
+              <InputBox
+                id="reward-icon"
+                type="text"
+                value={dialogReward?.reward?.image ?? ''}
+                onChange={(e) => {
+                  setDialogReward({
+                    ...dialogReward,
+                    reward: {
+                      ...dialogReward?.reward,
+                      image: e.target.value,
+                    },
+                  });
+                }}
+              />
+            </Field>
+            <Field size="fullWidth" spacing="narrow">
+              <Label htmlFor="reward-desc">
+                {t('pages.loyalty-rewards.reward-desc')}
+              </Label>
+              <Textarea
+                id="reward-desc"
+                value={dialogReward?.reward?.description ?? ''}
+                onChange={(e) => {
+                  setDialogReward({
+                    ...dialogReward,
+                    reward: {
+                      ...dialogReward?.reward,
+                      description: e.target.value,
+                    },
+                  });
+                }}
+              >
+                {dialogReward?.reward?.description ?? ''}
+              </Textarea>
+            </Field>
+            <Field size="fullWidth" spacing="narrow">
+              <Label htmlFor="reward-cost">
+                {t('pages.loyalty-rewards.reward-cost')}
+              </Label>
+              <InputBox
+                id="reward-cost"
+                type="number"
+                required
+                value={dialogReward?.reward?.price ?? '0'}
+                onChange={(e) => {
+                  setDialogReward({
+                    ...dialogReward,
+                    reward: {
+                      ...dialogReward?.reward,
+                      price: parseInt(e.target.value),
+                    },
+                  });
+                }}
+              />
+            </Field>
+            <Field size="fullWidth" spacing="narrow">
+              <Label htmlFor="reward-cooldown">
+                {t('pages.loyalty-rewards.reward-cooldown')}
+              </Label>
+              <FlexRow align="left">
+                <Interval
+                  value={dialogReward?.reward?.cooldown ?? 0}
+                  active={true}
+                  onChange={(cooldown) => {
+                    setDialogReward({
+                      ...dialogReward,
+                      reward: {
+                        ...dialogReward?.reward,
+                        cooldown,
+                      },
+                    });
+                  }}
+                />
+              </FlexRow>
+            </Field>
+            <Field size="fullWidth" spacing="narrow">
+              <FlexRow align="left" spacing="1">
+                <Checkbox
+                  id="reward-details"
+                  checked={requiredInfo.enabled}
+                  onCheckedChange={(e) => {
+                    setRequiredInfo({
+                      ...requiredInfo,
+                      enabled: !!e,
+                    });
+                  }}
+                >
+                  <CheckboxIndicator>
+                    {requiredInfo.enabled && <CheckIcon />}
+                  </CheckboxIndicator>
+                </Checkbox>
+                <Label htmlFor="reward-details">
+                  {t('pages.loyalty-rewards.reward-details')}
+                </Label>
+              </FlexRow>
+              <InputBox
+                id="reward-details-text"
+                type="text"
+                disabled={!requiredInfo.enabled}
+                required={requiredInfo.enabled}
+                value={dialogReward?.reward?.required_info ?? ''}
+                placeholder={t(
+                  'pages.loyalty-rewards.reward-details-placeholder',
+                )}
+                onChange={(e) => {
+                  setRequiredInfo({ ...requiredInfo, text: e.target.value });
+                }}
+              />
             </Field>
             <DialogActions>
               <Button variation="primary" type="submit">
-                {t('form-actions.create')}
+                {dialogReward.new
+                  ? t('form-actions.create')
+                  : t('form-actions.edit')}
               </Button>
               <Button
                 type="button"
@@ -133,7 +274,11 @@ function RewardsPage() {
         <FlexRow css={{ flex: 1, alignItems: 'stretch' }} spacing="1">
           <Button
             variation="primary"
-            onClick={() =>
+            onClick={() => {
+              setRequiredInfo({
+                enabled: false,
+                text: '',
+              });
               setDialogReward({
                 open: true,
                 new: true,
@@ -146,8 +291,8 @@ function RewardsPage() {
                   price: 0,
                   cooldown: 0,
                 },
-              })
-            }
+              });
+            }}
           >
             <PlusIcon /> {t('pages.loyalty-rewards.create-reward')}
           </Button>

@@ -210,7 +210,16 @@
       "create-reward": "Create reward",
       "reward-id": "Reward ID",
       "id-already-in-use": "ID already in use by another reward",
-      "reward-name": "Reward name"
+      "reward-name": "Name",
+      "reward-icon": "Icon (as remote URL)",
+      "reward-desc": "Description",
+      "reward-cost": "Cost",
+      "reward-id-hint": "This is what viewers will have to write to claim, ie. \"!redeem reward-id-here\".",
+      "reward-name-hint": "This is what viewers will see they claimed ie. \"USER has claimed REWARDNAME",
+      "reward-cooldown": "Cooldown",
+      "reward-details-placeholder": "What extra details to ask the viewer for",
+      "reward-details": "Require viewer details",
+      "edit-reward": "Edit reward"
     },
     "strimertul": {
       "need-help": "Need help?",
