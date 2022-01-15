@@ -4,7 +4,6 @@ import { useDispatch } from 'react-redux';
 import { useModule, useUserPoints } from '../../lib/react-utils';
 import { SortFunction } from '../../lib/type-utils';
 import { modules, removeRedeem, setUserPoints } from '../../store/api/reducer';
-import { LoyaltyRedeem } from '../../store/api/types';
 import { DataTable } from '../components/DataTable';
 import DialogContent from '../components/DialogContent';
 import {
@@ -112,7 +111,7 @@ function RewardQueue() {
                       dispatch(removeRedeem(entry));
                     }}
                   >
-                    Accept
+                    {t('pages.loyalty-queue.accept')}
                   </Button>
                   <Button
                     size="small"
@@ -129,7 +128,7 @@ function RewardQueue() {
                       dispatch(removeRedeem(entry));
                     }}
                   >
-                    Refund
+                    {t('pages.loyalty-queue.refund')}
                   </Button>
                 </FlexRow>
               </TableCell>
@@ -196,7 +195,7 @@ function UserList() {
               }
             }}
           >
-            <Field size="fullWidth">
+            <Field size="fullWidth" spacing="narrow">
               <Label htmlFor="d-username">
                 {t('pages.loyalty-queue.username')}
               </Label>
@@ -212,7 +211,7 @@ function UserList() {
                 }
               />
             </Field>
-            <Field size="fullWidth">
+            <Field size="fullWidth" spacing="narrow">
               <Label htmlFor="d-points" css={{ textTransform: 'capitalize' }}>
                 {config?.currency || t('pages.loyalty-queue.points')}
               </Label>
@@ -259,7 +258,7 @@ function UserList() {
               }
             }}
           >
-            <Field size="fullWidth">
+            <Field size="fullWidth" spacing="narrow">
               <Label htmlFor="d-username">
                 {t('pages.loyalty-queue.username')}
               </Label>
@@ -269,7 +268,7 @@ function UserList() {
                 value={currentEntry?.username ?? ''}
               />
             </Field>
-            <Field size="fullWidth">
+            <Field size="fullWidth" spacing="narrow">
               <Label htmlFor="d-points" css={{ textTransform: 'capitalize' }}>
                 {config?.currency || t('pages.loyalty-queue.points')}
               </Label>
@@ -303,7 +302,7 @@ function UserList() {
               setGivePointDialog({ open: true, user: '', points: 0 })
             }
           >
-            Give points
+            {t('pages.loyalty-queue.give-points-dialog')}
           </Button>
           <InputBox
             css={{ flex: 1 }}
@@ -352,7 +351,7 @@ function UserList() {
               <TableCell>{entry.points}</TableCell>
               <TableCell>
                 <Button onClick={() => setCurrentEntry(entry)} size="small">
-                  Edit
+                  {t('form-actions.edit')}
                 </Button>
               </TableCell>
             </TableRow>

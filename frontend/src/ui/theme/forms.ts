@@ -63,6 +63,9 @@ export const InputBox = styled('input', {
     borderColor: '$gray5',
     color: '$gray8',
   },
+  '&:invalid': {
+    borderColor: '$red5',
+  },
   variants: {
     border: {
       none: {
@@ -90,6 +93,9 @@ export const Textarea = styled('textarea', {
     backgroundColor: '$gray4',
     borderColor: '$gray5',
     color: '$gray8',
+  },
+  '&:invalid': {
+    borderColor: '$red5',
   },
   variants: {
     border: {

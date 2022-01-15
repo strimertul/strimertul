@@ -42,11 +42,19 @@ export default function ChatAlertsPage(): React.ReactElement {
         </PageHeader>
         <TabContainer defaultValue="follow">
           <TabList>
-            <TabButton value="follow">New follow</TabButton>
-            <TabButton value="sub">Subscription</TabButton>
-            <TabButton value="gift">Gift sub</TabButton>
-            <TabButton value="raid">Raid</TabButton>
-            <TabButton value="cheer">Cheer</TabButton>
+            <TabButton value="follow">
+              {t('pages.alerts.events.follow')}
+            </TabButton>
+            <TabButton value="sub">
+              {t('pages.alerts.events.subscription')}
+            </TabButton>
+            <TabButton value="gift">
+              {t('pages.alerts.events.gift-sub')}
+            </TabButton>
+            <TabButton value="raid">{t('pages.alerts.events.raid')}</TabButton>
+            <TabButton value="cheer">
+              {t('pages.alerts.events.cheer')}
+            </TabButton>
           </TabList>
           <TabContent value="follow">
             <Field size="fullWidth">

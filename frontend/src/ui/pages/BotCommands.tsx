@@ -263,7 +263,7 @@ function CommandDialog({
         </Field>
         <DialogActions>
           <Button variation="primary">
-            {t(`pages.botcommands.command-action-${kind}`)}
+            {kind === 'new' ? t('form-actions.create') : t('form-actions.edit')}
           </Button>
           <DialogClose asChild>
             <Button type="button">{t('form-actions.cancel')}</Button>

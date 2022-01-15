@@ -115,8 +115,6 @@
       "command-response-placeholder": "Hello {0}!",
       "command-acl": "Access level",
       "command-acl-help": "This specifies the minimum level, eg. if you choose VIPs, moderators and streamer can still use the command",
-      "command-action-new": "Create",
-      "command-action-edit": "Edit",
       "acl": {
         "everyone": "Everyone",
         "subscribers": "Subscribers",
@@ -135,8 +133,6 @@
       "timer-header-edit": "Edit timer",
       "timer-name": "Timer name",
       "timer-name-placeholder": "my-timer",
-      "timer-action-new": "Create",
-      "timer-action-edit": "Edit",
       "remove-timer-title": "Remove timer {{name}}?",
       "timer-parameters": "every {{time}}, ≥ {{messages}} messages in the last {{interval}}",
       "timer-interval": "Minimul interval",
@@ -160,7 +156,14 @@
       "subscription-enable": "Enable subscription message",
       "gift_sub-enable": "Enable gifted subscription message",
       "raid-enable": "Enable raid message",
-      "cheer-enable": "Enable cheering message"
+      "cheer-enable": "Enable cheering message",
+      "events": {
+        "follow": "New follow",
+        "subscription": "Subscription",
+        "gift-sub": "Gift sub",
+        "raid": "Raid",
+        "cheer": "Cheer"
+      }
     },
     "loyalty-settings": {
       "title": "Loyalty system configuration",
@@ -189,7 +192,9 @@
       "date": "Date",
       "request": "Request",
       "no-redeems": "No pending redeems",
-      "no-users": "No viewers found"
+      "no-users": "No viewers found",
+      "refund": "Refund",
+      "accept": "Accept"
     },
     "debug": {
       "dismiss-warning": "I am not afraid! ...well ok maybe a little",
@@ -197,7 +202,15 @@
       "disclaimer-header": "Big scary disclaimer"
     },
     "loyalty-rewards": {
-      "title": "Rewards and goals"
+      "title": "Rewards and goals",
+      "rewards-tab": "Rewards",
+      "goals-tab": "Goals",
+      "subtitle": "Set up rewards and community goals for your viewers to play with",
+      "reward-filter": "Search by reward name",
+      "create-reward": "Create reward",
+      "reward-id": "Reward ID",
+      "id-already-in-use": "ID already in use by another reward",
+      "reward-name": "Reward name"
     },
     "strimertul": {
       "need-help": "Need help?",
@@ -218,7 +231,8 @@
     "cancel": "Cancel",
     "ok": "OK",
     "add": "Add",
-    "warning-delete": "This cannot be undone"
+    "warning-delete": "This cannot be undone",
+    "create": "Create"
   },
   "debug": {
     "dev-build": "Development build"
