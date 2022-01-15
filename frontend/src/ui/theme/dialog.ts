@@ -38,6 +38,7 @@ export const DialogContainer = styled(DialogPrimitive.Content, {
   maxWidth: '600px',
   maxHeight: '85vh',
   padding: '1rem',
+  overflow: 'auto',
   '@media (prefers-reduced-motion: no-preference)': {
     animation: `${contentShow} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
   },
@@ -53,6 +54,9 @@ export const DialogTitle = styled(DialogPrimitive.Title, {
   marginBottom: '1.5rem',
   padding: '1rem',
   lineHeight: '1.25',
+  position: 'sticky',
+  top: '-1rem',
+  backgroundColor: '$gray2',
 });
 
 export const DialogDescription = styled(DialogPrimitive.Description, {
@@ -68,8 +72,11 @@ export const DialogActions = styled('div', {
   justifyContent: 'flex-end',
   borderTop: '1px solid $gray6',
   margin: '-1rem',
-  marginTop: '1.5rem',
+  marginTop: '2rem',
   padding: '1rem 1.5rem',
+  position: 'sticky',
+  backgroundColor: '$gray2',
+  bottom: '-1rem',
 });
 
 export const IconButton = styled('button', {

@@ -190,7 +190,10 @@ function CommandDialog({
   const { t } = useTranslation();
 
   return (
-    <DialogContent title={t(`pages.botcommands.command-header-${kind}`)}>
+    <DialogContent
+      title={t(`pages.botcommands.command-header-${kind}`)}
+      closeButton={true}
+    >
       <form
         onSubmit={(e) => {
           if (!(e.target as HTMLFormElement).checkValidity()) {

@@ -24,7 +24,7 @@ export interface DialogProps {
   onAction?: () => void;
 }
 
-function DialogContent({
+function AlertContent({
   title,
   description,
   children,
@@ -71,4 +71,4 @@ function DialogContent({
   );
 }
 
-export default React.memo(DialogContent);
+export default React.memo(AlertContent);

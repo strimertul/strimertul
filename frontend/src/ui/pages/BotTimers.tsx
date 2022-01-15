@@ -201,7 +201,10 @@ function TimerDialog({
   const { t } = useTranslation();
 
   return (
-    <DialogContent title={t(`pages.bottimers.timer-header-${kind}`)}>
+    <DialogContent
+      title={t(`pages.bottimers.timer-header-${kind}`)}
+      closeButton={true}
+    >
       <form
         onSubmit={(e) => {
           if (!(e.target as HTMLFormElement).checkValidity()) {

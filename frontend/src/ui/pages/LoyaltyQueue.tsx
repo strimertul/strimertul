@@ -180,7 +180,10 @@ function UserList() {
           setGivePointDialog({ ...givePointDialog, open: state })
         }
       >
-        <DialogContent title={t('pages.loyalty-queue.give-points-dialog')}>
+        <DialogContent
+          title={t('pages.loyalty-queue.give-points-dialog')}
+          closeButton={true}
+        >
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -231,7 +234,12 @@ function UserList() {
               <Button variation="primary" type="submit">
                 {t('form-actions.save')}
               </Button>
-              <Button type="button" onClick={() => setCurrentEntry(null)}>
+              <Button
+                type="button"
+                onClick={() =>
+                  setGivePointDialog({ ...givePointDialog, open: false })
+                }
+              >
                 {t('form-actions.cancel')}
               </Button>
             </DialogActions>
@@ -242,7 +250,10 @@ function UserList() {
         open={currentEntry !== null}
         onOpenChange={(state) => setCurrentEntry(state ? currentEntry : null)}
       >
-        <DialogContent title={t('pages.loyalty-queue.modify-balance-dialog')}>
+        <DialogContent
+          title={t('pages.loyalty-queue.modify-balance-dialog')}
+          closeButton={true}
+        >
           <form
             onSubmit={(e) => {
               e.preventDefault();

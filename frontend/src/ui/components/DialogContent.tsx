@@ -19,20 +19,27 @@ function DialogContent({
   title,
   description,
   children,
+  closeButton,
 }: React.PropsWithChildren<DialogProps>) {
   return (
     <DialogPrimitive.Portal>
       <DialogOverlay />
       <DialogContainer>
-        {title && <DialogTitle>{title}</DialogTitle>}
+        {title && (
+          <DialogTitle>
+            {title}
+
+            {closeButton && (
+              <DialogPrimitive.DialogClose asChild>
+                <IconButton>
+                  <Cross2Icon />
+                </IconButton>
+              </DialogPrimitive.DialogClose>
+            )}
+          </DialogTitle>
+        )}
         {description && <DialogDescription>{description}</DialogDescription>}
         {children}
-
-        <DialogPrimitive.DialogClose asChild>
-          <IconButton>
-            <Cross2Icon />
-          </IconButton>
-        </DialogPrimitive.DialogClose>
       </DialogContainer>
     </DialogPrimitive.Portal>
   );
