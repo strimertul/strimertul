@@ -219,7 +219,8 @@
       "reward-cooldown": "Cooldown",
       "reward-details-placeholder": "What extra details to ask the viewer for",
       "reward-details": "Require viewer details",
-      "edit-reward": "Edit reward"
+      "edit-reward": "Edit reward",
+      "remove-reward-title": "Remore reward \"{{name}}\"?"
     },
     "strimertul": {
       "need-help": "Need help?",

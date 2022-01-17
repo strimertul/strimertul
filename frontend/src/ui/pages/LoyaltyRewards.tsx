@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { useModule } from '../../lib/react-utils';
 import { modules } from '../../store/api/reducer';
 import { LoyaltyReward } from '../../store/api/types';
+import AlertContent from '../components/AlertContent';
 import DialogContent from '../components/DialogContent';
 import Interval from '../components/Interval';
 import {
@@ -18,9 +19,11 @@ import {
   FlexRow,
   InputBox,
   Label,
+  MultiButton,
   PageContainer,
   PageHeader,
   PageTitle,
+  styled,
   TabButton,
   TabContainer,
   TabContent,
@@ -28,10 +31,158 @@ import {
   Textarea,
   TextBlock,
 } from '../theme';
+import { Alert, AlertTrigger } from '../theme/alert';
+
+const RewardList = styled('div', { marginTop: '1rem' });
+const RewardItemContainer = styled('article', {
+  backgroundColor: '$gray2',
+  margin: '0.5rem 0',
+  padding: '0.5rem',
+  borderLeft: '5px solid $teal8',
+  borderRadius: '0.25rem',
+  borderBottom: '1px solid $gray4',
+  transition: 'all 50ms',
+  '&:hover': {
+    backgroundColor: '$gray3',
+  },
+  variants: {
+    status: {
+      enabled: {},
+      disabled: {
+        borderLeftColor: '$red6',
+        backgroundColor: '$gray3',
+        color: '$gray10',
+      },
+    },
+  },
+});
+const RewardHeader = styled('header', {
+  display: 'flex',
+  gap: '0.5rem',
+  alignItems: 'center',
+  marginBottom: '0.4rem',
+});
+const RewardName = styled('span', {
+  color: '$teal12',
+  flex: 1,
+  fontWeight: 'bold',
+  variants: {
+    status: {
+      enabled: {},
+      disabled: {
+        color: '$gray9',
+      },
+    },
+  },
+});
+const RewardDescription = styled('span', {
+  flex: 1,
+  fontSize: '0.9rem',
+  color: '$gray11',
+});
+const RewardActions = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.25rem',
+});
+const RewardID = styled('code', {
+  fontFamily: 'Space Mono',
+  color: '$teal11',
+});
+const RewardCost = styled('div', {
+  fontSize: '0.9rem',
+  marginRight: '0.5rem',
+});
+const RewardIcon = styled('div', {
+  width: '32px',
+  height: '32px',
+  backgroundColor: '$gray4',
+  borderRadius: '0.25rem',
+  display: 'flex',
+  alignItems: 'center',
+});
+
+interface RewardItemProps {
+  name: string;
+  item: LoyaltyReward;
+  currency: string;
+  onToggle?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+}
+function RewardItem({
+  name,
+  item,
+  currency,
+  onToggle,
+  onEdit,
+  onDelete,
+}: RewardItemProps): React.ReactElement {
+  const { t } = useTranslation();
+
+  return (
+    <RewardItemContainer status={item.enabled ? 'enabled' : 'disabled'}>
+      <RewardHeader>
+        <RewardIcon>
+          {item.image && (
+            <img
+              src={item.image}
+              style={{ width: '32px', borderRadius: '0.25rem' }}
+            />
+          )}
+        </RewardIcon>
+        <RewardName status={item.enabled ? 'enabled' : 'disabled'}>
+          {item.name} (<RewardID>{name}</RewardID>)
+        </RewardName>
+        <RewardCost>
+          {item.price} {currency}
+        </RewardCost>
+        <RewardActions>
+          <MultiButton>
+            <Button
+              styling="multi"
+              size="small"
+              onClick={() => (onToggle ? onToggle() : null)}
+            >
+              {t(item.enabled ? 'form-actions.disable' : 'form-actions.enable')}
+            </Button>
+            <Button
+              styling="multi"
+              size="small"
+              onClick={() => (onEdit ? onEdit() : null)}
+            >
+              {t('form-actions.edit')}
+            </Button>
+            <Alert>
+              <AlertTrigger asChild>
+                <Button styling="multi" size="small">
+                  {t('form-actions.delete')}
+                </Button>
+              </AlertTrigger>
+              <AlertContent
+                variation="danger"
+                title={t('pages.loyalty-rewards.remove-reward-title', {
+                  name: item.name,
+                })}
+                description={t('form-actions.warning-delete')}
+                actionText={t('form-actions.delete')}
+                actionButtonProps={{ variation: 'danger' }}
+                showCancel={true}
+                onAction={() => (onDelete ? onDelete() : null)}
+              />
+            </Alert>
+          </MultiButton>
+        </RewardActions>
+      </RewardHeader>
+      <RewardDescription>{item.description}</RewardDescription>
+    </RewardItemContainer>
+  );
+}
 
 function RewardsPage() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const [config] = useModule(modules.loyaltyConfig);
   const [rewards, setRewards] = useModule(modules.loyaltyRewards);
   const [filter, setFilter] = useState('');
   const [dialogReward, setDialogReward] = useState<{
@@ -43,6 +194,30 @@ function RewardsPage() {
     enabled: false,
     text: '',
   });
+
+  const deleteReward = (id: string): void => {
+    dispatch(
+      setRewards({
+        ...rewards.filter((r) => r.id !== id),
+      }),
+    );
+  };
+
+  const toggleReward = (id: string): void => {
+    dispatch(
+      setRewards({
+        ...rewards.map((r) => {
+          if (r.id === id) {
+            return {
+              ...r,
+              enabled: !r.enabled,
+            };
+          }
+          return r;
+        }),
+      }),
+    );
+  };
 
   return (
     <>
@@ -304,6 +479,26 @@ function RewardsPage() {
           />
         </FlexRow>
       </Field>
+      <RewardList>
+        {rewards?.map((r) => (
+          <RewardItem
+            name={r.id}
+            item={r}
+            currency={(
+              config?.currency || t('pages.loyalty-queue.points')
+            ).toLowerCase()}
+            onEdit={() =>
+              setDialogReward({
+                open: true,
+                new: false,
+                reward: r,
+              })
+            }
+            onDelete={() => deleteReward(r.id)}
+            onToggle={() => toggleReward(r.id)}
+          />
+        ))}
+      </RewardList>
     </>
   );
 }
