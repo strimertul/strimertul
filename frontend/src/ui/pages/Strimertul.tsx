@@ -65,14 +65,13 @@ const Channel = styled('li', {
 });
 const ChannelLink = styled('a', {
   textDecoration: 'none',
-  color: 'inherit',
+  color: '$teal11',
   display: 'inline-flex',
   flexDirection: 'row',
   gap: '0.5rem',
   alignItems: 'center',
   '&:hover': {
     textDecoration: 'underline',
-    color: 'inherit',
   },
 });
 
@@ -91,7 +90,12 @@ export default function StrimertulPage(): React.ReactElement {
           },
         }}
       >
-        <LogoPic />
+        <LogoPic
+          style={{
+            WebkitMaskRepeat: 'no-repeat',
+            WebkitMaskPosition: 'center',
+          }}
+        />
         <LogoName>{APPNAME}</LogoName>
       </PageHeader>
       <Section>
