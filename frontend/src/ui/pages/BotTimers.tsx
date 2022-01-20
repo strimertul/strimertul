@@ -391,7 +391,7 @@ export default function TwitchBotTimersPage(): React.ReactElement {
         />
       </FlexRow>
       <TimerList>
-        {!timerConfig?.timers ? (
+        {!!timerConfig?.timers ? (
           Object.keys(timerConfig?.timers ?? {})
             ?.filter((cmd) => cmd.toLowerCase().includes(filterLC))
             .sort()
