@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { useModule } from '../../lib/react-utils';
 import { modules } from '../../store/api/reducer';
-import { LoyaltyReward } from '../../store/api/types';
+import { LoyaltyGoal, LoyaltyReward } from '../../store/api/types';
 import AlertContent from '../components/AlertContent';
 import DialogContent from '../components/DialogContent';
 import Interval from '../components/Interval';
@@ -34,6 +34,7 @@ import {
 import { Alert, AlertTrigger } from '../theme/alert';
 
 const RewardList = styled('div', { marginTop: '1rem' });
+const GoalList = styled('div', { marginTop: '1rem' });
 const RewardItemContainer = styled('article', {
   backgroundColor: '$gray2',
   margin: '0.5rem 0',
@@ -100,6 +101,13 @@ const RewardIcon = styled('div', {
   borderRadius: '0.25rem',
   display: 'flex',
   alignItems: 'center',
+});
+const NoneText = styled('div', {
+  color: '$gray9',
+  fontSize: '1.2em',
+  textAlign: 'center',
+  fontStyle: 'italic',
+  paddingTop: '1rem',
 });
 
 interface RewardItemProps {
@@ -179,6 +187,84 @@ function RewardItem({
   );
 }
 
+interface GoalItemProps {
+  name: string;
+  item: LoyaltyGoal;
+  currency: string;
+  onToggle?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+}
+function GoalItem({
+  name,
+  item,
+  currency,
+  onToggle,
+  onEdit,
+  onDelete,
+}: GoalItemProps): React.ReactElement {
+  const { t } = useTranslation();
+
+  return (
+    <RewardItemContainer status={item.enabled ? 'enabled' : 'disabled'}>
+      <RewardHeader>
+        <RewardIcon>
+          {item.image && (
+            <img
+              src={item.image}
+              style={{ width: '32px', borderRadius: '0.25rem' }}
+            />
+          )}
+        </RewardIcon>
+        <RewardName status={item.enabled ? 'enabled' : 'disabled'}>
+          {item.name} (<RewardID>{name}</RewardID>)
+        </RewardName>
+        <RewardCost>
+          {item.contributed} / {item.total} {currency} (
+          {Math.round((item.contributed / item.total) * 100)}%)
+        </RewardCost>
+        <RewardActions>
+          <MultiButton>
+            <Button
+              styling="multi"
+              size="small"
+              onClick={() => (onToggle ? onToggle() : null)}
+            >
+              {t(item.enabled ? 'form-actions.disable' : 'form-actions.enable')}
+            </Button>
+            <Button
+              styling="multi"
+              size="small"
+              onClick={() => (onEdit ? onEdit() : null)}
+            >
+              {t('form-actions.edit')}
+            </Button>
+            <Alert>
+              <AlertTrigger asChild>
+                <Button styling="multi" size="small">
+                  {t('form-actions.delete')}
+                </Button>
+              </AlertTrigger>
+              <AlertContent
+                variation="danger"
+                title={t('pages.loyalty-rewards.remove-reward-title', {
+                  name: item.name,
+                })}
+                description={t('form-actions.warning-delete')}
+                actionText={t('form-actions.delete')}
+                actionButtonProps={{ variation: 'danger' }}
+                showCancel={true}
+                onAction={() => (onDelete ? onDelete() : null)}
+              />
+            </Alert>
+          </MultiButton>
+        </RewardActions>
+      </RewardHeader>
+      <RewardDescription>{item.description}</RewardDescription>
+    </RewardItemContainer>
+  );
+}
+
 function RewardsPage() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -194,19 +280,16 @@ function RewardsPage() {
     enabled: false,
     text: '',
   });
+  const filterLC = filter.toLowerCase();
 
   const deleteReward = (id: string): void => {
-    dispatch(
-      setRewards({
-        ...rewards.filter((r) => r.id !== id),
-      }),
-    );
+    dispatch(setRewards(rewards?.filter((r) => r.id !== id) ?? []));
   };
 
   const toggleReward = (id: string): void => {
     dispatch(
-      setRewards({
-        ...rewards.map((r) => {
+      setRewards(
+        rewards?.map((r) => {
           if (r.id === id) {
             return {
               ...r,
@@ -214,8 +297,8 @@ function RewardsPage() {
             };
           }
           return r;
-        }),
-      }),
+        }) ?? [],
+      ),
     );
   };
 
@@ -245,13 +328,13 @@ function RewardsPage() {
               if (requiredInfo.enabled) {
                 reward.required_info = requiredInfo.text;
               }
-              const index = rewards.findIndex((t) => t.id == reward.id);
+              const index = rewards?.findIndex((t) => t.id == reward.id);
               if (index >= 0) {
                 const newRewards = rewards.slice(0);
                 newRewards[index] = reward;
                 dispatch(setRewards(newRewards));
               } else {
-                dispatch(setRewards([...rewards, reward]));
+                dispatch(setRewards([...(rewards ?? []), reward]));
               }
               setDialogReward({ ...dialogReward, open: false });
             }}
@@ -480,24 +563,36 @@ function RewardsPage() {
         </FlexRow>
       </Field>
       <RewardList>
-        {rewards?.map((r) => (
-          <RewardItem
-            name={r.id}
-            item={r}
-            currency={(
-              config?.currency || t('pages.loyalty-queue.points')
-            ).toLowerCase()}
-            onEdit={() =>
-              setDialogReward({
-                open: true,
-                new: false,
-                reward: r,
-              })
-            }
-            onDelete={() => deleteReward(r.id)}
-            onToggle={() => toggleReward(r.id)}
-          />
-        ))}
+        {rewards ? (
+          rewards
+            ?.filter(
+              (r) =>
+                r.name.toLowerCase().includes(filterLC) ||
+                r.id.toLowerCase().includes(filterLC) ||
+                r.description.toLowerCase().includes(filterLC),
+            )
+            .map((r) => (
+              <RewardItem
+                key={r.id}
+                name={r.id}
+                item={r}
+                currency={(
+                  config?.currency || t('pages.loyalty-queue.points')
+                ).toLowerCase()}
+                onEdit={() =>
+                  setDialogReward({
+                    open: true,
+                    new: false,
+                    reward: r,
+                  })
+                }
+                onDelete={() => deleteReward(r.id)}
+                onToggle={() => toggleReward(r.id)}
+              />
+            ))
+        ) : (
+          <NoneText>{t('pages.loyalty-rewards.no-rewards')}</NoneText>
+        )}
       </RewardList>
     </>
   );
@@ -505,8 +600,273 @@ function RewardsPage() {
 
 function GoalsPage() {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const [config] = useModule(modules.loyaltyConfig);
+  const [goals, setGoals] = useModule(modules.loyaltyGoals);
+  const [filter, setFilter] = useState('');
+  const [dialogGoal, setDialogGoal] = useState<{
+    open: boolean;
+    new: boolean;
+    goal: LoyaltyGoal;
+  }>({ open: false, new: false, goal: null });
+  const [requiredInfo, setRequiredInfo] = useState({
+    enabled: false,
+    text: '',
+  });
+  const filterLC = filter.toLowerCase();
 
-  return <></>;
+  const deleteGoal = (id: string): void => {
+    dispatch(setGoals(goals?.filter((r) => r.id !== id) ?? []));
+  };
+
+  const toggleGoal = (id: string): void => {
+    dispatch(
+      setGoals(
+        goals?.map((r) => {
+          if (r.id === id) {
+            return {
+              ...r,
+              enabled: !r.enabled,
+            };
+          }
+          return r;
+        }) ?? [],
+      ),
+    );
+  };
+
+  return (
+    <>
+      <Dialog
+        open={dialogGoal.open}
+        onOpenChange={(state) => setDialogGoal({ ...dialogGoal, open: state })}
+      >
+        <DialogContent
+          title={
+            dialogGoal.new
+              ? t('pages.loyalty-rewards.create-goal')
+              : t('pages.loyalty-rewards.edit-goal')
+          }
+          closeButton={true}
+        >
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!(e.target as HTMLFormElement).checkValidity()) {
+                return;
+              }
+              const goal = dialogGoal.goal;
+              const index = goals?.findIndex((t) => t.id == goal.id);
+              if (index >= 0) {
+                const newGoals = goals.slice(0);
+                newGoals[index] = goal;
+                dispatch(setGoals(newGoals));
+              } else {
+                dispatch(setGoals([...(goals ?? []), goal]));
+              }
+              setDialogGoal({ ...dialogGoal, open: false });
+            }}
+          >
+            <Field size="fullWidth" spacing="narrow">
+              <Label htmlFor="goal-id">
+                {t('pages.loyalty-rewards.goal-id')}
+              </Label>
+              <InputBox
+                id="goal-id"
+                type="text"
+                required
+                disabled={!dialogGoal.new}
+                value={dialogGoal?.goal?.id}
+                onChange={(e) => {
+                  setDialogGoal({
+                    ...dialogGoal,
+                    goal: {
+                      ...dialogGoal?.goal,
+                      id:
+                        e.target.value
+                          ?.toLowerCase()
+                          .replace(/[^a-zA-Z0-9]/gi, '-') ?? '',
+                    },
+                  });
+                  if (
+                    dialogGoal.new &&
+                    goals.find((r) => r.id === e.target.value)
+                  ) {
+                    (e.target as HTMLInputElement).setCustomValidity(
+                      t('pages.loyalty-rewards.id-already-in-use'),
+                    );
+                  } else {
+                    (e.target as HTMLInputElement).setCustomValidity('');
+                  }
+                }}
+              />
+              <FieldNote>{t('pages.loyalty-rewards.goal-id-hint')}</FieldNote>
+            </Field>
+            <Field size="fullWidth" spacing="narrow">
+              <Label htmlFor="goal-name">
+                {t('pages.loyalty-rewards.goal-name')}
+              </Label>
+              <InputBox
+                id="goal-name"
+                type="text"
+                required
+                value={dialogGoal?.goal?.name ?? ''}
+                onChange={(e) => {
+                  setDialogGoal({
+                    ...dialogGoal,
+                    goal: {
+                      ...dialogGoal?.goal,
+                      name: e.target.value,
+                    },
+                  });
+                }}
+              />
+              <FieldNote>{t('pages.loyalty-rewards.goal-name-hint')}</FieldNote>
+            </Field>
+            <Field size="fullWidth" spacing="narrow">
+              <Label htmlFor="goal-icon">
+                {t('pages.loyalty-rewards.goal-icon')}
+              </Label>
+              <InputBox
+                id="goal-icon"
+                type="text"
+                value={dialogGoal?.goal?.image ?? ''}
+                onChange={(e) => {
+                  setDialogGoal({
+                    ...dialogGoal,
+                    goal: {
+                      ...dialogGoal?.goal,
+                      image: e.target.value,
+                    },
+                  });
+                }}
+              />
+            </Field>
+            <Field size="fullWidth" spacing="narrow">
+              <Label htmlFor="goal-desc">
+                {t('pages.loyalty-rewards.goal-desc')}
+              </Label>
+              <Textarea
+                id="goal-desc"
+                value={dialogGoal?.goal?.description ?? ''}
+                onChange={(e) => {
+                  setDialogGoal({
+                    ...dialogGoal,
+                    goal: {
+                      ...dialogGoal?.goal,
+                      description: e.target.value,
+                    },
+                  });
+                }}
+              >
+                {dialogGoal?.goal?.description ?? ''}
+              </Textarea>
+            </Field>
+            <Field size="fullWidth" spacing="narrow">
+              <Label htmlFor="goal-cost">
+                {t('pages.loyalty-rewards.goal-cost')}
+              </Label>
+              <InputBox
+                id="goal-cost"
+                type="number"
+                required
+                value={dialogGoal?.goal?.total ?? '0'}
+                onChange={(e) => {
+                  setDialogGoal({
+                    ...dialogGoal,
+                    goal: {
+                      ...dialogGoal?.goal,
+                      total: parseInt(e.target.value),
+                    },
+                  });
+                }}
+              />
+            </Field>
+            <DialogActions>
+              <Button variation="primary" type="submit">
+                {dialogGoal.new
+                  ? t('form-actions.create')
+                  : t('form-actions.edit')}
+              </Button>
+              <Button
+                type="button"
+                onClick={() => setDialogGoal({ ...dialogGoal, open: false })}
+              >
+                {t('form-actions.cancel')}
+              </Button>
+            </DialogActions>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <Field size="fullWidth" spacing="none">
+        <FlexRow css={{ flex: 1, alignItems: 'stretch' }} spacing="1">
+          <Button
+            variation="primary"
+            onClick={() => {
+              setRequiredInfo({
+                enabled: false,
+                text: '',
+              });
+              setDialogGoal({
+                open: true,
+                new: true,
+                goal: {
+                  id: '',
+                  enabled: true,
+                  name: '',
+                  description: '',
+                  image: '',
+                  total: 0,
+                  contributed: 0,
+                  contributors: {},
+                },
+              });
+            }}
+          >
+            <PlusIcon /> {t('pages.loyalty-rewards.create-goal')}
+          </Button>
+          <InputBox
+            css={{ flex: 1 }}
+            placeholder={t('pages.loyalty-rewards.goal-filter')}
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          />
+        </FlexRow>
+      </Field>
+      <GoalList>
+        {goals ? (
+          goals
+            ?.filter(
+              (r) =>
+                r.name.toLowerCase().includes(filterLC) ||
+                r.id.toLowerCase().includes(filterLC) ||
+                r.description.toLowerCase().includes(filterLC),
+            )
+            .map((r) => (
+              <GoalItem
+                key={r.id}
+                name={r.id}
+                item={r}
+                currency={(
+                  config?.currency || t('pages.loyalty-queue.points')
+                ).toLowerCase()}
+                onEdit={() =>
+                  setDialogGoal({
+                    open: true,
+                    new: false,
+                    goal: r,
+                  })
+                }
+                onDelete={() => deleteGoal(r.id)}
+                onToggle={() => toggleGoal(r.id)}
+              />
+            ))
+        ) : (
+          <NoneText>{t('pages.loyalty-rewards.no-goals')}</NoneText>
+        )}
+      </GoalList>
+    </>
+  );
 }
 
 export default function LoyaltyRewardsPage(): React.ReactElement {

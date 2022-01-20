@@ -122,7 +122,8 @@
         "moderators": "Moderators",
         "streamer": "Streamer only"
       },
-      "remove-command-title": "Remove command {{name}}?"
+      "remove-command-title": "Remove command {{name}}?",
+      "no-commands": "Chatbot has no commands configured"
     },
     "bottimers": {
       "title": "Bot timers",
@@ -138,7 +139,8 @@
       "timer-interval": "Minimul interval",
       "timer-activity": "Minimul chat activity (0 to disable)",
       "timer-activity-desc": "messages in the last 5 minutes",
-      "timer-messages": "Messages"
+      "timer-messages": "Messages",
+      "no-timers": "There are no timers configured"
     },
     "auth": {
       "title": "Authentication required",
@@ -199,7 +201,14 @@
     "debug": {
       "dismiss-warning": "I am not afraid! ...well ok maybe a little",
       "big-ass-warning": "Using this page can severely wreck your database. Please make sure you know what you're doing!",
-      "disclaimer-header": "Big scary disclaimer"
+      "disclaimer-header": "Big scary disclaimer",
+      "title": "Debug ops",
+      "read-key": "Read DB key",
+      "write-key": "Write DB key",
+      "fix-json": "Fix JSON",
+      "console-ops": "Console operations",
+      "dump-keys": "Dump all DB keys",
+      "dump-all": "Dump all KV pairs as JSON"
     },
     "loyalty-rewards": {
       "title": "Rewards and goals",
@@ -209,7 +218,7 @@
       "reward-filter": "Search by reward name",
       "create-reward": "Create reward",
       "reward-id": "Reward ID",
-      "id-already-in-use": "ID already in use by another reward",
+      "id-already-in-use": "ID already in use",
       "reward-name": "Name",
       "reward-icon": "Icon (as remote URL)",
       "reward-desc": "Description",
@@ -220,7 +229,19 @@
       "reward-details-placeholder": "What extra details to ask the viewer for",
       "reward-details": "Require viewer details",
       "edit-reward": "Edit reward",
-      "remove-reward-title": "Remore reward \"{{name}}\"?"
+      "remove-reward-title": "Remore reward \"{{name}}\"?",
+      "no-rewards": "There are no loyalty rewards, why not start with an Hydrate or Stretch?",
+      "no-goals": "There are no goals configured",
+      "create-goal": "Create goal",
+      "edit-goal": "Edit goal",
+      "goal-id": "Goal ID",
+      "goal-id-hint": "This is what viewers will have to write to contribute to, ie. \"!contribute goal-id-here\".",
+      "goal-name": "Name",
+      "goal-icon": "Goal icon (as remote URL)",
+      "goal-name-hint": "This is what viewers will see they contributed to ie. \"USER has contributed to GOALNAME\"",
+      "goal-cost": "Total points required",
+      "goal-desc": "Description",
+      "goal-filter": "Search by goal name"
     },
     "strimertul": {
       "need-help": "Need help?",
@@ -242,7 +263,8 @@
     "ok": "OK",
     "add": "Add",
     "warning-delete": "This cannot be undone",
-    "create": "Create"
+    "create": "Create",
+    "submit": "Submit"
   },
   "debug": {
     "dev-build": "Development build"
