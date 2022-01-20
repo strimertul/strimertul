@@ -96,6 +96,14 @@ const ACLIndicator = styled('span', {
   marginRight: '0.5rem',
 });
 
+const NoneText = styled('div', {
+  color: '$gray9',
+  fontSize: '1.2em',
+  textAlign: 'center',
+  fontStyle: 'italic',
+  paddingTop: '1rem',
+});
+
 interface CommandItemProps {
   name: string;
   item: TwitchBotCustomCommand;
@@ -358,25 +366,33 @@ export default function TwitchBotCommandsPage(): React.ReactElement {
         />
       </FlexRow>
       <CommandList>
-        {Object.keys(commands ?? {})
-          ?.filter((cmd) => cmd.toLowerCase().includes(filterLC))
-          .sort()
-          .map((cmd) => (
-            <CommandItem
-              key={cmd}
-              name={cmd}
-              item={commands[cmd]}
-              onToggle={() => toggleCommand(cmd)}
-              onEdit={() =>
-                setActiveDialog({
-                  kind: 'edit',
-                  name: cmd,
-                  item: commands[cmd],
-                })
-              }
-              onDelete={() => deleteCommand(cmd)}
-            />
-          ))}
+        {commands ? (
+          Object.keys(commands ?? {})
+            ?.filter(
+              (cmd) =>
+                cmd.toLowerCase().includes(filterLC) ||
+                commands[cmd].description.toLowerCase().includes(filterLC),
+            )
+            .sort()
+            .map((cmd) => (
+              <CommandItem
+                key={cmd}
+                name={cmd}
+                item={commands[cmd]}
+                onToggle={() => toggleCommand(cmd)}
+                onEdit={() =>
+                  setActiveDialog({
+                    kind: 'edit',
+                    name: cmd,
+                    item: commands[cmd],
+                  })
+                }
+                onDelete={() => deleteCommand(cmd)}
+              />
+            ))
+        ) : (
+          <NoneText>{t('pages.botcommands.no-commands')}</NoneText>
+        )}
       </CommandList>
 
       <Dialog

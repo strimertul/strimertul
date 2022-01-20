@@ -89,6 +89,13 @@ const TimerText = styled('div', {
     marginBottom: '-0.5rem',
   },
 });
+const NoneText = styled('div', {
+  color: '$gray9',
+  fontSize: '1.2em',
+  textAlign: 'center',
+  fontStyle: 'italic',
+  paddingTop: '1rem',
+});
 
 function humanTime(t: TFunction<'translation'>, secs: number): string {
   const mins = Math.floor(secs / 60);
@@ -384,25 +391,29 @@ export default function TwitchBotTimersPage(): React.ReactElement {
         />
       </FlexRow>
       <TimerList>
-        {Object.keys(timerConfig?.timers ?? {})
-          ?.filter((cmd) => cmd.toLowerCase().includes(filterLC))
-          .sort()
-          .map((cmd) => (
-            <TimerItem
-              key={cmd}
-              name={cmd}
-              item={timerConfig.timers[cmd]}
-              onToggle={() => toggleTimer(cmd)}
-              onEdit={() =>
-                setActiveDialog({
-                  kind: 'edit',
-                  name: cmd,
-                  item: timerConfig.timers[cmd],
-                })
-              }
-              onDelete={() => deleteTimer(cmd)}
-            />
-          ))}
+        {!timerConfig?.timers ? (
+          Object.keys(timerConfig?.timers ?? {})
+            ?.filter((cmd) => cmd.toLowerCase().includes(filterLC))
+            .sort()
+            .map((cmd) => (
+              <TimerItem
+                key={cmd}
+                name={cmd}
+                item={timerConfig.timers[cmd]}
+                onToggle={() => toggleTimer(cmd)}
+                onEdit={() =>
+                  setActiveDialog({
+                    kind: 'edit',
+                    name: cmd,
+                    item: timerConfig.timers[cmd],
+                  })
+                }
+                onDelete={() => deleteTimer(cmd)}
+              />
+            ))
+        ) : (
+          <NoneText>{t('pages.bottimers.no-timers')}</NoneText>
+        )}
       </TimerList>
 
       <Dialog
