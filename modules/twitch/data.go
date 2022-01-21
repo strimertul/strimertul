@@ -12,11 +12,10 @@ type Config struct {
 const BotConfigKey = "twitch/bot-config"
 
 type BotConfig struct {
-	Username       string `json:"username"`
-	Token          string `json:"oauth"`
-	Channel        string `json:"channel"`
-	EnableChatKeys bool   `json:"chat_keys"`
-	ChatHistory    int    `json:"chat_history"`
+	Username    string `json:"username"`
+	Token       string `json:"oauth"`
+	Channel     string `json:"channel"`
+	ChatHistory int    `json:"chat_history"`
 }
 
 const ChatEventKey = "twitch/ev/chat-message"

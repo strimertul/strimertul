@@ -108,15 +108,13 @@ func NewBot(api *Client, config BotConfig) *Bot {
 		}
 		bot.mu.Unlock()
 
-		if bot.config.EnableChatKeys {
-			bot.api.db.PutJSON(ChatEventKey, message)
-			if bot.config.ChatHistory > 0 {
-				if len(bot.chatHistory) >= bot.config.ChatHistory {
-					bot.chatHistory = bot.chatHistory[len(bot.chatHistory)-bot.config.ChatHistory+1:]
-				}
-				bot.chatHistory = append(bot.chatHistory, message)
-				bot.api.db.PutJSON(ChatHistoryKey, bot.chatHistory)
+		bot.api.db.PutJSON(ChatEventKey, message)
+		if bot.config.ChatHistory > 0 {
+			if len(bot.chatHistory) >= bot.config.ChatHistory {
+				bot.chatHistory = bot.chatHistory[len(bot.chatHistory)-bot.config.ChatHistory+1:]
 			}
+			bot.chatHistory = append(bot.chatHistory, message)
+			bot.api.db.PutJSON(ChatHistoryKey, bot.chatHistory)
 		}
 
 		if bot.Timers != nil {
@@ -156,10 +154,14 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	}
 
 	// Load custom commands
-	api.db.GetJSON(CustomCommandsKey, &bot.customCommands)
-	err = bot.updateTemplates()
+	err = api.db.GetJSON(CustomCommandsKey, &bot.customCommands)
 	if err != nil {
 		bot.logger.WithError(err).Error("failed to load custom commands")
+	}
+
+	err = bot.updateTemplates()
+	if err != nil {
+		bot.logger.WithError(err).Error("failed to parse custom commands")
 	}
 	go api.db.Subscribe(context.Background(), bot.updateCommands, CustomCommandsKey)
 	go api.db.Subscribe(context.Background(), bot.handleWriteMessageRPC, WriteMessageRPC)

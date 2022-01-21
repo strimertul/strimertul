@@ -95,10 +95,7 @@
       "bot-info-header": "Bot account info",
       "bot-settings-copy": "A bot can interact with chat messages and provide extra events for the platform (chat events, some notifications) but requires access to a Twitch account. You can use your own or make a new one (if enabled on your main account, you can re-use the same email for your second account!)",
       "bot-chat-header": "Chat logging",
-      "bot-chat-keys": "Enable chat logging",
-      "bot-chat-history": "How many messages to keep in history",
-      "bot-chat-history-suffix": "messages",
-      "bot-chat-history-desc": "Chat logging allows for pages and modules to read messages from chat. It's recommended to keep chat logging enabled with a reasonable history size (eg. 6)"
+      "bot-chat-history": "How many messages to keep in history (0 to disable)"
     },
     "botcommands": {
       "title": "Bot commands",

@@ -21,7 +21,6 @@ interface TwitchBotConfig {
   username: string;
   oauth: string;
   channel: string;
-  chat_keys: boolean;
   chat_history: number;
 }
 

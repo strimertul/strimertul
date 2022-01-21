@@ -157,65 +157,25 @@ function TwitchBotSettings() {
       <SectionHeader>
         {t('pages.twitch-settings.bot-chat-header')}
       </SectionHeader>
-      <TextBlock>{t('pages.twitch-settings.bot-chat-history-desc')}</TextBlock>
-      <Field>
-        <FlexRow spacing={1}>
-          <Checkbox
-            disabled={!active || status?.type === 'pending'}
-            checked={botConfig?.chat_keys ?? false}
-            onCheckedChange={(ev) =>
-              dispatch(
-                apiReducer.actions.twitchBotConfigChanged({
-                  ...botConfig,
-                  chat_keys: !!ev,
-                }),
-              )
-            }
-            id="bot-chat-keys"
-          >
-            <CheckboxIndicator>{active && <CheckIcon />}</CheckboxIndicator>
-          </Checkbox>
-
-          <Label htmlFor="bot-chat-keys">
-            {t('pages.twitch-settings.bot-chat-keys')}
-          </Label>
-        </FlexRow>
-      </Field>
-      <Field size="vertical">
+      <Field size="fullWidth">
         <Label htmlFor="bot-chat-history">
           {t('pages.twitch-settings.bot-chat-history')}
         </Label>
-        <FlexRow
-          css={{
-            justifyContent: 'flex-start',
-            gap: '0.8rem',
-            backgroundColor: '$gray6',
-            borderRadius: '5px',
-            paddingRight: '0.8rem',
-          }}
-        >
-          <InputBox
-            type="number"
-            id="bot-chat-history"
-            required={active}
-            disabled={!active || status?.type === 'pending'}
-            value={botConfig?.chat_history ?? ''}
-            css={{
-              appearance: 'textfield',
-              width: '4rem',
-              textAlign: 'center',
-            }}
-            onChange={(ev) =>
-              dispatch(
-                apiReducer.actions.twitchBotConfigChanged({
-                  ...botConfig,
-                  chat_history: ev.target.value,
-                }),
-              )
-            }
-          />
-          {t('pages.twitch-settings.bot-chat-history-suffix')}
-        </FlexRow>
+        <InputBox
+          type="number"
+          id="bot-chat-history"
+          required={active}
+          disabled={!active || status?.type === 'pending'}
+          value={botConfig?.chat_history ?? ''}
+          onChange={(ev) =>
+            dispatch(
+              apiReducer.actions.twitchBotConfigChanged({
+                ...botConfig,
+                chat_history: ev.target.value,
+              }),
+            )
+          }
+        />
       </Field>
       <SaveButton status={status} />
     </form>
