@@ -230,7 +230,7 @@ func main() {
 		defer ticker.Stop()
 		for range ticker.C {
 			// Run backup procedure
-			file, err := os.Create(fmt.Sprintf("%s/%d.db", *backupDir, time.Now().Unix()))
+			file, err := os.Create(fmt.Sprintf("%s/%s.db", *backupDir, time.Now().Format("20060102-150405")))
 			if err != nil {
 				log.WithError(err).Error("Could not create backup file")
 				continue
