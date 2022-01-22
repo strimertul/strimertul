@@ -14,6 +14,26 @@ interface LoadStatus {
   save: RequestStatus;
 }
 
+export function useLiveKeyRaw(key: string) {
+  const client = useSelector((state: RootState) => state.api.client);
+  const [data, setData] = useState<string>(null);
+
+  useEffect(() => {
+    const subscriber: SubscriptionHandler = (v) => setData(v);
+    client.subscribeKey(key, subscriber);
+    return () => {
+      client.unsubscribeKey(key, subscriber);
+    };
+  }, []);
+
+  return data;
+}
+
+export function useLiveKey<T>(key: string): T {
+  const data = useLiveKeyRaw(key);
+  return data ? JSON.parse(data) : null;
+}
+
 export function useModule<T>({
   key,
   selector,

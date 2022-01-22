@@ -9,6 +9,8 @@ type Config struct {
 	APIClientSecret string `json:"api_client_secret"`
 }
 
+const StreamInfoKey = "twitch/stream-info"
+
 const BotConfigKey = "twitch/bot-config"
 
 type BotConfig struct {
@@ -20,6 +22,7 @@ type BotConfig struct {
 
 const ChatEventKey = "twitch/ev/chat-message"
 const ChatHistoryKey = "twitch/chat-history"
+const ChatActivityKey = "twitch/chat-activity"
 
 type BotCustomCommand struct {
 	Description string          `json:"description"`

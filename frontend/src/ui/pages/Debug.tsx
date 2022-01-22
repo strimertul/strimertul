@@ -48,8 +48,7 @@ export default function DebugPage(): React.ReactElement {
     setReadValue(value);
   };
   const performWrite = async () => {
-    const result = await api.putKey(writeKey, writeValue);
-    console.log(result);
+    await api.putKey(writeKey, writeValue);
   };
   const fixJSON = () => {
     try {
@@ -125,7 +124,7 @@ export default function DebugPage(): React.ReactElement {
         onSubmit={(e) => {
           e.preventDefault();
           if ((e.target as HTMLFormElement).checkValidity()) {
-            performWrite;
+            performWrite();
           }
         }}
       >

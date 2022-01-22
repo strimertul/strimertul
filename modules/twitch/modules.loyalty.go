@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	irc "github.com/gempir/go-twitch-irc/v2"
@@ -48,31 +49,50 @@ func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
 
 	// Setup handler for adding points over time
 	b.Client.OnConnect(func() {
-		if config.Points.Interval > 0 {
-			go func() {
-				b.logger.Info("loyalty poll started")
-				for {
-					// Wait for next poll
-					time.Sleep(time.Duration(config.Points.Interval) * time.Second)
+		b.logger.Info("status poll started")
+		var statusMux sync.Mutex
+		streamOnline := true
+		go func() {
+			defer statusMux.Unlock()
+			for {
+				// Wait for next poll
+				time.Sleep(60 * time.Second)
 
-					// Check if streamer is online, if possible
-					streamOnline := true
-					status, err := b.api.API.GetStreams(&helix.StreamsParams{
-						UserLogins: []string{b.config.Channel},
-					})
-					if err != nil {
-						b.logger.WithError(err).Error("Error checking stream status")
-					} else {
-						streamOnline = len(status.Data.Streams) > 0
-					}
+				// Check if streamer is online, if possible
+				statusMux.Lock()
+				streamOnline = true
+				status, err := b.api.API.GetStreams(&helix.StreamsParams{
+					UserLogins: []string{b.config.Channel},
+				})
+				if err != nil {
+					b.logger.WithError(err).Error("Error checking stream status")
+				} else {
+					streamOnline = len(status.Data.Streams) > 0
+				}
+				statusMux.Unlock()
 
-					// If stream is confirmed offline, don't give points away!
-					if !streamOnline {
-						b.logger.Debug("loyalty poll active but stream is offline!")
-						continue
-					} else {
-						b.logger.Debug("awarding points")
-					}
+				err = b.api.db.PutJSON(StreamInfoKey, status.Data.Streams)
+				if err != nil {
+					b.logger.WithError(err).Warn("Error saving stream info")
+				}
+			}
+		}()
+		go func() {
+			defer statusMux.Unlock()
+			for {
+				// Wait for next poll
+				time.Sleep(time.Duration(config.Points.Interval) * time.Second)
+
+				// If stream is confirmed offline, don't give points away!
+				statusMux.Lock()
+				isOnline := streamOnline
+				statusMux.Unlock()
+				if !isOnline {
+					continue
+				}
+
+				if config.Points.Interval > 0 {
+					b.logger.Debug("awarding points")
 
 					// Get user list
 					users, err := b.Client.Userlist(b.config.Channel)
@@ -109,8 +129,8 @@ func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
 						}
 					}
 				}
-			}()
-		}
+			}
+		}()
 	})
 }
 
