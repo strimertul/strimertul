@@ -7,17 +7,20 @@ import (
 	"io/fs"
 	"net/http"
 
+	"github.com/strimertul/kilovolt/v7/drivers/badgerdb"
+
+	"go.uber.org/zap"
+
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/database"
 
-	"github.com/sirupsen/logrus"
-	kv "github.com/strimertul/kilovolt/v6"
+	kv "github.com/strimertul/kilovolt/v7"
 )
 
 type Server struct {
 	Config   ServerConfig
 	db       *database.DB
-	logger   logrus.FieldLogger
+	logger   *zap.Logger
 	server   *http.Server
 	frontend fs.FS
 	hub      *kv.Hub
@@ -30,10 +33,10 @@ func NewServer(manager *modules.Manager) (*Server, error) {
 		return nil, errors.New("db module not found")
 	}
 
-	log := manager.Logger(modules.ModuleHTTP)
+	logger := manager.Logger(modules.ModuleHTTP)
 
 	server := &Server{
-		logger: log,
+		logger: logger,
 		db:     db,
 		server: &http.Server{},
 	}
@@ -52,9 +55,9 @@ func NewServer(manager *modules.Manager) (*Server, error) {
 		}
 	}
 
-	server.hub, err = kv.NewHub(db.Client(), kv.HubOptions{
+	server.hub, err = kv.NewHub(badgerdb.NewBadgerBackend(db.Client()), kv.HubOptions{
 		Password: server.Config.KVPassword,
-	}, log.WithField("module", "kv"))
+	}, logger.With(zap.String("module", "kv")))
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +134,7 @@ func (s *Server) Listen() error {
 						restart.Set(true)
 						err = s.server.Shutdown(context.Background())
 						if err != nil {
-							s.logger.WithError(err).Error("Failed to shutdown server")
+							s.logger.Error("Failed to shutdown server", zap.Error(err))
 							return err
 						}
 					}
@@ -145,21 +148,21 @@ func (s *Server) Listen() error {
 	}()
 	go func() {
 		for {
-			s.logger.WithField("bind", s.Config.Bind).Info("Starting HTTP server")
+			s.logger.Info("Starting HTTP server", zap.String("bind", s.Config.Bind))
 			s.mux = s.makeMux()
 			s.server = &http.Server{
 				Handler: s,
 				Addr:    s.Config.Bind,
 			}
-			s.logger.WithField("bind", s.Config.Bind).Info("HTTP server started")
+			s.logger.Info("HTTP server started", zap.String("bind", s.Config.Bind))
 			err := s.server.ListenAndServe()
-			s.logger.WithError(err).Debug("HTTP server died")
+			s.logger.Debug("HTTP server died", zap.Error(err))
 			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				exit <- err
 				return
 			}
 			// Are we trying to close or restart?
-			s.logger.WithField("restart", restart).Debug("HTTP server stopped")
+			s.logger.Debug("HTTP server stopped", zap.Bool("restart", restart.Get()))
 			if restart.Get() {
 				restart.Set(false)
 				continue

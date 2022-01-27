@@ -3,16 +3,16 @@ package loyalty
 import (
 	"errors"
 
-	"github.com/strimertul/strimertul/modules/database"
+	"go.uber.org/zap"
 
-	"github.com/sirupsen/logrus"
+	"github.com/strimertul/strimertul/modules/database"
 )
 
 const OldPointsKey = "loyalty/users"
 
 type OldPointStorage map[string]int64
 
-func migratePoints(db *database.DB, log logrus.FieldLogger) error {
+func migratePoints(db *database.DB, log *zap.Logger) error {
 	// Retrieve old storage
 	var oldStorage OldPointStorage
 	err := db.GetJSON(OldPointsKey, &oldStorage)

@@ -6,13 +6,14 @@ import (
 	"encoding/binary"
 	"io"
 
+	"go.uber.org/zap"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/strimertul/strimertul/modules"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/dgraph-io/badger/v3/pb"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/sirupsen/logrus"
 )
 
 var json = jsoniter.ConfigFastest
@@ -23,7 +24,7 @@ var (
 
 type DB struct {
 	client *badger.DB
-	logger logrus.FieldLogger
+	logger *zap.Logger
 }
 
 type ModifiedKV struct {
@@ -39,7 +40,7 @@ func Open(options badger.Options, manager *modules.Manager) (*DB, error) {
 	logger := manager.Logger(modules.ModuleDB)
 
 	// Open database
-	client, err := badger.Open(options.WithLogger(logger))
+	client, err := badger.Open(options)
 	if err != nil {
 		return nil, err
 	}

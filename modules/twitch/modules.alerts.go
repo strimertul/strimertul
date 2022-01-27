@@ -9,6 +9,8 @@ import (
 	"text/template"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/Masterminds/sprig/v3"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix/v2"
@@ -105,7 +107,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 	// Load config from database
 	err := bot.api.db.GetJSON(BotAlertsKey, &mod.Config)
 	if err != nil {
-		bot.logger.WithError(err).Debug("config load error")
+		bot.logger.Debug("config load error", zap.Error(err))
 		mod.Config = BotAlertsConfig{}
 		// Save empty config
 		bot.api.db.PutJSON(BotAlertsKey, mod.Config)
@@ -118,7 +120,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			if kv.Key == BotAlertsKey {
 				err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &mod.Config)
 				if err != nil {
-					bot.logger.WithError(err).Debug("error reloading timer config")
+					bot.logger.Debug("error reloading timer config", zap.Error(err))
 				} else {
 					bot.logger.Info("reloaded alert config")
 				}
@@ -245,7 +247,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 				var ev eventSubNotification
 				err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &ev)
 				if err != nil {
-					bot.logger.WithError(err).Debug("error parsing webhook payload")
+					bot.logger.Debug("error parsing webhook payload", zap.Error(err))
 					continue
 				}
 				switch ev.Subscription.Type {
@@ -258,7 +260,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 					var followEv helix.EventSubChannelFollowEvent
 					err := jsoniter.ConfigFastest.Unmarshal(ev.Event, &followEv)
 					if err != nil {
-						bot.logger.WithError(err).Debug("error parsing follow event")
+						bot.logger.Debug("error parsing follow event", zap.Error(err))
 						continue
 					}
 					// Pick a random message
@@ -279,7 +281,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 					var raidEv helix.EventSubChannelRaidEvent
 					err := jsoniter.ConfigFastest.Unmarshal(ev.Event, &raidEv)
 					if err != nil {
-						bot.logger.WithError(err).Debug("error parsing raid event")
+						bot.logger.Debug("error parsing raid event", zap.Error(err))
 						continue
 					}
 					// Pick a random message from base set
@@ -316,7 +318,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 					var cheerEv helix.EventSubChannelCheerEvent
 					err := jsoniter.ConfigFastest.Unmarshal(ev.Event, &cheerEv)
 					if err != nil {
-						bot.logger.WithError(err).Debug("error parsing cheer event")
+						bot.logger.Debug("error parsing cheer event", zap.Error(err))
 						continue
 					}
 					// Pick a random message from base set
@@ -353,7 +355,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 					var subEv helix.EventSubChannelSubscribeEvent
 					err := jsoniter.ConfigFastest.Unmarshal(ev.Event, &subEv)
 					if err != nil {
-						bot.logger.WithError(err).Debug("error parsing sub event")
+						bot.logger.Debug("error parsing sub event", zap.Error(err))
 						continue
 					}
 					addPendingSub(subEv)
@@ -366,7 +368,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 					var subEv helix.EventSubChannelSubscriptionMessageEvent
 					err := jsoniter.ConfigFastest.Unmarshal(ev.Event, &subEv)
 					if err != nil {
-						bot.logger.WithError(err).Debug("error parsing sub event")
+						bot.logger.Debug("error parsing sub event", zap.Error(err))
 						continue
 					}
 					addPendingSub(subEv)
@@ -379,7 +381,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 					var giftEv helix.EventSubChannelSubscriptionGiftEvent
 					err := jsoniter.ConfigFastest.Unmarshal(ev.Event, &giftEv)
 					if err != nil {
-						bot.logger.WithError(err).Debug("error parsing raid event")
+						bot.logger.Debug("error parsing raid event", zap.Error(err))
 						continue
 					}
 					// Pick a random message from base set
@@ -486,7 +488,7 @@ func (m *BotAlertsModule) compileTemplates() {
 func (m *BotAlertsModule) addTemplate(templateList map[int]*template.Template, id int, msg string) {
 	tpl, err := template.New("").Funcs(m.bot.customFunctions).Funcs(sprig.TxtFuncMap()).Parse(msg)
 	if err != nil {
-		m.bot.logger.WithError(err).Error("error compiling template")
+		m.bot.logger.Error("error compiling template", zap.Error(err))
 		return
 	}
 	templateList[id] = tpl
@@ -497,7 +499,7 @@ func writeTemplate(bot *Bot, tpl *template.Template, data interface{}) {
 	var buf bytes.Buffer
 	err := tpl.Execute(&buf, data)
 	if err != nil {
-		bot.logger.WithError(err).Error("error executing template for alert")
+		bot.logger.Error("error executing template for alert", zap.Error(err))
 		return
 	}
 	bot.WriteMessage(buf.String())

@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"go.uber.org/zap"
+
 	jsoniter "github.com/json-iterator/go"
 
 	irc "github.com/gempir/go-twitch-irc/v2"
@@ -49,7 +51,7 @@ func SetupTimers(bot *Bot) *BotTimerModule {
 	// Load config from database
 	err := bot.api.db.GetJSON(BotTimersKey, &mod.Config)
 	if err != nil {
-		bot.logger.WithError(err).Debug("config load error")
+		bot.logger.Debug("config load error", zap.Error(err))
 		mod.Config = BotTimersConfig{
 			Timers: make(map[string]BotTimer),
 		}
@@ -62,7 +64,7 @@ func SetupTimers(bot *Bot) *BotTimerModule {
 			if kv.Key == BotTimersKey {
 				err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &mod.Config)
 				if err != nil {
-					bot.logger.WithError(err).Debug("error reloading timer config")
+					bot.logger.Debug("error reloading timer config", zap.Error(err))
 				} else {
 					bot.logger.Info("reloaded timer config")
 				}
@@ -71,7 +73,7 @@ func SetupTimers(bot *Bot) *BotTimerModule {
 		return nil
 	}, BotTimersKey)
 
-	bot.logger.WithField("timers", len(mod.Config.Timers)).Debug("loaded timers")
+	bot.logger.Debug("loaded timers", zap.Int("timers", len(mod.Config.Timers)))
 
 	// Start goroutine for clearing message counters and running timers
 	go mod.runTimers()
@@ -89,7 +91,7 @@ func (m *BotTimerModule) runTimers() {
 
 		err := m.bot.api.db.PutJSON(ChatActivityKey, m.messages)
 		if err != nil {
-			m.bot.logger.WithError(err).Warn("error saving chat activity")
+			m.bot.logger.Warn("error saving chat activity", zap.Error(err))
 		}
 
 		// Calculate activity

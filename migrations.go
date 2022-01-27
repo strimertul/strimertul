@@ -9,6 +9,7 @@ import (
 	"github.com/strimertul/strimertul/modules/twitch"
 
 	"github.com/dgraph-io/badger/v3"
+	"go.uber.org/zap"
 )
 
 func runMigrations(db *database.DB) {
@@ -54,7 +55,7 @@ func pre180MigrateModuleConfig(db *database.DB) {
 	} else {
 		twitchConfig.Enabled = moduleConfig.EnableTwitch
 		if err := db.PutJSON(twitch.ConfigKey, twitchConfig); err != nil {
-			log.WithError(err).Error("Failed to update twitch config during 1.8 migration")
+			logger.Error("Failed to update twitch config during 1.8 migration", zap.Error(err))
 		}
 	}
 
@@ -67,7 +68,7 @@ func pre180MigrateModuleConfig(db *database.DB) {
 	} else {
 		stulbeConfig.Enabled = moduleConfig.EnableStulbe
 		if err := db.PutJSON(stulbe.ConfigKey, stulbeConfig); err != nil {
-			log.WithError(err).Error("Failed to update stulbe config during 1.8 migration")
+			logger.Error("Failed to update stulbe config during 1.8 migration", zap.Error(err))
 		}
 	}
 
@@ -80,11 +81,11 @@ func pre180MigrateModuleConfig(db *database.DB) {
 	} else {
 		loyaltyConfig.Enabled = moduleConfig.EnableLoyalty
 		if err := db.PutJSON(loyalty.ConfigKey, loyaltyConfig); err != nil {
-			log.WithError(err).Error("Failed to update loyalty config during 1.8 migration")
+			logger.Error("Failed to update loyalty config during 1.8 migration", zap.Error(err))
 		}
 	}
 
-	log.Info("Migrated module config to 1.8+")
+	logger.Info("Migrated module config to 1.8+")
 
 	// Remove old config key
 	failOnError(db.RemoveKey(pre180ModuleConfigKey), "Failed to remove pre-1.8 module config")

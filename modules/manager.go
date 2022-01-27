@@ -1,6 +1,8 @@
 package modules
 
-import "github.com/sirupsen/logrus"
+import (
+	"go.uber.org/zap"
+)
 
 type ModuleStatus struct {
 	Enabled      bool
@@ -31,16 +33,16 @@ const (
 type Manager struct {
 	Modules map[ModuleID]Module
 
-	logger logrus.FieldLogger
+	logger *zap.Logger
 }
 
-func NewManager(log logrus.FieldLogger) *Manager {
+func NewManager(log *zap.Logger) *Manager {
 	return &Manager{
 		Modules: make(map[ModuleID]Module),
 		logger:  log,
 	}
 }
 
-func (m *Manager) Logger(module ModuleID) logrus.FieldLogger {
-	return m.logger.WithField("module", module)
+func (m *Manager) Logger(module ModuleID) *zap.Logger {
+	return m.logger.With(zap.String("module", string(module)))
 }

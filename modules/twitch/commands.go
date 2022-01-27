@@ -7,6 +7,8 @@ import (
 	"strings"
 	"text/template"
 
+	"go.uber.org/zap"
+
 	irc "github.com/gempir/go-twitch-irc/v2"
 	"github.com/nicklaw5/helix/v2"
 )
@@ -52,7 +54,7 @@ func cmdCustom(bot *Bot, cmd string, data BotCustomCommand, message irc.PrivateM
 	var buf bytes.Buffer
 	err := bot.customTemplates[cmd].Execute(&buf, message)
 	if err != nil {
-		bot.logger.WithError(err).Error("Failed to execute custom command template")
+		bot.logger.Error("Failed to execute custom command template", zap.Error(err))
 		return
 	}
 	bot.Client.Say(message.Channel, buf.String())
@@ -89,7 +91,7 @@ func (b *Bot) setupFunctions() {
 			counter += 1
 			err := b.api.db.PutKey(counterKey, []byte(strconv.Itoa(counter)))
 			if err != nil {
-				b.logger.WithError(err).WithField("key", counterKey).Error("error saving key")
+				b.logger.Error("error saving key", zap.Error(err), zap.String("key", counterKey))
 			}
 			return counter
 		},

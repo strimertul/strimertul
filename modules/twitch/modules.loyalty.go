@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"go.uber.org/zap"
+
 	irc "github.com/gempir/go-twitch-irc/v2"
 	"github.com/nicklaw5/helix/v2"
 	"github.com/strimertul/strimertul/modules/loyalty"
@@ -65,7 +67,7 @@ func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
 					UserLogins: []string{b.config.Channel},
 				})
 				if err != nil {
-					b.logger.WithError(err).Error("Error checking stream status")
+					b.logger.Error("Error checking stream status", zap.Error(err))
 				} else {
 					streamOnline = len(status.Data.Streams) > 0
 				}
@@ -73,7 +75,7 @@ func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
 
 				err = b.api.db.PutJSON(StreamInfoKey, status.Data.Streams)
 				if err != nil {
-					b.logger.WithError(err).Warn("Error saving stream info")
+					b.logger.Warn("Error saving stream info", zap.Error(err))
 				}
 			}
 		}()
@@ -97,7 +99,7 @@ func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
 					// Get user list
 					users, err := b.Client.Userlist(b.config.Channel)
 					if err != nil {
-						b.logger.WithError(err).Error("error listing users")
+						b.logger.Error("error listing users", zap.Error(err))
 						continue
 					}
 
@@ -125,7 +127,7 @@ func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
 					if len(users) > 0 {
 						err := b.Loyalty.GivePoints(pointsToGive)
 						if err != nil {
-							b.logger.WithError(err).Error("error giving points to user")
+							b.logger.Error("error giving points to user", zap.Error(err))
 						}
 					}
 				}
@@ -212,7 +214,7 @@ func cmdRedeemReward(bot *Bot, message irc.PrivateMessage) {
 			bot.Client.Say(message.Channel, fmt.Sprintf("%s: That reward is in cooldown (available in %s)", message.User.DisplayName,
 				time.Until(nextAvailable).Truncate(time.Second)))
 		default:
-			bot.logger.WithError(err).Error("error while performing redeem")
+			bot.logger.Error("error while performing redeem", zap.Error(err))
 		}
 		return
 	}
@@ -311,7 +313,7 @@ func cmdContributeGoal(bot *Bot, message irc.PrivateMessage) {
 
 	// Add points to goal
 	if err := bot.Loyalty.PerformContribution(selectedGoal, message.User.Name, points); err != nil {
-		bot.logger.WithError(err).Error("error while contributing to goal")
+		bot.logger.Error("error while contributing to goal", zap.Error(err))
 		return
 	}
 

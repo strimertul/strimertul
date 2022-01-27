@@ -7,13 +7,14 @@ import (
 	"sync"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/database"
 	"github.com/strimertul/strimertul/modules/stulbe"
 
 	"github.com/dgraph-io/badger/v3"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -30,7 +31,7 @@ type Manager struct {
 	queue     RedeemQueueStorage
 	mu        sync.Mutex
 	db        *database.DB
-	logger    logrus.FieldLogger
+	logger    *zap.Logger
 	cooldowns map[string]time.Time
 }
 
@@ -40,17 +41,17 @@ func Register(manager *modules.Manager) error {
 		return errors.New("db module not found")
 	}
 
-	log := manager.Logger(modules.ModuleLoyalty)
+	logger := manager.Logger(modules.ModuleLoyalty)
 
 	// Check if we need to migrate
 	// TODO Remove this in the future
-	err := migratePoints(db, log)
+	err := migratePoints(db, logger)
 	if err != nil {
 		return err
 	}
 
 	loyalty := &Manager{
-		logger:    log,
+		logger:    logger,
 		db:        db,
 		mu:        sync.Mutex{},
 		cooldowns: make(map[string]time.Time),
@@ -58,7 +59,7 @@ func Register(manager *modules.Manager) error {
 	// Ger data from DB
 	if err := db.GetJSON(ConfigKey, &loyalty.config); err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {
-			log.Warn("missing configuration for loyalty (but it's enabled). Please make sure to set it up properly!")
+			logger.Warn("missing configuration for loyalty (but it's enabled). Please make sure to set it up properly!")
 		} else {
 			return err
 		}
@@ -113,7 +114,7 @@ func Register(manager *modules.Manager) error {
 				PointsPrefix,
 			})
 			if err != nil {
-				log.WithError(err).Error("failed to replicate keys")
+				logger.Error("failed to replicate keys", zap.Error(err))
 			}
 		}()
 	}
@@ -202,12 +203,9 @@ func (m *Manager) update(kvs []database.ModifiedKV) error {
 			}
 		}
 		if err != nil {
-			m.logger.WithFields(logrus.Fields{
-				"key":   kv.Key,
-				"error": err.Error(),
-			}).Error("subscribe error: invalid JSON received on key")
+			m.logger.Error("subscribe error: invalid JSON received on key", zap.Error(err), zap.String("key", kv.Key))
 		} else {
-			m.logger.WithField("key", kv.Key).Debug("updated key")
+			m.logger.Debug("updated key", zap.String("key", kv.Key))
 		}
 	}
 	return nil
@@ -215,20 +213,20 @@ func (m *Manager) update(kvs []database.ModifiedKV) error {
 
 func (m *Manager) handleRemote(kvs []database.ModifiedKV) error {
 	for _, kv := range kvs {
-		m.logger.WithField("key", kv.Key).Trace("loyalty request from stulbe")
+		m.logger.Debug("loyalty request from stulbe", zap.String("key", kv.Key))
 		switch kv.Key {
 		case KVExLoyaltyRedeem:
 			// Parse request
 			var redeemRequest ExLoyaltyRedeem
 			err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &redeemRequest)
 			if err != nil {
-				m.logger.WithError(err).Warn("error decoding redeem request")
+				m.logger.Warn("error decoding redeem request", zap.Error(err))
 				break
 			}
 			// Find reward
 			reward := m.GetReward(redeemRequest.RewardID)
 			if reward.ID == "" {
-				m.logger.WithField("reward-id", redeemRequest.RewardID).Warn("redeem request contains invalid reward id")
+				m.logger.Warn("redeem request contains invalid reward id", zap.String("reward-id", redeemRequest.RewardID))
 				break
 			}
 			err = m.PerformRedeem(Redeem{
@@ -239,25 +237,25 @@ func (m *Manager) handleRemote(kvs []database.ModifiedKV) error {
 				RequestText: redeemRequest.RequestText,
 			})
 			if err != nil {
-				m.logger.WithError(err).Warn("error performing redeem request")
+				m.logger.Warn("error performing redeem request", zap.Error(err))
 			}
 		case KVExLoyaltyContribute:
 			// Parse request
 			var contributeRequest ExLoyaltyContribute
 			err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &contributeRequest)
 			if err != nil {
-				m.logger.WithError(err).Warn("error decoding contribution request")
+				m.logger.Warn("error decoding contribution request", zap.Error(err))
 				break
 			}
 			// Find goal
 			goal := m.GetGoal(contributeRequest.GoalID)
 			if goal.ID == "" {
-				m.logger.WithField("goal-id", contributeRequest.GoalID).Warn("contribute request contains invalid goal id")
+				m.logger.Warn("contribute request contains invalid goal id", zap.String("goal-id", contributeRequest.GoalID))
 				break
 			}
 			err = m.PerformContribution(goal, contributeRequest.Username, contributeRequest.Amount)
 			if err != nil {
-				m.logger.WithError(err).Warn("error performing contribution request")
+				m.logger.Warn("error performing contribution request", zap.Error(err))
 			}
 		}
 	}

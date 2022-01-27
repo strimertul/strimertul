@@ -9,11 +9,11 @@ import (
 
 	"github.com/strimertul/strimertul/modules/database"
 	"github.com/strimertul/strimertul/modules/loyalty"
+	"go.uber.org/zap"
 
 	"github.com/Masterminds/sprig/v3"
 	irc "github.com/gempir/go-twitch-irc/v2"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/sirupsen/logrus"
 )
 
 type Bot struct {
@@ -22,7 +22,7 @@ type Bot struct {
 	api         *Client
 	username    string
 	config      BotConfig
-	logger      logrus.FieldLogger
+	logger      *zap.Logger
 	lastMessage time.Time
 	activeUsers map[string]bool
 	banlist     map[string]bool
@@ -124,23 +124,17 @@ func NewBot(api *Client, config BotConfig) *Bot {
 
 	client.OnUserJoinMessage(func(message irc.UserJoinMessage) {
 		if strings.ToLower(message.User) == bot.username {
-			bot.logger.WithField("channel", message.Channel).Info("joined channel")
+			bot.logger.Info("joined channel", zap.String("channel", message.Channel))
 		} else {
-			bot.logger.WithFields(logrus.Fields{
-				"username": message.User,
-				"channel":  message.Channel,
-			}).Debug("user joined channel")
+			bot.logger.Debug("user joined channel", zap.String("channel", message.Channel), zap.String("username", message.User))
 		}
 	})
 
 	client.OnUserPartMessage(func(message irc.UserPartMessage) {
 		if strings.ToLower(message.User) == bot.username {
-			bot.logger.WithField("channel", message.Channel).Info("left channel")
+			bot.logger.Info("left channel", zap.String("channel", message.Channel))
 		} else {
-			bot.logger.WithFields(logrus.Fields{
-				"username": message.User,
-				"channel":  message.Channel,
-			}).Debug("user left channel")
+			bot.logger.Debug("user left channel", zap.String("channel", message.Channel), zap.String("username", message.User))
 		}
 	})
 
@@ -150,18 +144,18 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	// Load modules
 	err := bot.LoadModules()
 	if err != nil {
-		bot.logger.WithError(err).Error("failed to load modules")
+		bot.logger.Error("failed to load modules", zap.Error(err))
 	}
 
 	// Load custom commands
 	err = api.db.GetJSON(CustomCommandsKey, &bot.customCommands)
 	if err != nil {
-		bot.logger.WithError(err).Error("failed to load custom commands")
+		bot.logger.Error("failed to load custom commands", zap.Error(err))
 	}
 
 	err = bot.updateTemplates()
 	if err != nil {
-		bot.logger.WithError(err).Error("failed to parse custom commands")
+		bot.logger.Error("failed to parse custom commands", zap.Error(err))
 	}
 	go api.db.Subscribe(context.Background(), bot.updateCommands, CustomCommandsKey)
 	go api.db.Subscribe(context.Background(), bot.handleWriteMessageRPC, WriteMessageRPC)

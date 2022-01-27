@@ -5,15 +5,18 @@ import (
 	"flag"
 	"fmt"
 	"io/fs"
+	"log"
 	"math/rand"
 	"os"
 	"runtime"
 	"time"
 
+	"go.uber.org/zap/zapcore"
+
 	jsoniter "github.com/json-iterator/go"
+	"go.uber.org/zap"
 
 	"github.com/strimertul/strimertul/modules"
-
 	"github.com/strimertul/strimertul/modules/database"
 	"github.com/strimertul/strimertul/modules/http"
 	"github.com/strimertul/strimertul/modules/loyalty"
@@ -21,9 +24,7 @@ import (
 	"github.com/strimertul/strimertul/modules/twitch"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/mattn/go-colorable"
 	"github.com/pkg/browser"
-	"github.com/sirupsen/logrus"
 
 	_ "net/http/pprof"
 )
@@ -39,24 +40,7 @@ var appVersion = "v0.0.0-UNKNOWN"
 //go:embed frontend/dist/*
 var frontend embed.FS
 
-var log = logrus.New()
-
-func parseLogLevel(level string) logrus.Level {
-	switch level {
-	case "error":
-		return logrus.ErrorLevel
-	case "warn", "warning":
-		return logrus.WarnLevel
-	case "info", "notice":
-		return logrus.InfoLevel
-	case "debug":
-		return logrus.DebugLevel
-	case "trace":
-		return logrus.TraceLevel
-	default:
-		return logrus.InfoLevel
-	}
-}
+var logger *zap.Logger
 
 type ModuleConstructor = func(manager *modules.Manager) error
 
@@ -70,7 +54,8 @@ func main() {
 	// Get cmd line parameters
 	noHeader := flag.Bool("no-header", false, "Do not print the app header")
 	dbDir := flag.String("database-dir", "data", "Path to strimertül database dir")
-	loglevel := flag.String("log-level", "info", "Logging level (debug, info, warn, error)")
+	debug := flag.Bool("debug", false, "Start in debug mode (more logging)")
+	json := flag.Bool("json", false, "Print logging in JSON format")
 	cleanup := flag.Bool("run-gc", false, "Run garbage collection and exit immediately after")
 	exportDB := flag.Bool("export", false, "Export database as JSON")
 	importDB := flag.String("import", "", "Import database from JSON file")
@@ -81,15 +66,24 @@ func main() {
 
 	rand.Seed(time.Now().UnixNano())
 
-	log.SetLevel(parseLogLevel(*loglevel))
-
-	// Ok this is dumb but listen, I like colors.
-	if runtime.GOOS == "windows" {
-		log.SetFormatter(&logrus.TextFormatter{ForceColors: true, FullTimestamp: true})
-		log.SetOutput(colorable.NewColorableStderr())
+	if *debug {
+		cfg := zap.NewDevelopmentConfig()
+		if *json {
+			cfg.Encoding = "json"
+		}
+		logger, _ = cfg.Build()
 	} else {
-		log.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
+		cfg := zap.NewProductionConfig()
+		if !*json {
+			cfg.Encoding = "console"
+			cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+			cfg.EncoderConfig.CallerKey = zapcore.OmitKey
+		}
+		logger, _ = cfg.Build()
 	}
+	defer logger.Sync()
+	undo := zap.RedirectStdLog(logger)
+	defer undo()
 
 	if !*noHeader {
 		// Print the app header and version info
@@ -97,14 +91,14 @@ func main() {
 	}
 
 	// Create module manager
-	manager := modules.NewManager(log)
+	manager := modules.NewManager(logger)
 
 	// Loading routine
 	db, err := database.Open(badger.DefaultOptions(*dbDir), manager)
 	failOnError(err, "Could not open DB")
 	defer func() {
 		if err := db.Close(); err != nil {
-			log.WithError(err).Error("Could not close DB")
+			logger.Error("Could not close DB", zap.Error(err))
 		}
 	}()
 
@@ -136,17 +130,14 @@ func main() {
 		for key, value := range entries {
 			err = db.PutKey(key, []byte(value))
 			if err != nil {
-				log.WithField("key", key).WithError(err).Error("Could not import entry")
+				logger.Error("Could not import entry", zap.String("key", key), zap.Error(err))
 				errors += 1
 			} else {
 				imported += 1
 			}
 		}
 		_ = db.Client().Sync()
-		log.WithFields(logrus.Fields{
-			"imported": imported,
-			"errors":   errors,
-		}).Info("Imported database from file")
+		logger.Info("Imported database from file", zap.Int("imported", imported), zap.Int("errors", errors))
 	}
 
 	if *restoreDB != "" {
@@ -155,7 +146,7 @@ func main() {
 		err = db.RestoreOverwrite(file)
 		failOnError(err, "Could not restore database")
 		_ = db.Client().Sync()
-		log.Info("Restored database from backup")
+		logger.Info("Restored database from backup")
 	}
 
 	// Set meta keys
@@ -166,12 +157,12 @@ func main() {
 	for module, constructor := range moduleList {
 		err := constructor(manager)
 		if err != nil {
-			log.WithError(err).WithField("module", module).Error("Could not register module")
+			logger.Error("Could not register module", zap.String("module", string(module)))
 		} else {
 			//goland:noinspection GoDeferInLoop
 			defer func() {
 				if err := manager.Modules[module].Close(); err != nil {
-					log.WithError(err).WithField("module", module).Error("Could not close module")
+					logger.Error("Could not close module", zap.String("module", string(module)), zap.Error(err))
 				}
 			}()
 		}
@@ -182,7 +173,7 @@ func main() {
 	failOnError(err, "Could not initialize http server")
 	defer func() {
 		if err := httpServer.Close(); err != nil {
-			log.WithError(err).Error("Could not close DB")
+			logger.Error("Could not close DB", zap.Error(err))
 		}
 	}()
 
@@ -194,7 +185,7 @@ func main() {
 		dashboardURL := fmt.Sprintf("http://%s/ui", httpServer.Config.Bind)
 		err := browser.OpenURL(dashboardURL)
 		if err != nil {
-			log.WithError(err).Warnf("could not open browser, dashboard URL available at: %s", dashboardURL)
+			logger.Warn(fmt.Sprintf("could not open browser, dashboard URL available at: %s", dashboardURL), zap.Error(err))
 		}
 	}()
 
@@ -214,15 +205,15 @@ func main() {
 	// Backup database periodically
 	go func() {
 		if *backupDir == "" {
-			log.Warn("Backup directory not set, database backups are disabled (this is dangerous, power loss will result in your database being potentially wiped!)")
+			logger.Warn("Backup directory not set, database backups are disabled (this is dangerous, power loss will result in your database being potentially wiped!)")
 			return
 		}
 
 		err := os.MkdirAll(*backupDir, 0755)
 		if err != nil {
-			log.WithError(err).Error("Could not create backup directory, moving to a temporary folder")
+			logger.Error("Could not create backup directory, moving to a temporary folder", zap.Error(err))
 			*backupDir = os.TempDir()
-			log.WithField("backup-dir", *backupDir).Info("Using temporary directory")
+			logger.Info("Using temporary directory", zap.String("backup-dir", *backupDir))
 			return
 		}
 
@@ -232,15 +223,15 @@ func main() {
 			// Run backup procedure
 			file, err := os.Create(fmt.Sprintf("%s/%s.db", *backupDir, time.Now().Format("20060102-150405")))
 			if err != nil {
-				log.WithError(err).Error("Could not create backup file")
+				logger.Error("Could not create backup file", zap.Error(err))
 				continue
 			}
 			_, err = db.Client().Backup(file, 0)
 			if err != nil {
-				log.WithError(err).Error("Could not backup database")
+				logger.Error("Could not backup database", zap.Error(err))
 			}
 			_ = file.Close()
-			log.WithField("backup-file", file.Name()).Info("Database backed up")
+			logger.Info("Database backed up", zap.String("backup-file", file.Name()))
 		}
 	}()
 

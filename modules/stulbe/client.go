@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 
+	"go.uber.org/zap"
+
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/database"
 
-	"github.com/sirupsen/logrus"
 	"github.com/strimertul/stulbe-client-go"
 )
 
@@ -15,7 +16,7 @@ type Manager struct {
 	Config Config
 	Client *stulbe.Client
 	db     *database.DB
-	logger logrus.FieldLogger
+	logger *zap.Logger
 
 	restart chan bool
 }
@@ -39,7 +40,6 @@ func Register(manager *modules.Manager) error {
 		Endpoint: config.Endpoint,
 		Username: config.Username,
 		AuthKey:  config.AuthKey,
-		Logger:   logger,
 	})
 	if err != nil {
 		return err
@@ -59,7 +59,7 @@ func Register(manager *modules.Manager) error {
 		for {
 			err := stulbeManager.ReceiveEvents()
 			if err != nil {
-				logger.WithError(err).Error("Stulbe subscription died unexpectedly!")
+				logger.Error("Stulbe subscription died unexpectedly!", zap.Error(err))
 				// Wait for config change before retrying
 				<-stulbeManager.restart
 			}
@@ -73,7 +73,7 @@ func Register(manager *modules.Manager) error {
 				var config Config
 				err := db.GetJSON(ConfigKey, &config)
 				if err != nil {
-					logger.WithError(err).Warn("Failed to get config")
+					logger.Warn("Failed to get config", zap.Error(err))
 					continue
 				}
 
@@ -81,10 +81,9 @@ func Register(manager *modules.Manager) error {
 					Endpoint: config.Endpoint,
 					Username: config.Username,
 					AuthKey:  config.AuthKey,
-					Logger:   logger,
 				})
 				if err != nil {
-					logger.WithError(err).Warn("Failed to update stulbe client, keeping old settings")
+					logger.Warn("Failed to update stulbe client, keeping old settings", zap.Error(err))
 				} else {
 					stulbeManager.Client.Close()
 					stulbeManager.Client = client
@@ -158,9 +157,7 @@ func (m *Manager) ReplicateKey(prefix string) error {
 		return err
 	}
 
-	m.logger.WithFields(logrus.Fields{
-		"prefix": prefix,
-	}).Debug("synced to remote")
+	m.logger.Debug("synced to remote", zap.String("prefix", prefix))
 
 	// Subscribe to local datastore and update remote on change
 	return m.db.Subscribe(context.Background(), func(pairs []database.ModifiedKV) error {
@@ -169,9 +166,7 @@ func (m *Manager) ReplicateKey(prefix string) error {
 			if err != nil {
 				return err
 			}
-			m.logger.WithFields(logrus.Fields{
-				"key": changed.Key,
-			}).Debug("replicated to remote")
+			m.logger.Debug("replicated to remote", zap.String("key", changed.Key))
 		}
 
 		return nil
