@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
@@ -83,11 +84,46 @@ func makeBadgerHub(options dbOptions) (*badger.DB, *kv.Hub, error) {
 			}
 			_ = file.Close()
 			logger.Info("Database backed up", zap.String("backup-file", file.Name()))
+			// Remove old backups
+			files, err := os.ReadDir(options.backupDir)
+			if err != nil {
+				logger.Error("Could not read backup directory", zap.Error(err))
+				continue
+			}
+			// If maxBackups is set, remove older backups when we reach the limit
+			if options.maxBackups > 0 && len(files) > options.maxBackups {
+				// Sort by date
+				sort.Sort(ByDate(files))
+				// Get files to remove
+				toRemove := files[:len(files)-options.maxBackups]
+				for _, file := range toRemove {
+					err = os.Remove(fmt.Sprintf("%s/%s", options.backupDir, file.Name()))
+					if err != nil {
+						logger.Error("Could not remove backup file", zap.Error(err))
+					}
+				}
+			}
 		}
 	}()
 
 	hub, err := kv.NewHub(badger_driver.NewBadgerBackend(db), kv.HubOptions{}, logger)
 	return db, hub, err
+}
+
+type ByDate []os.DirEntry
+
+func (f ByDate) Len() int {
+	return len(f)
+}
+
+func (f ByDate) Swap(i, j int) {
+	f[i], f[j] = f[j], f[i]
+}
+
+func (f ByDate) Less(i, j int) bool {
+	firstInfo, _ := f[i].Info()
+	secondInfo, _ := f[i].Info()
+	return firstInfo.ModTime().Before(secondInfo.ModTime())
 }
 
 func badgerClose(db *badger.DB) error {

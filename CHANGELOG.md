@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **New UI**: Strimertul now features a more slick and better organized UI.
 - **Multiple database options**: Strimertul now supports multiple databases drivers. BadgerDB will remain as default (and currently the only option) for the time being but other databases are coming in the future.
 - **Database operations**: You can now export and import the entire database as JSON files
-- **Database backups**: The database will periodically save optimized copies of itself in a backup directory, directory and intervals are both configurable, though for the time being you might need to periodically clean it before it becomes too large.
+- **Database backups**: The database will periodically save optimized copies of itself in a backup directory. Backup directory, intervals and how many to keep at once are all configurable via new command line flags (Defaults: "backup" directory in the current working directory, taken every hour, up to 20 backups).
 - **Exposed internal metrics via keys**: `twitch/chat-activity` and `twitch/stream-status` now expose previously internal-only info about the current stream.
 
 ### Changed

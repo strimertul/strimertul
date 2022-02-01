@@ -58,6 +58,7 @@ type dbOptions struct {
 	restore        string
 	backupDir      string
 	backupInterval int
+	maxBackups     int
 }
 
 func main() {
@@ -71,6 +72,7 @@ func main() {
 	restoreDB := flag.String("restore", "", "Restore database from backup file")
 	backupDir := flag.String("backup-dir", "backups", "Path to directory with database backups")
 	backupInterval := flag.Int("backup-interval", 60, "Backup database every X minutes, 0 to disable")
+	maxBackups := flag.Int("max-backups", 20, "Maximum number of backups to keep, older ones will be deleted, set to 0 to keep all")
 	driver := flag.String("driver", "badger", "Database driver to use (available: badger)")
 	flag.Parse()
 
@@ -107,10 +109,17 @@ func main() {
 	var hub *kv.Hub
 	var err error
 	logger.Info("opening database", zap.String("driver", *driver))
+	options := dbOptions{
+		directory:      *dbDir,
+		restore:        *restoreDB,
+		backupDir:      *backupDir,
+		backupInterval: *backupInterval,
+		maxBackups:     *maxBackups,
+	}
 	switch *driver {
 	case "badger":
 		var db *badger.DB
-		db, hub, err = makeBadgerHub(dbOptions{directory: *dbDir, backupDir: *backupDir, backupInterval: *backupInterval, restore: *restoreDB})
+		db, hub, err = makeBadgerHub(options)
 		defer func() {
 			if err := badgerClose(db); err != nil {
 				logger.Fatal("Failed to close database", zap.Error(err))
