@@ -1,28 +1,28 @@
 package stulbe
 
 import (
-	"context"
+	"encoding/json"
 	"errors"
+
+	"github.com/strimertul/strimertul/modules/database"
 
 	"go.uber.org/zap"
 
 	"github.com/strimertul/strimertul/modules"
-	"github.com/strimertul/strimertul/modules/database"
-
 	"github.com/strimertul/stulbe-client-go"
 )
 
 type Manager struct {
 	Config Config
 	Client *stulbe.Client
-	db     *database.DB
+	db     *database.DBModule
 	logger *zap.Logger
 
 	restart chan bool
 }
 
 func Register(manager *modules.Manager) error {
-	db, ok := manager.Modules["db"].(*database.DB)
+	db, ok := manager.Modules["db"].(*database.DBModule)
 	if !ok {
 		return errors.New("db module not found")
 	}
@@ -67,32 +67,29 @@ func Register(manager *modules.Manager) error {
 	}()
 
 	// Listen for config changes
-	go db.Subscribe(context.Background(), func(changed []database.ModifiedKV) error {
-		for _, kv := range changed {
-			if kv.Key == ConfigKey {
-				var config Config
-				err := db.GetJSON(ConfigKey, &config)
-				if err != nil {
-					logger.Warn("Failed to get config", zap.Error(err))
-					continue
-				}
+	go db.Subscribe(func(key, value string) {
+		if key == ConfigKey {
+			var config Config
+			err := json.Unmarshal([]byte(value), &config)
+			if err != nil {
+				logger.Warn("Failed to get new config", zap.Error(err))
+				return
+			}
 
-				client, err := stulbe.NewClient(stulbe.ClientOptions{
-					Endpoint: config.Endpoint,
-					Username: config.Username,
-					AuthKey:  config.AuthKey,
-				})
-				if err != nil {
-					logger.Warn("Failed to update stulbe client, keeping old settings", zap.Error(err))
-				} else {
-					stulbeManager.Client.Close()
-					stulbeManager.Client = client
-					stulbeManager.restart <- true
-					logger.Info("updated/restarted stulbe client")
-				}
+			client, err := stulbe.NewClient(stulbe.ClientOptions{
+				Endpoint: config.Endpoint,
+				Username: config.Username,
+				AuthKey:  config.AuthKey,
+			})
+			if err != nil {
+				logger.Warn("Failed to update stulbe client, keeping old settings", zap.Error(err))
+			} else {
+				stulbeManager.Client.Close()
+				stulbeManager.Client = client
+				stulbeManager.restart <- true
+				logger.Info("updated/restarted stulbe client")
 			}
 		}
-		return nil
 	}, ConfigKey)
 
 	// Register module
@@ -109,7 +106,7 @@ func (m *Manager) ReceiveEvents() error {
 	for {
 		select {
 		case kv := <-chn:
-			err := m.db.PutKey(kv.Key, []byte(kv.Value))
+			err := m.db.PutKey(kv.Key, kv.Value)
 			if err != nil {
 				return err
 			}
@@ -160,16 +157,13 @@ func (m *Manager) ReplicateKey(prefix string) error {
 	m.logger.Debug("synced to remote", zap.String("prefix", prefix))
 
 	// Subscribe to local datastore and update remote on change
-	return m.db.Subscribe(context.Background(), func(pairs []database.ModifiedKV) error {
-		for _, changed := range pairs {
-			err := m.Client.KV.SetKey(changed.Key, string(changed.Data))
-			if err != nil {
-				return err
-			}
-			m.logger.Debug("replicated to remote", zap.String("key", changed.Key))
+	return m.db.Subscribe(func(key, value string) {
+		err := m.Client.KV.SetKey(key, value)
+		if err != nil {
+			m.logger.Error("failed to replicate key", zap.String("key", key), zap.Error(err))
+		} else {
+			m.logger.Debug("replicated to remote", zap.String("key", key))
 		}
-
-		return nil
 	}, prefix)
 }
 

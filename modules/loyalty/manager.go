@@ -1,20 +1,18 @@
 package loyalty
 
 import (
-	"context"
 	"errors"
 	"strings"
 	"sync"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/database"
 	"github.com/strimertul/strimertul/modules/stulbe"
 
-	"github.com/dgraph-io/badger/v3"
 	jsoniter "github.com/json-iterator/go"
+	kv "github.com/strimertul/kilovolt/v8"
+	"go.uber.org/zap"
 )
 
 var (
@@ -30,25 +28,18 @@ type Manager struct {
 	goals     GoalStorage
 	queue     RedeemQueueStorage
 	mu        sync.Mutex
-	db        *database.DB
+	db        *database.DBModule
 	logger    *zap.Logger
 	cooldowns map[string]time.Time
 }
 
 func Register(manager *modules.Manager) error {
-	db, ok := manager.Modules["db"].(*database.DB)
+	db, ok := manager.Modules["db"].(*database.DBModule)
 	if !ok {
 		return errors.New("db module not found")
 	}
 
 	logger := manager.Logger(modules.ModuleLoyalty)
-
-	// Check if we need to migrate
-	// TODO Remove this in the future
-	err := migratePoints(db, logger)
-	if err != nil {
-		return err
-	}
 
 	loyalty := &Manager{
 		logger:    logger,
@@ -58,7 +49,7 @@ func Register(manager *modules.Manager) error {
 	}
 	// Ger data from DB
 	if err := db.GetJSON(ConfigKey, &loyalty.config); err != nil {
-		if errors.Is(err, badger.ErrKeyNotFound) {
+		if errors.Is(err, kv.ErrorKeyNotFound) {
 			logger.Warn("missing configuration for loyalty (but it's enabled). Please make sure to set it up properly!")
 		} else {
 			return err
@@ -67,17 +58,17 @@ func Register(manager *modules.Manager) error {
 
 	// Retrieve configs
 	if err := db.GetJSON(RewardsKey, &loyalty.rewards); err != nil {
-		if !errors.Is(err, badger.ErrKeyNotFound) {
+		if !errors.Is(err, kv.ErrorKeyNotFound) {
 			return err
 		}
 	}
 	if err := db.GetJSON(GoalsKey, &loyalty.goals); err != nil {
-		if !errors.Is(err, badger.ErrKeyNotFound) {
+		if !errors.Is(err, kv.ErrorKeyNotFound) {
 			return err
 		}
 	}
 	if err := db.GetJSON(QueueKey, &loyalty.queue); err != nil {
-		if !errors.Is(err, badger.ErrKeyNotFound) {
+		if !errors.Is(err, kv.ErrorKeyNotFound) {
 			return err
 		}
 	}
@@ -85,7 +76,7 @@ func Register(manager *modules.Manager) error {
 	// Retrieve user points
 	points, err := db.GetAll(PointsPrefix)
 	if err != nil {
-		if !errors.Is(err, badger.ErrKeyNotFound) {
+		if !errors.Is(err, kv.ErrorKeyNotFound) {
 			return err
 		}
 		points = make(map[string]string)
@@ -101,8 +92,8 @@ func Register(manager *modules.Manager) error {
 	}
 
 	// Subscribe for changes
-	go db.Subscribe(context.Background(), loyalty.update, "loyalty/")
-	go db.Subscribe(context.Background(), loyalty.handleRemote, "stulbe/loyalty/")
+	go db.Subscribe(loyalty.update, "loyalty/")
+	go db.Subscribe(loyalty.handleRemote, "stulbe/loyalty/")
 
 	// Replicate keys on stulbe if available
 	if stulbeManager, ok := manager.Modules["stulbe"].(*stulbe.Manager); ok {
@@ -145,121 +136,115 @@ func (m *Manager) Close() error {
 	return nil
 }
 
-func (m *Manager) update(kvs []database.ModifiedKV) error {
-	for _, kv := range kvs {
-		var err error
+func (m *Manager) update(key, value string) {
+	var err error
 
-		// Check for config changes/RPC
-		switch kv.Key {
-		case ConfigKey:
-			err = func() error {
-				m.mu.Lock()
-				defer m.mu.Unlock()
-				return jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.config)
-			}()
-		case GoalsKey:
-			err = func() error {
-				m.mu.Lock()
-				defer m.mu.Unlock()
-				return jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.goals)
-			}()
-		case RewardsKey:
-			err = func() error {
-				m.mu.Lock()
-				defer m.mu.Unlock()
-				return jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.rewards)
-			}()
-		case QueueKey:
-			err = func() error {
-				m.mu.Lock()
-				defer m.mu.Unlock()
-				return jsoniter.ConfigFastest.Unmarshal(kv.Data, &m.queue)
-			}()
-		case CreateRedeemRPC:
-			var redeem Redeem
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &redeem)
-			if err == nil {
-				err = m.AddRedeem(redeem)
-			}
-		case RemoveRedeemRPC:
-			var redeem Redeem
-			err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &redeem)
-			if err == nil {
-				err = m.RemoveRedeem(redeem)
-			}
-		default:
-			// Check for prefix changes
-			switch {
-			// User point changed
-			case strings.HasPrefix(kv.Key, PointsPrefix):
-				var entry PointsEntry
-				err = jsoniter.ConfigFastest.Unmarshal(kv.Data, &entry)
-				user := kv.Key[len(PointsPrefix):]
-				func() {
-					m.mu.Lock()
-					defer m.mu.Unlock()
-					m.points[user] = entry
-				}()
-			}
+	// Check for config changes/RPC
+	switch key {
+	case ConfigKey:
+		err = func() error {
+			m.mu.Lock()
+			defer m.mu.Unlock()
+			return jsoniter.ConfigFastest.UnmarshalFromString(value, &m.config)
+		}()
+	case GoalsKey:
+		err = func() error {
+			m.mu.Lock()
+			defer m.mu.Unlock()
+			return jsoniter.ConfigFastest.UnmarshalFromString(value, &m.goals)
+		}()
+	case RewardsKey:
+		err = func() error {
+			m.mu.Lock()
+			defer m.mu.Unlock()
+			return jsoniter.ConfigFastest.UnmarshalFromString(value, &m.rewards)
+		}()
+	case QueueKey:
+		err = func() error {
+			m.mu.Lock()
+			defer m.mu.Unlock()
+			return jsoniter.ConfigFastest.UnmarshalFromString(value, &m.queue)
+		}()
+	case CreateRedeemRPC:
+		var redeem Redeem
+		err = jsoniter.ConfigFastest.UnmarshalFromString(value, &redeem)
+		if err == nil {
+			err = m.AddRedeem(redeem)
 		}
-		if err != nil {
-			m.logger.Error("subscribe error: invalid JSON received on key", zap.Error(err), zap.String("key", kv.Key))
-		} else {
-			m.logger.Debug("updated key", zap.String("key", kv.Key))
+	case RemoveRedeemRPC:
+		var redeem Redeem
+		err = jsoniter.ConfigFastest.UnmarshalFromString(value, &redeem)
+		if err == nil {
+			err = m.RemoveRedeem(redeem)
+		}
+	default:
+		// Check for prefix changes
+		switch {
+		// User point changed
+		case strings.HasPrefix(key, PointsPrefix):
+			var entry PointsEntry
+			err = jsoniter.ConfigFastest.UnmarshalFromString(value, &entry)
+			user := key[len(PointsPrefix):]
+			func() {
+				m.mu.Lock()
+				defer m.mu.Unlock()
+				m.points[user] = entry
+			}()
 		}
 	}
-	return nil
+	if err != nil {
+		m.logger.Error("subscribe error: invalid JSON received on key", zap.Error(err), zap.String("key", key))
+	} else {
+		m.logger.Debug("updated key", zap.String("key", key))
+	}
 }
 
-func (m *Manager) handleRemote(kvs []database.ModifiedKV) error {
-	for _, kv := range kvs {
-		m.logger.Debug("loyalty request from stulbe", zap.String("key", kv.Key))
-		switch kv.Key {
-		case KVExLoyaltyRedeem:
-			// Parse request
-			var redeemRequest ExLoyaltyRedeem
-			err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &redeemRequest)
-			if err != nil {
-				m.logger.Warn("error decoding redeem request", zap.Error(err))
-				break
-			}
-			// Find reward
-			reward := m.GetReward(redeemRequest.RewardID)
-			if reward.ID == "" {
-				m.logger.Warn("redeem request contains invalid reward id", zap.String("reward-id", redeemRequest.RewardID))
-				break
-			}
-			err = m.PerformRedeem(Redeem{
-				Username:    redeemRequest.Username,
-				DisplayName: redeemRequest.DisplayName,
-				Reward:      reward,
-				When:        time.Now(),
-				RequestText: redeemRequest.RequestText,
-			})
-			if err != nil {
-				m.logger.Warn("error performing redeem request", zap.Error(err))
-			}
-		case KVExLoyaltyContribute:
-			// Parse request
-			var contributeRequest ExLoyaltyContribute
-			err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &contributeRequest)
-			if err != nil {
-				m.logger.Warn("error decoding contribution request", zap.Error(err))
-				break
-			}
-			// Find goal
-			goal := m.GetGoal(contributeRequest.GoalID)
-			if goal.ID == "" {
-				m.logger.Warn("contribute request contains invalid goal id", zap.String("goal-id", contributeRequest.GoalID))
-				break
-			}
-			err = m.PerformContribution(goal, contributeRequest.Username, contributeRequest.Amount)
-			if err != nil {
-				m.logger.Warn("error performing contribution request", zap.Error(err))
-			}
+func (m *Manager) handleRemote(key, value string) {
+	m.logger.Debug("loyalty request from stulbe", zap.String("key", key))
+	switch key {
+	case KVExLoyaltyRedeem:
+		// Parse request
+		var redeemRequest ExLoyaltyRedeem
+		err := jsoniter.ConfigFastest.UnmarshalFromString(value, &redeemRequest)
+		if err != nil {
+			m.logger.Warn("error decoding redeem request", zap.Error(err))
+			break
+		}
+		// Find reward
+		reward := m.GetReward(redeemRequest.RewardID)
+		if reward.ID == "" {
+			m.logger.Warn("redeem request contains invalid reward id", zap.String("reward-id", redeemRequest.RewardID))
+			break
+		}
+		err = m.PerformRedeem(Redeem{
+			Username:    redeemRequest.Username,
+			DisplayName: redeemRequest.DisplayName,
+			Reward:      reward,
+			When:        time.Now(),
+			RequestText: redeemRequest.RequestText,
+		})
+		if err != nil {
+			m.logger.Warn("error performing redeem request", zap.Error(err))
+		}
+	case KVExLoyaltyContribute:
+		// Parse request
+		var contributeRequest ExLoyaltyContribute
+		err := jsoniter.ConfigFastest.UnmarshalFromString(value, &contributeRequest)
+		if err != nil {
+			m.logger.Warn("error decoding contribution request", zap.Error(err))
+			break
+		}
+		// Find goal
+		goal := m.GetGoal(contributeRequest.GoalID)
+		if goal.ID == "" {
+			m.logger.Warn("contribute request contains invalid goal id", zap.String("goal-id", contributeRequest.GoalID))
+			break
+		}
+		err = m.PerformContribution(goal, contributeRequest.Username, contributeRequest.Amount)
+		if err != nil {
+			m.logger.Warn("error performing contribution request", zap.Error(err))
 		}
 	}
-	return nil
 }
 
 func (m *Manager) GetPoints(user string) int64 {

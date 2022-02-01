@@ -1,13 +1,11 @@
 package twitch
 
 import (
-	"context"
 	"strings"
 	"sync"
 	"text/template"
 	"time"
 
-	"github.com/strimertul/strimertul/modules/database"
 	"github.com/strimertul/strimertul/modules/loyalty"
 	"go.uber.org/zap"
 
@@ -157,41 +155,37 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	if err != nil {
 		bot.logger.Error("failed to parse custom commands", zap.Error(err))
 	}
-	go api.db.Subscribe(context.Background(), bot.updateCommands, CustomCommandsKey)
-	go api.db.Subscribe(context.Background(), bot.handleWriteMessageRPC, WriteMessageRPC)
+	go api.db.Subscribe(bot.updateCommands, CustomCommandsKey)
+	go api.db.Subscribe(bot.handleWriteMessageRPC, WriteMessageRPC)
 
 	return bot
 }
 
-func (b *Bot) updateCommands(kvs []database.ModifiedKV) error {
-	for _, kv := range kvs {
-		switch kv.Key {
-		case CustomCommandsKey:
-			err := func() error {
-				b.mu.Lock()
-				defer b.mu.Unlock()
-				return jsoniter.ConfigFastest.Unmarshal(kv.Data, &b.customCommands)
-			}()
-			if err != nil {
-				return err
-			}
-			// Recreate templates
-			if err := b.updateTemplates(); err != nil {
-				return err
-			}
+func (b *Bot) updateCommands(key, value string) {
+	switch key {
+	case CustomCommandsKey:
+		err := func() error {
+			b.mu.Lock()
+			defer b.mu.Unlock()
+			return jsoniter.ConfigFastest.UnmarshalFromString(value, &b.customCommands)
+		}()
+		if err != nil {
+			b.logger.Error("failed to decode new custom commands", zap.Error(err))
+			return
+		}
+		// Recreate templates
+		if err := b.updateTemplates(); err != nil {
+			b.logger.Error("failed to update custom commands templates", zap.Error(err))
+			return
 		}
 	}
-	return nil
 }
 
-func (b *Bot) handleWriteMessageRPC(kvs []database.ModifiedKV) error {
-	for _, kv := range kvs {
-		switch kv.Key {
-		case WriteMessageRPC:
-			b.Client.Say(b.config.Channel, string(kv.Data))
-		}
+func (b *Bot) handleWriteMessageRPC(key, value string) {
+	switch key {
+	case WriteMessageRPC:
+		b.Client.Say(b.config.Channel, value)
 	}
-	return nil
 }
 
 func (b *Bot) updateTemplates() error {

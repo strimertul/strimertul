@@ -1,23 +1,22 @@
 package twitch
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix/v2"
+	"github.com/strimertul/strimertul/modules/database"
 	"go.uber.org/zap"
 
 	"github.com/strimertul/strimertul/modules"
-	"github.com/strimertul/strimertul/modules/database"
 	"github.com/strimertul/strimertul/modules/loyalty"
 )
 
 type Client struct {
 	Config Config
 	Bot    *Bot
-	db     *database.DB
+	db     *database.DBModule
 	API    *helix.Client
 	logger *zap.Logger
 
@@ -25,7 +24,7 @@ type Client struct {
 }
 
 func Register(manager *modules.Manager) error {
-	db, ok := manager.Modules["db"].(*database.DB)
+	db, ok := manager.Modules["db"].(*database.DBModule)
 	if !ok {
 		return errors.New("db module not found")
 	}
@@ -79,38 +78,35 @@ func Register(manager *modules.Manager) error {
 	}
 
 	// Listen for config changes
-	go db.Subscribe(context.Background(), func(changed []database.ModifiedKV) error {
-		for _, kv := range changed {
-			switch kv.Key {
-			case ConfigKey:
-				err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &config)
-				if err != nil {
-					logger.Error("failed to unmarshal config", zap.Error(err))
-					continue
-				}
-				api, err := getHelixAPI(config.APIClientID, config.APIClientSecret)
-				if err != nil {
-					logger.Warn("failed to create new twitch client, keeping old credentials", zap.Error(err))
-					continue
-				}
-				client.API = api
-				logger.Info("reloaded/updated Twitch API")
-			case BotConfigKey:
-				err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &twitchBotConfig)
-				if err != nil {
-					logger.Error("failed to unmarshal config", zap.Error(err))
-					continue
-				}
-				err = client.Bot.Client.Disconnect()
-				if err != nil {
-					logger.Warn("failed to disconnect from Twitch IRC", zap.Error(err))
-				}
-				client.Bot = NewBot(client, twitchBotConfig)
-				client.restart <- true
-				logger.Info("reloaded/restarted Twitch bot")
+	go db.Subscribe(func(key, value string) {
+		switch key {
+		case ConfigKey:
+			err := jsoniter.ConfigFastest.UnmarshalFromString(value, &config)
+			if err != nil {
+				logger.Error("failed to unmarshal config", zap.Error(err))
+				return
 			}
+			api, err := getHelixAPI(config.APIClientID, config.APIClientSecret)
+			if err != nil {
+				logger.Warn("failed to create new twitch client, keeping old credentials", zap.Error(err))
+				return
+			}
+			client.API = api
+			logger.Info("reloaded/updated Twitch API")
+		case BotConfigKey:
+			err := jsoniter.ConfigFastest.UnmarshalFromString(value, &twitchBotConfig)
+			if err != nil {
+				logger.Error("failed to unmarshal config", zap.Error(err))
+				return
+			}
+			err = client.Bot.Client.Disconnect()
+			if err != nil {
+				logger.Warn("failed to disconnect from Twitch IRC", zap.Error(err))
+			}
+			client.Bot = NewBot(client, twitchBotConfig)
+			client.restart <- true
+			logger.Info("reloaded/restarted Twitch bot")
 		}
-		return nil
 	}, ConfigKey, BotConfigKey)
 
 	manager.Modules[modules.ModuleTwitch] = client

@@ -7,19 +7,19 @@ import (
 	"io/fs"
 	"net/http"
 
-	"github.com/strimertul/kilovolt/v7/drivers/badgerdb"
+	jsoniter "github.com/json-iterator/go"
+
+	"github.com/strimertul/strimertul/modules/database"
 
 	"go.uber.org/zap"
 
+	kv "github.com/strimertul/kilovolt/v8"
 	"github.com/strimertul/strimertul/modules"
-	"github.com/strimertul/strimertul/modules/database"
-
-	kv "github.com/strimertul/kilovolt/v7"
 )
 
 type Server struct {
 	Config   ServerConfig
-	db       *database.DB
+	db       *database.DBModule
 	logger   *zap.Logger
 	server   *http.Server
 	frontend fs.FS
@@ -28,7 +28,7 @@ type Server struct {
 }
 
 func NewServer(manager *modules.Manager) (*Server, error) {
-	db, ok := manager.Modules["db"].(*database.DB)
+	db, ok := manager.Modules["db"].(*database.DBModule)
 	if !ok {
 		return nil, errors.New("db module not found")
 	}
@@ -55,13 +55,13 @@ func NewServer(manager *modules.Manager) (*Server, error) {
 		}
 	}
 
-	server.hub, err = kv.NewHub(badgerdb.NewBadgerBackend(db.Client()), kv.HubOptions{
+	// Set hub
+	server.hub = db.Hub()
+
+	// Set password
+	server.hub.SetOptions(kv.HubOptions{
 		Password: server.Config.KVPassword,
-	}, logger.With(zap.String("module", "kv")))
-	if err != nil {
-		return nil, err
-	}
-	go server.hub.Run()
+	})
 
 	// Register module
 	manager.Modules[modules.ModuleHTTP] = server
@@ -113,34 +113,32 @@ func (s *Server) Listen() error {
 	restart := newSafeBool(false)
 	exit := make(chan error)
 	go func() {
-		err := s.db.Subscribe(context.Background(), func(changed []database.ModifiedKV) error {
-			for _, pair := range changed {
-				if pair.Key == ServerConfigKey {
-					oldBind := s.Config.Bind
-					oldPassword := s.Config.KVPassword
-					err := s.db.GetJSON(ServerConfigKey, &s.Config)
+		err := s.db.Subscribe(func(key, value string) {
+			if key == ServerConfigKey {
+				oldBind := s.Config.Bind
+				oldPassword := s.Config.KVPassword
+				err := jsoniter.ConfigFastest.Unmarshal([]byte(value), &s.Config)
+				if err != nil {
+					s.logger.Error("Failed to unmarshal config", zap.Error(err))
+					return
+				}
+				s.mux = s.makeMux()
+				// Restart hub if password changed
+				if oldPassword != s.Config.KVPassword {
+					s.hub.SetOptions(kv.HubOptions{
+						Password: s.Config.KVPassword,
+					})
+				}
+				// Restart server if bind changed
+				if oldBind != s.Config.Bind {
+					restart.Set(true)
+					err = s.server.Shutdown(context.Background())
 					if err != nil {
-						return err
-					}
-					s.mux = s.makeMux()
-					// Restart hub if password changed
-					if oldPassword != s.Config.KVPassword {
-						s.hub.SetOptions(kv.HubOptions{
-							Password: s.Config.KVPassword,
-						})
-					}
-					// Restart server if bind changed
-					if oldBind != s.Config.Bind {
-						restart.Set(true)
-						err = s.server.Shutdown(context.Background())
-						if err != nil {
-							s.logger.Error("Failed to shutdown server", zap.Error(err))
-							return err
-						}
+						s.logger.Error("Failed to shutdown server", zap.Error(err))
+						return
 					}
 				}
 			}
-			return nil
 		}, ServerConfigKey)
 		if err != nil {
 			exit <- fmt.Errorf("error while handling subscription to HTTP config changes: %w", err)

@@ -10,16 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **New UI**: Strimertul now features a more slick and better organized UI.
+- **Multiple database options**: Strimertul now supports multiple databases drivers. BadgerDB will remain as default (and currently the only option) for the time being but other databases are coming in the future.
 - **Database operations**: You can now export and import the entire database as JSON files
 - **Database backups**: The database will periodically save optimized copies of itself in a backup directory, directory and intervals are both configurable, though for the time being you might need to periodically clean it before it becomes too large.
-- **Manual garbage collection**: You can now launch strimertul with `--run-gc` to manually trigger garbage collection for the database. This will launch strimertul, execute a round of garbage collection and exit.
 - **Exposed internal metrics via keys**: `twitch/chat-activity` and `twitch/stream-status` now expose previously internal-only info about the current stream.
 
 ### Changed
 
+- The logging library has been changed to zap, the format of logs will therefore be wildly different.
 - A lot of the command line parameters have changed syntax (eg. from -noheader to -no-header), please check the new formats using `-h` if you rely on them.
 - Database schema has slightly changed, strimertul will auto-migrate to the new format if it detects old schema in use.
+
+### Removed
+
 - Twitch chat history doesn't have an explicit toggle anymore, they are always enabled unless the `chat_history` setting is set to 0.
+- Loyalty point migration from v1.2.0 and earlier has been removed. If you are somehow running such an old version of strimertul and using loyalty points, run any version of strimertul between v1.3.0 and v1.7.0 first to make sure all points are migrated to the new format.
 
 ## [1.7.0] - 2021-12-07
 

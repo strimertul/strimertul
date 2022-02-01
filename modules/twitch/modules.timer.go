@@ -1,17 +1,14 @@
 package twitch
 
 import (
-	"context"
 	"math/rand"
 	"sync"
 	"time"
 
 	"go.uber.org/zap"
 
-	jsoniter "github.com/json-iterator/go"
-
 	irc "github.com/gempir/go-twitch-irc/v2"
-	"github.com/strimertul/strimertul/modules/database"
+	jsoniter "github.com/json-iterator/go"
 )
 
 const BotTimersKey = "twitch/bot-modules/timers/config"
@@ -59,18 +56,15 @@ func SetupTimers(bot *Bot) *BotTimerModule {
 		bot.api.db.PutJSON(BotTimersKey, mod.Config)
 	}
 
-	go bot.api.db.Subscribe(context.Background(), func(changed []database.ModifiedKV) error {
-		for _, kv := range changed {
-			if kv.Key == BotTimersKey {
-				err := jsoniter.ConfigFastest.Unmarshal(kv.Data, &mod.Config)
-				if err != nil {
-					bot.logger.Debug("error reloading timer config", zap.Error(err))
-				} else {
-					bot.logger.Info("reloaded timer config")
-				}
+	go bot.api.db.Subscribe(func(key, value string) {
+		if key == BotTimersKey {
+			err := jsoniter.ConfigFastest.UnmarshalFromString(value, &mod.Config)
+			if err != nil {
+				bot.logger.Debug("error reloading timer config", zap.Error(err))
+			} else {
+				bot.logger.Info("reloaded timer config")
 			}
 		}
-		return nil
 	}, BotTimersKey)
 
 	bot.logger.Debug("loaded timers", zap.Int("timers", len(mod.Config.Timers)))

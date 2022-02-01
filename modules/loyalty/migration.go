@@ -3,20 +3,22 @@ package loyalty
 import (
 	"errors"
 
-	"go.uber.org/zap"
+	kv "github.com/strimertul/kilovolt/v8"
 
 	"github.com/strimertul/strimertul/modules/database"
+
+	"go.uber.org/zap"
 )
 
 const OldPointsKey = "loyalty/users"
 
 type OldPointStorage map[string]int64
 
-func migratePoints(db *database.DB, log *zap.Logger) error {
+func migratePoints(db *database.DBModule, log *zap.Logger) error {
 	// Retrieve old storage
 	var oldStorage OldPointStorage
 	err := db.GetJSON(OldPointsKey, &oldStorage)
-	if errors.Is(err, database.ErrKeyNotFound) {
+	if errors.Is(err, kv.ErrorKeyNotFound) {
 		// No migration needed, points are already kaput
 		return nil
 	}
