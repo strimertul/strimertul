@@ -71,7 +71,7 @@ func main() {
 	restoreDB := flag.String("restore", "", "Restore database from backup file")
 	backupDir := flag.String("backup-dir", "backups", "Path to directory with database backups")
 	backupInterval := flag.Int("backup-interval", 60, "Backup database every X minutes, 0 to disable")
-	driver := flag.String("driver", "badger", "Database driver to use (available: badger,pebble)")
+	driver := flag.String("driver", "badger", "Database driver to use (available: badger)")
 	flag.Parse()
 
 	rand.Seed(time.Now().UnixNano())
