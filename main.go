@@ -93,7 +93,9 @@ func main() {
 		}
 		logger, _ = cfg.Build()
 	}
-	defer logger.Sync()
+	defer func() {
+		_ = logger.Sync()
+	}()
 	undo := zap.RedirectStdLog(logger)
 	defer undo()
 
@@ -120,6 +122,9 @@ func main() {
 	case "badger":
 		var db *badger.DB
 		db, hub, err = makeBadgerHub(options)
+		if err != nil {
+			logger.Fatal("failed to open database", zap.Error(err))
+		}
 		defer func() {
 			if err := badgerClose(db); err != nil {
 				logger.Fatal("Failed to close database", zap.Error(err))
