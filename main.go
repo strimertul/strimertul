@@ -5,11 +5,15 @@ import (
 	"flag"
 	"fmt"
 	"io/fs"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"runtime"
 	"time"
+
+	"github.com/cockroachdb/pebble"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/strimertul/strimertul/modules/database"
@@ -73,7 +77,7 @@ func main() {
 	backupDir := flag.String("backup-dir", "backups", "Path to directory with database backups")
 	backupInterval := flag.Int("backup-interval", 60, "Backup database every X minutes, 0 to disable")
 	maxBackups := flag.Int("max-backups", 20, "Maximum number of backups to keep, older ones will be deleted, set to 0 to keep all")
-	driver := flag.String("driver", "badger", "Database driver to use (available: badger)")
+	driver := flag.String("driver", "auto", "Database driver to use (available: auto, badger, pebble). If 'auto' is specified with no database already in-place, the default driver (badger) will be used.")
 	flag.Parse()
 
 	rand.Seed(time.Now().UnixNano())
@@ -110,7 +114,6 @@ func main() {
 	// Make KV hub
 	var hub *kv.Hub
 	var err error
-	logger.Info("opening database", zap.String("driver", *driver))
 	options := dbOptions{
 		directory:      *dbDir,
 		restore:        *restoreDB,
@@ -118,6 +121,22 @@ func main() {
 		backupInterval: *backupInterval,
 		maxBackups:     *maxBackups,
 	}
+
+	// If driver is not mentioned explicitly, run db detection
+	if *driver == "auto" {
+		file, err := ioutil.ReadFile(filepath.Join(options.directory, "stul-driver"))
+		if err != nil {
+			if err == os.ErrNotExist {
+				*driver = "badger"
+			} else {
+				failOnError(err, "failed to open database driver file")
+			}
+		} else {
+			*driver = string(file)
+		}
+	}
+
+	logger.Info("opening database", zap.String("driver", *driver))
 	switch *driver {
 	case "badger":
 		var db *badger.DB
@@ -125,11 +144,14 @@ func main() {
 		if err != nil {
 			logger.Fatal("failed to open database", zap.Error(err))
 		}
-		defer func() {
-			if err := badgerClose(db); err != nil {
-				logger.Fatal("Failed to close database", zap.Error(err))
-			}
-		}()
+		defer badgerClose(db)
+	case "pebble":
+		var db *pebble.DB
+		db, hub, err = makePebbleHub(options)
+		if err != nil {
+			logger.Fatal("failed to open database", zap.Error(err))
+		}
+		defer pebbleClose(db)
 	default:
 		logger.Fatal("Unknown database driver", zap.String("driver", *driver))
 	}

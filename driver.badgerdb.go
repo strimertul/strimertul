@@ -6,29 +6,33 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"sort"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/dgraph-io/badger/v3/pb"
 	"github.com/golang/protobuf/proto"
-
+	jsoniter "github.com/json-iterator/go"
 	badger_driver "github.com/strimertul/kv-badgerdb"
+	"go.uber.org/zap"
 
 	kv "github.com/strimertul/kilovolt/v8"
 	"github.com/strimertul/strimertul/modules/loyalty"
 	"github.com/strimertul/strimertul/modules/stulbe"
 	"github.com/strimertul/strimertul/modules/twitch"
-
-	jsoniter "github.com/json-iterator/go"
-	"go.uber.org/zap"
 )
 
 func makeBadgerHub(options dbOptions) (*badger.DB, *kv.Hub, error) {
 	// Loading routine
 	db, err := badger.Open(badger.DefaultOptions(options.directory).WithSyncWrites(true))
 	failOnError(err, "Could not open DB")
+
+	// Create file for autodetect
+	err = ioutil.WriteFile(filepath.Join(options.directory, "stul-driver"), []byte("badger"), 0644)
+	failOnError(err, "Could not write driver file")
 
 	// Run migrations
 	pre200MigrateModuleConfig(db)
@@ -110,24 +114,9 @@ func makeBadgerHub(options dbOptions) (*badger.DB, *kv.Hub, error) {
 	return db, hub, err
 }
 
-type ByDate []os.DirEntry
-
-func (f ByDate) Len() int {
-	return len(f)
-}
-
-func (f ByDate) Swap(i, j int) {
-	f[i], f[j] = f[j], f[i]
-}
-
-func (f ByDate) Less(i, j int) bool {
-	firstInfo, _ := f[i].Info()
-	secondInfo, _ := f[i].Info()
-	return firstInfo.ModTime().Before(secondInfo.ModTime())
-}
-
-func badgerClose(db *badger.DB) error {
-	return db.Close()
+func badgerClose(db *badger.DB) {
+	err := db.Close()
+	failOnError(err, "Could not close database")
 }
 
 func badgerRestoreOverwrite(db *badger.DB, r io.Reader) error {

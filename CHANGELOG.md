@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [CURRENT]
+
+### Added
+
+- **Pebble driver**: You can now use [Pebble](https://github.com/cockroachdb/pebble) as a database. Just use `-driver=pebble`
+- **Auto driver detection**: The `-driver` option now defaults to `auto`, which will try to identify which database is in use. This means the `-driver` argument is realistically only needed when you first start strimertul. `auto` defaults to BadgerDB if no database is found (to preserve compatibility)
+
+### Fixed
+
+- Fixed nasty sync bug that would make strimertul unresponsive when it would detect streaming on Twitch.
+
 ## [2.0.0] - 2022-02-01
 
 ### Added
