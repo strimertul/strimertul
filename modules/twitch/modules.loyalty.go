@@ -15,8 +15,8 @@ import (
 )
 
 func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
-	config := loyalty.Config()
 	b.Loyalty = loyalty
+	config := loyalty.Config()
 	b.SetBanList(config.BanList)
 
 	// Add loyalty-based commands
@@ -55,79 +55,83 @@ func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
 		var statusMux sync.Mutex
 		streamOnline := true
 		go func() {
-			defer statusMux.Unlock()
 			for {
 				// Wait for next poll
 				time.Sleep(60 * time.Second)
 
 				// Check if streamer is online, if possible
-				statusMux.Lock()
-				streamOnline = true
-				status, err := b.api.API.GetStreams(&helix.StreamsParams{
-					UserLogins: []string{b.config.Channel},
-				})
-				if err != nil {
-					b.logger.Error("Error checking stream status", zap.Error(err))
-				} else {
-					streamOnline = len(status.Data.Streams) > 0
-				}
-				statusMux.Unlock()
+				func() {
+					statusMux.Lock()
+					defer statusMux.Unlock()
+					streamOnline = true
+					status, err := b.api.API.GetStreams(&helix.StreamsParams{
+						UserLogins: []string{b.config.Channel},
+					})
+					if err != nil {
+						b.logger.Error("Error checking stream status", zap.Error(err))
+					} else {
+						streamOnline = len(status.Data.Streams) > 0
+					}
 
-				err = b.api.db.PutJSON(StreamInfoKey, status.Data.Streams)
-				if err != nil {
-					b.logger.Warn("Error saving stream info", zap.Error(err))
-				}
+					err = b.api.db.PutJSON(StreamInfoKey, status.Data.Streams)
+					if err != nil {
+						b.logger.Warn("Error saving stream info", zap.Error(err))
+					}
+				}()
 			}
 		}()
 		go func() {
-			defer statusMux.Unlock()
 			for {
-				// Wait for next poll
-				time.Sleep(time.Duration(config.Points.Interval) * time.Second)
+				status := loyalty.Status()
+				if status.Enabled {
+					config := loyalty.Config()
+					if config.Points.Interval > 0 {
+						// Wait for next poll
+						time.Sleep(time.Duration(config.Points.Interval) * time.Second)
 
-				// If stream is confirmed offline, don't give points away!
-				statusMux.Lock()
-				isOnline := streamOnline
-				statusMux.Unlock()
-				if !isOnline {
-					continue
-				}
-
-				if config.Points.Interval > 0 {
-					b.logger.Debug("awarding points")
-
-					// Get user list
-					users, err := b.Client.Userlist(b.config.Channel)
-					if err != nil {
-						b.logger.Error("error listing users", zap.Error(err))
-						continue
-					}
-
-					// Iterate for each user in the list
-					pointsToGive := make(map[string]int64)
-					for _, user := range users {
-						// Check if user is blocked
-						if b.IsBanned(user) {
+						// If stream is confirmed offline, don't give points away!
+						statusMux.Lock()
+						isOnline := streamOnline
+						statusMux.Unlock()
+						if !isOnline {
 							continue
 						}
 
-						// Check if user was active (chatting) for the bonus dingus
-						award := config.Points.Amount
-						if b.IsActive(user) {
-							award += config.Points.ActivityBonus
+						b.logger.Debug("awarding points")
+
+						// Get user list
+						users, err := b.Client.Userlist(b.config.Channel)
+						if err != nil {
+							b.logger.Error("error listing users", zap.Error(err))
+							continue
 						}
 
-						// Add to point pool if already on it, otherwise initialize
-						pointsToGive[user] = award
-					}
+						// Iterate for each user in the list
+						pointsToGive := make(map[string]int64)
+						for _, user := range users {
+							// Check if user is blocked
+							if b.IsBanned(user) {
+								continue
+							}
 
-					b.ResetActivity()
+							// Check if user was active (chatting) for the bonus dingus
+							award := config.Points.Amount
+							if b.IsActive(user) {
+								award += config.Points.ActivityBonus
+							}
 
-					// If changes were made, save the pool!
-					if len(users) > 0 {
-						err := b.Loyalty.GivePoints(pointsToGive)
-						if err != nil {
-							b.logger.Error("error giving points to user", zap.Error(err))
+							// Add to point pool if already on it, otherwise initialize
+							pointsToGive[user] = award
+						}
+
+						b.ResetActivity()
+
+						// If changes were made, save the pool!
+						if len(users) > 0 {
+							err := b.Loyalty.GivePoints(pointsToGive)
+							if err != nil {
+								b.logger.Error("error giving points to user", zap.Error(err))
+							}
 						}
 					}
 				}

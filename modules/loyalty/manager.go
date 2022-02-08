@@ -117,7 +117,8 @@ func Register(manager *modules.Manager) error {
 }
 
 func (m *Manager) Status() modules.ModuleStatus {
-	if !m.config.Enabled {
+	config := m.Config()
+	if !config.Enabled {
 		return modules.ModuleStatus{
 			Enabled: false,
 		}
