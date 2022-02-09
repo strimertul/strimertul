@@ -4,11 +4,11 @@ import "sync"
 
 type SafeBool struct {
 	val bool
-	mux sync.Mutex
+	mux sync.RWMutex
 }
 
 func newSafeBool(val bool) *SafeBool {
-	return &SafeBool{val: val, mux: sync.Mutex{}}
+	return &SafeBool{val: val, mux: sync.RWMutex{}}
 }
 
 func (s *SafeBool) Set(val bool) {
@@ -18,8 +18,8 @@ func (s *SafeBool) Set(val bool) {
 }
 
 func (s *SafeBool) Get() bool {
-	s.mux.Lock()
+	s.mux.RLock()
 	val := s.val
-	s.mux.Unlock()
+	s.mux.RUnlock()
 	return val
 }

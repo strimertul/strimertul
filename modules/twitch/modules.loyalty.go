@@ -52,7 +52,7 @@ func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
 	// Setup handler for adding points over time
 	b.Client.OnConnect(func() {
 		b.logger.Info("status poll started")
-		var statusMux sync.Mutex
+		var statusMux sync.RWMutex
 		streamOnline := true
 		go func() {
 			for {
@@ -90,9 +90,9 @@ func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
 						time.Sleep(time.Duration(config.Points.Interval) * time.Second)
 
 						// If stream is confirmed offline, don't give points away!
-						statusMux.Lock()
+						statusMux.RLock()
 						isOnline := streamOnline
-						statusMux.Unlock()
+						statusMux.RUnlock()
 						if !isOnline {
 							continue
 						}
@@ -154,15 +154,15 @@ func (b *Bot) IsBanned(user string) bool {
 
 func (b *Bot) IsActive(user string) bool {
 	b.mu.Lock()
-	defer b.mu.Unlock()
 	active, ok := b.activeUsers[user]
+	b.mu.Unlock()
 	return ok && active
 }
 
 func (b *Bot) ResetActivity() {
 	b.mu.Lock()
-	defer b.mu.Unlock()
 	b.activeUsers = make(map[string]bool)
+	b.mu.Unlock()
 }
 
 func cmdBalance(bot *Bot, message irc.PrivateMessage) {
