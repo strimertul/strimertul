@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/strimertul/strimertul/modules"
+	"github.com/strimertul/strimertul/modules/database"
+	"github.com/strimertul/strimertul/modules/loyalty"
+
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix/v2"
-	"github.com/strimertul/strimertul/modules/database"
 	"go.uber.org/zap"
-
-	"github.com/strimertul/strimertul/modules"
-	"github.com/strimertul/strimertul/modules/loyalty"
 )
 
 type Client struct {

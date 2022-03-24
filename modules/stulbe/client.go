@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/database"
 
-	"go.uber.org/zap"
-
-	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/stulbe-client-go"
+	"go.uber.org/zap"
 )
 
 type Manager struct {

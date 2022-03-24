@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/strimertul/strimertul/modules/loyalty"
-	"go.uber.org/zap"
 
 	"github.com/Masterminds/sprig/v3"
 	irc "github.com/gempir/go-twitch-irc/v3"
 	jsoniter "github.com/json-iterator/go"
+	"go.uber.org/zap"
 )
 
 type Bot struct {

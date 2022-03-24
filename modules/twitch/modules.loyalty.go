@@ -7,11 +7,11 @@ import (
 	"sync"
 	"time"
 
-	"go.uber.org/zap"
+	"github.com/strimertul/strimertul/modules/loyalty"
 
 	irc "github.com/gempir/go-twitch-irc/v3"
 	"github.com/nicklaw5/helix/v2"
-	"github.com/strimertul/strimertul/modules/loyalty"
+	"go.uber.org/zap"
 )
 
 func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {

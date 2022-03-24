@@ -8,11 +8,10 @@ import (
 	"text/template"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/Masterminds/sprig/v3"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix/v2"
+	"go.uber.org/zap"
 )
 
 const BotAlertsKey = "twitch/bot-modules/alerts/config"

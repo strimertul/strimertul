@@ -8,14 +8,12 @@ import (
 	"net/http"
 	"net/http/pprof"
 
-	jsoniter "github.com/json-iterator/go"
-
+	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/database"
 
-	"go.uber.org/zap"
-
+	jsoniter "github.com/json-iterator/go"
 	kv "github.com/strimertul/kilovolt/v8"
-	"github.com/strimertul/strimertul/modules"
+	"go.uber.org/zap"
 )
 
 type Server struct {

@@ -5,10 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"go.uber.org/zap"
-
 	irc "github.com/gempir/go-twitch-irc/v3"
 	jsoniter "github.com/json-iterator/go"
+	"go.uber.org/zap"
 )
 
 const BotTimersKey = "twitch/bot-modules/timers/config"
