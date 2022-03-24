@@ -9,7 +9,7 @@ import (
 
 	"go.uber.org/zap"
 
-	irc "github.com/gempir/go-twitch-irc/v2"
+	irc "github.com/gempir/go-twitch-irc/v3"
 	"github.com/nicklaw5/helix/v2"
 )
 

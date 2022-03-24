@@ -7,7 +7,7 @@ import (
 
 	"go.uber.org/zap"
 
-	irc "github.com/gempir/go-twitch-irc/v2"
+	irc "github.com/gempir/go-twitch-irc/v3"
 	jsoniter "github.com/json-iterator/go"
 )
 

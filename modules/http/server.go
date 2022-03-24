@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"net/http/pprof"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -92,6 +93,13 @@ func (s *Server) SetFrontend(files fs.FS) {
 
 func (s *Server) makeMux() *http.ServeMux {
 	mux := http.NewServeMux()
+
+	// Register pprof
+	mux.HandleFunc("/debug/pprof/", pprof.Index)
+	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 
 	if s.frontend != nil {
 		mux.Handle("/ui/", http.StripPrefix("/ui/", FileServerWithDefault(http.FS(s.frontend))))
