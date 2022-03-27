@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"errors"
 	"flag"
 	"fmt"
 	"io/fs"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/strimertul/strimertul/modules/database"
+	"github.com/strimertul/strimertul/modules/glimesh"
 
 	kv "github.com/strimertul/kilovolt/v8"
 
@@ -55,6 +57,7 @@ var moduleList = map[modules.ModuleID]ModuleConstructor{
 	modules.ModuleStulbe:  stulbe.Register,
 	modules.ModuleLoyalty: loyalty.Register,
 	modules.ModuleTwitch:  twitch.Register,
+	modules.ModuleGlimesh: glimesh.Register,
 }
 
 type dbOptions struct {
@@ -126,7 +129,7 @@ func main() {
 	if *driver == "auto" {
 		file, err := ioutil.ReadFile(filepath.Join(options.directory, "stul-driver"))
 		if err != nil {
-			if err == os.ErrNotExist {
+			if errors.Is(err, os.ErrNotExist) {
 				*driver = "badger"
 			} else {
 				failOnError(err, "failed to open database driver file")

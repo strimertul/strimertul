@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/strimertul/strimertul/modules"
@@ -14,7 +15,10 @@ var json = jsoniter.ConfigFastest
 
 var (
 	// ErrUnknown is returned when a response is received that doesn't match any expected outcome.
-	ErrUnknown = fmt.Errorf("unknown error")
+	ErrUnknown = errors.New("unknown error")
+
+	// ErrEmptyKey is when a key is requested as JSON object but is an empty string (or unset)
+	ErrEmptyKey = errors.New("empty key")
 )
 
 type DBModule struct {
@@ -84,7 +88,7 @@ func (mod *DBModule) Subscribe(fn kv.SubscriptionCallback, prefixes ...string) e
 		if err != nil {
 			return err
 		}
-		mod.client.SetPrefixSubCallback(prefix, fn)
+		go mod.client.SetPrefixSubCallback(prefix, fn)
 	}
 	return nil
 }
@@ -93,6 +97,9 @@ func (mod *DBModule) GetJSON(key string, dst interface{}) error {
 	res, err := mod.GetKey(key)
 	if err != nil {
 		return err
+	}
+	if res == "" {
+		return ErrEmptyKey
 	}
 	return json.Unmarshal([]byte(res), dst)
 }

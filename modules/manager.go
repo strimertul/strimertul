@@ -23,11 +23,17 @@ type Module interface {
 type ModuleID string
 
 const (
+	// Required
+	ModuleDB   ModuleID = "db"
+	ModuleHTTP ModuleID = "http"
+
+	// Feature modules
 	ModuleLoyalty ModuleID = "loyalty"
-	ModuleTwitch  ModuleID = "twitch"
 	ModuleStulbe  ModuleID = "stulbe"
-	ModuleDB      ModuleID = "db"
-	ModuleHTTP    ModuleID = "http"
+
+	// Streaming providers
+	ModuleTwitch  ModuleID = "twitch"
+	ModuleGlimesh ModuleID = "glimesh"
 )
 
 type Manager struct {

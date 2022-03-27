@@ -11,6 +11,7 @@ import (
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/database"
 
+	"git.sr.ht/~hamcha/containers"
 	jsoniter "github.com/json-iterator/go"
 	kv "github.com/strimertul/kilovolt/v8"
 	"go.uber.org/zap"
@@ -116,7 +117,7 @@ func (s *Server) makeMux() *http.ServeMux {
 
 func (s *Server) Listen() error {
 	// Start HTTP server
-	restart := newSafeBool(false)
+	restart := containers.NewRWSync(false)
 	exit := make(chan error)
 	go func() {
 		err := s.db.Subscribe(func(key, value string) {

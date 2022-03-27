@@ -2,6 +2,7 @@ package loyalty
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -11,7 +12,6 @@ import (
 	"github.com/strimertul/strimertul/modules/stulbe"
 
 	jsoniter "github.com/json-iterator/go"
-	kv "github.com/strimertul/kilovolt/v8"
 	"go.uber.org/zap"
 )
 
@@ -49,26 +49,25 @@ func Register(manager *modules.Manager) error {
 	}
 	// Ger data from DB
 	if err := db.GetJSON(ConfigKey, &loyalty.config); err != nil {
-		if errors.Is(err, kv.ErrorKeyNotFound) {
-			logger.Warn("missing configuration for loyalty (but it's enabled). Please make sure to set it up properly!")
-		} else {
-			return err
+		if !errors.Is(err, database.ErrEmptyKey) {
+			return fmt.Errorf("could not retrieve loyalty config: %w", err)
 		}
+		loyalty.config.Enabled = false
 	}
 
 	// Retrieve configs
 	if err := db.GetJSON(RewardsKey, &loyalty.rewards); err != nil {
-		if !errors.Is(err, kv.ErrorKeyNotFound) {
+		if !errors.Is(err, database.ErrEmptyKey) {
 			return err
 		}
 	}
 	if err := db.GetJSON(GoalsKey, &loyalty.goals); err != nil {
-		if !errors.Is(err, kv.ErrorKeyNotFound) {
+		if !errors.Is(err, database.ErrEmptyKey) {
 			return err
 		}
 	}
 	if err := db.GetJSON(QueueKey, &loyalty.queue); err != nil {
-		if !errors.Is(err, kv.ErrorKeyNotFound) {
+		if !errors.Is(err, database.ErrEmptyKey) {
 			return err
 		}
 	}
@@ -76,7 +75,7 @@ func Register(manager *modules.Manager) error {
 	// Retrieve user points
 	points, err := db.GetAll(PointsPrefix)
 	if err != nil {
-		if !errors.Is(err, kv.ErrorKeyNotFound) {
+		if !errors.Is(err, database.ErrEmptyKey) {
 			return err
 		}
 		points = make(map[string]string)
