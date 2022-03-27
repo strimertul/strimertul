@@ -1,4 +1,4 @@
-# <center><img src="https://raw.githubusercontent.com/strimertul/strimertul/master/frontend/assets/images/readme-logo.svg"/></center>
+# Strimertül
 
 Small broadcasting suite for Twitch, includes:
 
