@@ -177,7 +177,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 		}
 		writeTemplate(bot, tpl, sub)
 	}
-	addPendingSub := func(ev interface{}) {
+	addPendingSub := func(ev any) {
 		switch sub := ev.(type) {
 		case helix.EventSubChannelSubscribeEvent:
 			pendingMux.Lock()
@@ -486,7 +486,7 @@ func (m *BotAlertsModule) addTemplate(templateList map[int]*template.Template, i
 }
 
 // writeTemplate renders the template and sends the message to the channel
-func writeTemplate(bot *Bot, tpl *template.Template, data interface{}) {
+func writeTemplate(bot *Bot, tpl *template.Template, data any) {
 	var buf bytes.Buffer
 	err := tpl.Execute(&buf, data)
 	if err != nil {

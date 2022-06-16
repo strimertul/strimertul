@@ -7,7 +7,7 @@ import (
 type ModuleStatus struct {
 	Enabled      bool
 	Working      bool
-	Data         interface{}
+	Data         any
 	StatusString string
 }
 
@@ -29,8 +29,9 @@ const (
 	ModuleHTTP ModuleID = "http"
 
 	// Feature modules
-	ModuleLoyalty ModuleID = "loyalty"
-	ModuleStulbe  ModuleID = "stulbe"
+	ModuleLoyalty    ModuleID = "loyalty"
+	ModuleStulbe     ModuleID = "stulbe"
+	ModuleExtensions ModuleID = "extensions"
 
 	// Streaming providers
 	ModuleTwitch ModuleID = "twitch"

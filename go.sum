@@ -263,6 +263,8 @@ github.com/strimertul/kv-pebble v1.1.0 h1:NaewHmVo7SyHhIAQS+iEoQpkxAHhyphRcouT3E
 github.com/strimertul/kv-pebble v1.1.0/go.mod h1:rIAu3qbUISmHn6OJ7+EvcHCDlLK02GGnvzAfX+XRsFA=
 github.com/strimertul/stulbe-client-go v0.7.2 h1:mco2JjkYuahgq1p8nlH7TRWNgFKyQMPb83AnBNO6B6E=
 github.com/strimertul/stulbe-client-go v0.7.2/go.mod h1:moBqGVP+6cDkJM760YUhSuLgrenHsRRgnC6s+91TzSs=
+github.com/traefik/yaegi v0.13.0 h1:dNwyGNSLHuRw5xswpbuW1TlzzGDciiK6uAighR1tMsc=
+github.com/traefik/yaegi v0.13.0/go.mod h1:RuCwD8/wsX7b6KoQHOaIFUfuH3gQIK4KWnFFmJMw5VA=
 github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGrc=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=
 github.com/urfave/negroni v1.0.0/go.mod h1:Meg73S6kFm/4PpbYdq35yYWoCZ9mS/YSx+lKnmiohz4=

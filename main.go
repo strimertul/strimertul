@@ -9,32 +9,27 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	_ "net/http/pprof"
 	"os"
 	"path/filepath"
 	"runtime"
 	"time"
 
 	"github.com/cockroachdb/pebble"
-
 	"github.com/dgraph-io/badger/v3"
-	"github.com/strimertul/strimertul/modules/database"
-
+	jsoniter "github.com/json-iterator/go"
+	"github.com/pkg/browser"
 	kv "github.com/strimertul/kilovolt/v8"
-
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	jsoniter "github.com/json-iterator/go"
-	"go.uber.org/zap"
-
 	"github.com/strimertul/strimertul/modules"
+	"github.com/strimertul/strimertul/modules/database"
+	"github.com/strimertul/strimertul/modules/extensions"
 	"github.com/strimertul/strimertul/modules/http"
 	"github.com/strimertul/strimertul/modules/loyalty"
 	"github.com/strimertul/strimertul/modules/stulbe"
 	"github.com/strimertul/strimertul/modules/twitch"
-
-	"github.com/pkg/browser"
-
-	_ "net/http/pprof"
 )
 
 const AppHeader = `
@@ -53,9 +48,10 @@ var logger *zap.Logger
 type ModuleConstructor = func(manager *modules.Manager) error
 
 var moduleList = map[modules.ModuleID]ModuleConstructor{
-	modules.ModuleStulbe:  stulbe.Register,
-	modules.ModuleLoyalty: loyalty.Register,
-	modules.ModuleTwitch:  twitch.Register,
+	modules.ModuleStulbe:     stulbe.Register,
+	modules.ModuleLoyalty:    loyalty.Register,
+	modules.ModuleTwitch:     twitch.Register,
+	modules.ModuleExtensions: extensions.Register,
 }
 
 type dbOptions struct {
@@ -176,18 +172,18 @@ func main() {
 		var entries map[string]string
 		err = jsoniter.ConfigFastest.NewDecoder(file).Decode(&entries)
 		failOnError(err, "Could not decode import file")
-		errors := 0
+		errcount := 0
 		imported := 0
 		for key, value := range entries {
 			err = db.PutKey(key, value)
 			if err != nil {
 				logger.Error("Could not import entry", zap.String("key", key), zap.Error(err))
-				errors += 1
+				errcount += 1
 			} else {
 				imported += 1
 			}
 		}
-		logger.Info("Imported database from file", zap.Int("imported", imported), zap.Int("errors", errors))
+		logger.Info("Imported database from file", zap.Int("imported", imported), zap.Int("errors", errcount))
 	}
 
 	// Set meta keys
