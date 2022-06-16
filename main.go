@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"errors"
 	"flag"
 	"fmt"
 	"io/fs"
@@ -126,7 +127,7 @@ func main() {
 	if *driver == "auto" {
 		file, err := ioutil.ReadFile(filepath.Join(options.directory, "stul-driver"))
 		if err != nil {
-			if err == os.ErrNotExist {
+			if errors.Is(err, os.ErrNotExist) {
 				*driver = "badger"
 			} else {
 				failOnError(err, "failed to open database driver file")

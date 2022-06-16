@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"go.uber.org/zap"
 
 	irc "github.com/gempir/go-twitch-irc/v3"
-	"github.com/nicklaw5/helix/v2"
 	"github.com/strimertul/strimertul/modules/loyalty"
 )
 
@@ -51,35 +49,6 @@ func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
 
 	// Setup handler for adding points over time
 	b.Client.OnConnect(func() {
-		b.logger.Info("status poll started")
-		var statusMux sync.RWMutex
-		streamOnline := true
-		go func() {
-			for {
-				// Wait for next poll
-				time.Sleep(60 * time.Second)
-
-				// Check if streamer is online, if possible
-				func() {
-					statusMux.Lock()
-					defer statusMux.Unlock()
-					streamOnline = true
-					status, err := b.api.API.GetStreams(&helix.StreamsParams{
-						UserLogins: []string{b.config.Channel},
-					})
-					if err != nil {
-						b.logger.Error("Error checking stream status", zap.Error(err))
-					} else {
-						streamOnline = len(status.Data.Streams) > 0
-					}
-
-					err = b.api.db.PutJSON(StreamInfoKey, status.Data.Streams)
-					if err != nil {
-						b.logger.Warn("Error saving stream info", zap.Error(err))
-					}
-				}()
-			}
-		}()
 		go func() {
 			for {
 				status := loyalty.Status()
@@ -90,9 +59,7 @@ func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
 						time.Sleep(time.Duration(config.Points.Interval) * time.Second)
 
 						// If stream is confirmed offline, don't give points away!
-						statusMux.RLock()
-						isOnline := streamOnline
-						statusMux.RUnlock()
+						isOnline := b.api.streamOnline.Get()
 						if !isOnline {
 							continue
 						}

@@ -19,6 +19,7 @@ require (
 )
 
 require (
+	git.sr.ht/~hamcha/containers v0.0.3 // indirect
 	github.com/DataDog/zstd v1.4.5 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect

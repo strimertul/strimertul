@@ -3,7 +3,9 @@ package twitch
 import (
 	"errors"
 	"fmt"
+	"time"
 
+	"git.sr.ht/~hamcha/containers"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix/v2"
 	"github.com/strimertul/strimertul/modules/database"
@@ -20,7 +22,8 @@ type Client struct {
 	API    *helix.Client
 	logger *zap.Logger
 
-	restart chan bool
+	restart      chan bool
+	streamOnline *containers.RWSync[bool]
 }
 
 func Register(manager *modules.Manager) error {
@@ -35,38 +38,51 @@ func Register(manager *modules.Manager) error {
 	var config Config
 	err := db.GetJSON(ConfigKey, &config)
 	if err != nil {
-		return fmt.Errorf("failed to get twitch config: %w", err)
+		if !errors.Is(err, database.ErrEmptyKey) {
+			return fmt.Errorf("failed to get twitch config: %w", err)
+		}
+		config.Enabled = false
 	}
 
 	// Create Twitch client
-	api, err := getHelixAPI(config.APIClientID, config.APIClientSecret)
-	if err != nil {
-		return fmt.Errorf("failed to create twitch client: %w", err)
+	var api *helix.Client
+
+	if config.Enabled {
+		api, err = getHelixAPI(config.APIClientID, config.APIClientSecret)
+		if err != nil {
+			return fmt.Errorf("failed to create twitch client: %w", err)
+		}
 	}
 
 	client := &Client{
-		Config:  config,
-		db:      db,
-		API:     api,
-		logger:  logger,
-		restart: make(chan bool),
+		Config:       config,
+		db:           db,
+		API:          api,
+		logger:       logger,
+		restart:      make(chan bool, 128),
+		streamOnline: containers.NewRWSync(false),
 	}
 
-	// Get Twitch bot config
-	var twitchBotConfig BotConfig
-	err = db.GetJSON(BotConfigKey, &twitchBotConfig)
-	if err != nil {
-		return fmt.Errorf("failed to get bot config: %w", err)
+	if client.Config.EnableBot {
+		if err := client.startBot(manager); err != nil {
+			if !errors.Is(err, database.ErrEmptyKey) {
+				return err
+			}
+		}
 	}
 
-	// Create and run IRC bot
-	client.Bot = NewBot(client, twitchBotConfig)
+	go client.runStatusPoll()
+
 	go func() {
 		for {
-			err := client.RunBot()
-			if err != nil {
-				logger.Error("failed to connect to Twitch IRC", zap.Error(err))
-				// Wait for config change before retrying
+			if client.Config.EnableBot && client.Bot != nil {
+				err := client.RunBot()
+				if err != nil {
+					logger.Error("failed to connect to Twitch IRC", zap.Error(err))
+					// Wait for config change before retrying
+					<-client.restart
+				}
+			} else {
 				<-client.restart
 			}
 		}
@@ -94,6 +110,7 @@ func Register(manager *modules.Manager) error {
 			client.API = api
 			logger.Info("reloaded/updated Twitch API")
 		case BotConfigKey:
+			var twitchBotConfig BotConfig
 			err := jsoniter.ConfigFastest.UnmarshalFromString(value, &twitchBotConfig)
 			if err != nil {
 				logger.Error("failed to unmarshal config", zap.Error(err))
@@ -103,13 +120,66 @@ func Register(manager *modules.Manager) error {
 			if err != nil {
 				logger.Warn("failed to disconnect from Twitch IRC", zap.Error(err))
 			}
-			client.Bot = NewBot(client, twitchBotConfig)
+			if client.Config.EnableBot {
+				if err := client.startBot(manager); err != nil {
+					if !errors.Is(err, database.ErrEmptyKey) {
+						logger.Error("failed to re-create bot", zap.Error(err))
+					}
+				}
+			}
 			client.restart <- true
 			logger.Info("reloaded/restarted Twitch bot")
 		}
 	}, ConfigKey, BotConfigKey)
 
 	manager.Modules[modules.ModuleTwitch] = client
+
+	return nil
+}
+
+func (c *Client) runStatusPoll() {
+	c.logger.Info("status poll started")
+	for {
+		// Wait for next poll
+		time.Sleep(60 * time.Second)
+
+		// Check if streamer is online, if possible
+		func() {
+			status, err := c.API.GetStreams(&helix.StreamsParams{
+				UserLogins: []string{c.Bot.config.Channel}, //TODO Replace with something non bot dependant
+			})
+			if err != nil {
+				c.logger.Error("Error checking stream status", zap.Error(err))
+			} else {
+				c.streamOnline.Set(len(status.Data.Streams) > 0)
+			}
+
+			err = c.db.PutJSON(StreamInfoKey, status.Data.Streams)
+			if err != nil {
+				c.logger.Warn("Error saving stream info", zap.Error(err))
+			}
+		}()
+	}
+}
+
+func (c *Client) startBot(manager *modules.Manager) error {
+	// Get Twitch bot config
+	var twitchBotConfig BotConfig
+	err := c.db.GetJSON(BotConfigKey, &twitchBotConfig)
+	if err != nil {
+		if !errors.Is(err, database.ErrEmptyKey) {
+			return fmt.Errorf("failed to get bot config: %w", err)
+		}
+		c.Config.EnableBot = false
+	}
+
+	// Create and run IRC bot
+	c.Bot = NewBot(c, twitchBotConfig)
+
+	// If loyalty module is enabled, set-up loyalty commands
+	if loyaltyManager, ok := manager.Modules[modules.ModuleLoyalty].(*loyalty.Manager); ok && c.Bot != nil {
+		c.Bot.SetupLoyalty(loyaltyManager)
+	}
 
 	return nil
 }

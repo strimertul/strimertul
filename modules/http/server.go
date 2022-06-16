@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 
+	"git.sr.ht/~hamcha/containers"
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/strimertul/strimertul/modules/database"
@@ -118,7 +119,7 @@ func (s *Server) makeMux() *http.ServeMux {
 
 func (s *Server) Listen() error {
 	// Start HTTP server
-	restart := newSafeBool(false)
+	restart := containers.NewRWSync(false)
 	exit := make(chan error)
 	go func() {
 		err := s.db.Subscribe(func(key, value string) {
