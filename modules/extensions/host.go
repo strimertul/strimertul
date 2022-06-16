@@ -31,3 +31,16 @@ func Register(manager *modules.Manager) error {
 
 	return nil
 }
+
+func (e *ExtensionHost) Close() error {
+	return nil
+}
+
+func (e *ExtensionHost) Status() modules.ModuleStatus {
+	return modules.ModuleStatus{
+		Enabled:      true,
+		Working:      true,
+		Data:         struct{}{},
+		StatusString: "",
+	}
+}
