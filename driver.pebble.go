@@ -9,12 +9,13 @@ import (
 	"sort"
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
-
 	"github.com/cockroachdb/pebble"
+	jsoniter "github.com/json-iterator/go"
 	kv "github.com/strimertul/kilovolt/v8"
 	pebble_driver "github.com/strimertul/kv-pebble"
 	"go.uber.org/zap"
+
+	"github.com/strimertul/strimertul/utils"
 )
 
 func makePebbleHub(options dbOptions) (*pebble.DB, *kv.Hub, error) {
@@ -71,7 +72,7 @@ func makePebbleHub(options dbOptions) (*pebble.DB, *kv.Hub, error) {
 			// If maxBackups is set, remove older backups when we reach the limit
 			if options.maxBackups > 0 && len(files) > options.maxBackups {
 				// Sort by date
-				sort.Sort(ByDate(files))
+				sort.Sort(utils.ByDate(files))
 				// Get files to remove
 				toRemove := files[:len(files)-options.maxBackups]
 				for _, file := range toRemove {
