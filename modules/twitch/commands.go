@@ -76,6 +76,7 @@ func (b *Bot) setupFunctions() {
 			return rand.Intn(max-min) + min
 		},
 		"game": func(channel string) string {
+			channel = strings.TrimLeft(channel, "@")
 			info, err := b.api.API.SearchChannels(&helix.SearchChannelsParams{Channel: channel, First: 1, LiveOnly: false})
 			if err != nil {
 				return "unknown"
