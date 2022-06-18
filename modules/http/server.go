@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"mime"
 	"net/http"
 	"net/http/pprof"
 
@@ -37,12 +38,18 @@ func NewServer(manager *modules.Manager) (*Server, error) {
 
 	logger := manager.Logger(modules.ModuleHTTP)
 
+	// Fix mime type bug in Windows (fixed in Go 1.19)
+	err := mime.AddExtensionType(".js", "text/javascript; charset=utf-8")
+	if err != nil {
+		logger.Warn("Failed to set fix for mime-type bug", zap.Error(err))
+	}
+
 	server := &Server{
 		logger: logger,
 		db:     db,
 		server: &http.Server{},
 	}
-	err := db.GetJSON(ServerConfigKey, &server.Config)
+	err = db.GetJSON(ServerConfigKey, &server.Config)
 	if err != nil {
 		// Initialize with default config
 		server.Config = ServerConfig{
