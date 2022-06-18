@@ -143,6 +143,11 @@ func (c *Client) runStatusPoll() {
 		// Wait for next poll
 		time.Sleep(60 * time.Second)
 
+		// Make sure we're configured and connected properly first
+		if !c.Config.Enabled || c.Bot == nil || c.Bot.config.Channel == "" {
+			continue
+		}
+
 		// Check if streamer is online, if possible
 		func() {
 			status, err := c.API.GetStreams(&helix.StreamsParams{
