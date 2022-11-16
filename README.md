@@ -31,21 +31,15 @@ At strimertul's core is [Kilovolt](https://github.com/strimertul/kilovolt), a pu
 
 Check out the [project's wiki](https://github.com/strimertul/strimertul/wiki) for more information on how to use the API to interact with strimertul, or the `docs` folder for more technical informations.
 
+## Development
+
+This project uses Wails, check out the [Getting Started](https://wails.io/docs/gettingstarted/installation) guide on how to install it.
+
+To run in live development mode, run `wails dev` in the project directory. This will run a Vite development server that will provide hot reload of frontend changes, while hard-reloading on backend changes.
+
 ## Building
 
-You need to build the frontend first!
-
-```sh
-cd frontend
-npm i
-npm run build
-```
-
-Once that's done, just build the app like any other Go project
-
-```sh
-go build
-```
+To build a redistributable, production mode package, use `wails build`.
 
 ## License
 

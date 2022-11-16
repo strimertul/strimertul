@@ -2,53 +2,41 @@ package main
 
 import (
 	"embed"
-	"errors"
-	"flag"
 	"fmt"
-	"io/fs"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
 	"path/filepath"
-	"runtime"
 	"time"
 
 	"github.com/cockroachdb/pebble"
-
-	"github.com/dgraph-io/badger/v3"
-	"github.com/strimertul/strimertul/modules/database"
+	"github.com/urfave/cli/v2"
+	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	kv "github.com/strimertul/kilovolt/v8"
 
-	"go.uber.org/zap/zapcore"
-
-	jsoniter "github.com/json-iterator/go"
-	"go.uber.org/zap"
-
 	"github.com/strimertul/strimertul/modules"
+	"github.com/strimertul/strimertul/modules/database"
 	"github.com/strimertul/strimertul/modules/http"
 	"github.com/strimertul/strimertul/modules/loyalty"
 	"github.com/strimertul/strimertul/modules/stulbe"
 	"github.com/strimertul/strimertul/modules/twitch"
 
-	"github.com/pkg/browser"
-
 	_ "net/http/pprof"
 )
 
-const AppHeader = `
-     _       _               _   O  O _ 
-  __| |_ _ _(_)_ __  ___ _ _| |_ _  _| | 
- (_-<  _| '_| | '  \/ -_) '_|  _| || | | 
- /__/\__|_| |_|_|_|_\___|_|  \__|\_,_|_| `
+const databaseDefaultDriver = "pebble"
 
 var appVersion = "v0.0.0-UNKNOWN"
 
+var logger *zap.Logger
+
 //go:embed frontend/dist/*
 var frontend embed.FS
-
-var logger *zap.Logger
 
 type ModuleConstructor = func(manager *modules.Manager) error
 
@@ -59,135 +47,143 @@ var moduleList = map[modules.ModuleID]ModuleConstructor{
 }
 
 type dbOptions struct {
-	directory      string
-	restore        string
 	backupDir      string
 	backupInterval int
 	maxBackups     int
 }
 
 func main() {
-	// Get cmd line parameters
-	noHeader := flag.Bool("no-header", false, "Do not print the app header")
-	dbDir := flag.String("database-dir", "data", "Path to strimertül database dir")
-	debug := flag.Bool("debug", false, "Start in debug mode (more logging)")
-	json := flag.Bool("json", false, "Print logging in JSON format")
-	exportDB := flag.Bool("export", false, "Export database as JSON")
-	importDB := flag.String("import", "", "Import database from JSON file")
-	restoreDB := flag.String("restore", "", "Restore database from backup file")
-	backupDir := flag.String("backup-dir", "backups", "Path to directory with database backups")
-	backupInterval := flag.Int("backup-interval", 60, "Backup database every X minutes, 0 to disable")
-	maxBackups := flag.Int("max-backups", 20, "Maximum number of backups to keep, older ones will be deleted, set to 0 to keep all")
-	driver := flag.String("driver", "auto", "Database driver to use (available: auto, badger, pebble). If 'auto' is specified with no database already in-place, the default driver (badger) will be used.")
-	flag.Parse()
+	app := &cli.App{
+		Name:    "strimertul",
+		Usage:   "the small broadcasting suite for Twitch",
+		Version: appVersion,
+		Action:  cliMain,
+		Flags: []cli.Flag{
+			&cli.BoolFlag{Name: "debug", Aliases: []string{"d"}, Usage: "print more logs (for debugging)", Value: false},
+			&cli.BoolFlag{Name: "json-log", Usage: "print logs in JSON format", Value: false},
+			&cli.StringFlag{Name: "driver", Usage: "specify database driver", Value: "auto"},
+			&cli.StringFlag{Name: "database-dir", Aliases: []string{"db-dir"}, Usage: "specify database directory", Value: "data"},
+			&cli.StringFlag{Name: "backup-dir", Aliases: []string{"b-dir"}, Usage: "specify backup directory", Value: "backups"},
+			&cli.IntFlag{Name: "backup-interval", Aliases: []string{"b-i"}, Usage: "specify backup interval (in minutes, 0 to disable)", Value: 60},
+			&cli.IntFlag{Name: "max-backups", Aliases: []string{"b-max"}, Usage: "maximum number of backups to keep, older ones will be deleted, set to 0 to keep all", Value: 20},
+		},
+		Commands: []*cli.Command{
+			{
+				Name:      "import",
+				Usage:     "import database from JSON file",
+				ArgsUsage: "[-f input.json]",
+				Flags: []cli.Flag{
+					&cli.StringFlag{Name: "file", Aliases: []string{"f"}, Usage: "file to open", DefaultText: "STDIN"},
+				},
+				Action: cliImport,
+			},
+			{
+				Name:      "export",
+				Usage:     "export database as JSON file",
+				ArgsUsage: "[-f output.json]",
+				Flags: []cli.Flag{
+					&cli.StringFlag{Name: "file", Aliases: []string{"f"}, Usage: "file to save to", DefaultText: "STDOUT"},
+				},
+				Action: cliExport,
+			},
+			{
+				Name:      "restore",
+				Usage:     "restore database from backup",
+				ArgsUsage: "[-f backup.db]",
+				Flags: []cli.Flag{
+					&cli.StringFlag{Name: "file", Aliases: []string{"f"}, Usage: "backup to open", DefaultText: "STDOUT"},
+				},
+				Action: cliRestore,
+			},
+		},
+		Before: func(ctx *cli.Context) error {
+			// Seed RNG
+			rand.Seed(time.Now().UnixNano())
 
-	rand.Seed(time.Now().UnixNano())
+			// Initialize logger with global flags
+			initLogger(ctx.Bool("debug"), ctx.Bool("json-log"))
+			return nil
+		},
+		After: func(ctx *cli.Context) error {
+			logger.Sync()
+			zap.RedirectStdLog(logger)()
+			return nil
+		},
+	}
 
-	if *debug {
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func initLogger(debug bool, json bool) {
+	if debug {
 		cfg := zap.NewDevelopmentConfig()
-		if *json {
+		if json {
 			cfg.Encoding = "json"
 		}
 		logger, _ = cfg.Build()
 	} else {
 		cfg := zap.NewProductionConfig()
-		if !*json {
+		if !json {
 			cfg.Encoding = "console"
 			cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 			cfg.EncoderConfig.CallerKey = zapcore.OmitKey
 		}
 		logger, _ = cfg.Build()
 	}
-	defer func() {
-		_ = logger.Sync()
-	}()
-	undo := zap.RedirectStdLog(logger)
-	defer undo()
+}
 
-	if !*noHeader {
-		// Print the app header and version info
-		_, _ = fmt.Fprintf(os.Stderr, "%s\n\n %s - %s/%s (%s)\n\n", AppHeader, appVersion, runtime.GOOS, runtime.GOARCH, runtime.Version())
+func getDatabaseDriver(ctx *cli.Context) string {
+	driver := ctx.String("driver")
+	if driver != "auto" {
+		return driver
 	}
 
+	dbdir := ctx.String("database-dir")
+	file, err := os.ReadFile(filepath.Join(dbdir, "stul-driver"))
+	if err != nil {
+		// No driver file found (or file corrupted), use default driver
+		return databaseDefaultDriver
+	}
+	return string(file)
+}
+
+func cliMain(ctx *cli.Context) error {
 	// Create module manager
 	manager := modules.NewManager(logger)
 
 	// Make KV hub
 	var hub *kv.Hub
 	var err error
-	options := dbOptions{
-		directory:      *dbDir,
-		restore:        *restoreDB,
-		backupDir:      *backupDir,
-		backupInterval: *backupInterval,
-		maxBackups:     *maxBackups,
+	dbopts := dbOptions{
+		backupDir:      ctx.String("backup-dir"),
+		backupInterval: ctx.Int("backup-interval"),
+		maxBackups:     ctx.Int("max-backups"),
 	}
 
-	// If driver is not mentioned explicitly, run db detection
-	if *driver == "auto" {
-		file, err := ioutil.ReadFile(filepath.Join(options.directory, "stul-driver"))
-		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				*driver = "badger"
-			} else {
-				failOnError(err, "failed to open database driver file")
-			}
-		} else {
-			*driver = string(file)
-		}
-	}
-
-	logger.Info("opening database", zap.String("driver", *driver))
-	switch *driver {
+	dbdir := ctx.String("database-dir")
+	driver := getDatabaseDriver(ctx)
+	logger.Info("opening database", zap.String("driver", driver))
+	switch driver {
 	case "badger":
-		var db *badger.DB
-		db, hub, err = makeBadgerHub(options)
-		if err != nil {
-			logger.Fatal("failed to open database", zap.Error(err))
-		}
-		defer badgerClose(db)
+		return cli.Exit("Badger is not supported anymore as a database driver", 64)
 	case "pebble":
 		var db *pebble.DB
-		db, hub, err = makePebbleHub(options)
+		db, hub, err = makePebbleHub(dbdir, dbopts)
 		if err != nil {
-			logger.Fatal("failed to open database", zap.Error(err))
+			return fatalError(err, "failed to open database")
 		}
 		defer pebbleClose(db)
 	default:
-		logger.Fatal("Unknown database driver", zap.String("driver", *driver))
+		return cli.Exit(fmt.Sprintf("Unknown database driver: %s", driver), 64)
 	}
 
 	go hub.Run()
 
 	db, err := database.NewDBModule(hub, manager)
-	failOnError(err, "Failed to initialize database module")
-
-	if *exportDB {
-		// Export database to stdout
-		data, err := db.GetAll("")
-		failOnError(err, "Could not export database")
-		failOnError(jsoniter.ConfigFastest.NewEncoder(os.Stdout).Encode(data), "Could not encode database")
-		return
-	}
-
-	if *importDB != "" {
-		file, err := os.Open(*importDB)
-		failOnError(err, "Could not open import file")
-		var entries map[string]string
-		err = jsoniter.ConfigFastest.NewDecoder(file).Decode(&entries)
-		failOnError(err, "Could not decode import file")
-		errors := 0
-		imported := 0
-		for key, value := range entries {
-			err = db.PutKey(key, value)
-			if err != nil {
-				logger.Error("Could not import entry", zap.String("key", key), zap.Error(err))
-				errors += 1
-			} else {
-				imported += 1
-			}
-		}
-		logger.Info("Imported database from file", zap.Int("imported", imported), zap.Int("errors", errors))
+	if err != nil {
+		return fatalError(err, "Failed to initialize database module")
 	}
 
 	// Set meta keys
@@ -209,35 +205,48 @@ func main() {
 
 	// Create logger and endpoints
 	httpServer, err := http.NewServer(manager)
-	failOnError(err, "Could not initialize http server")
+	if err != nil {
+		return fatalError(err, "Could not initialize http server")
+	}
 	defer func() {
 		if err := httpServer.Close(); err != nil {
 			logger.Error("Could not close DB", zap.Error(err))
 		}
 	}()
 
-	fedir, _ := fs.Sub(frontend, "frontend/dist")
-	httpServer.SetFrontend(fedir)
+	// Run HTTP server
+	go failOnError(httpServer.Listen(), "HTTP server stopped")
 
-	go func() {
-		time.Sleep(time.Second) // THIS IS STUPID
-		dashboardURL := fmt.Sprintf("http://%s/ui", httpServer.Config.Bind)
-		err := browser.OpenURL(dashboardURL)
-		if err != nil {
-			logger.Warn(fmt.Sprintf("could not open browser, dashboard URL available at: %s", dashboardURL), zap.Error(err))
-		}
-	}()
+	// Create an instance of the app structure
+	app := NewApp()
 
-	// Start HTTP server
-	failOnError(httpServer.Listen(), "HTTP server stopped")
+	// Create application with options
+	err = wails.Run(&options.App{
+		Title:  "strimertul",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: frontend,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		OnStartup:        app.startup,
+		Bind: []interface{}{
+			app,
+		},
+	})
+
+	if err != nil {
+		return fatalError(err, "App exited unexpectedly")
+	}
+	return nil
+}
+
+func fatalError(err error, text string) error {
+	return cli.Exit(fmt.Errorf("%s: %w", text, err), 1)
 }
 
 func failOnError(err error, text string) {
 	if err != nil {
-		fatalError(err, text)
+		log.Fatal(fatalError(err, text))
 	}
-}
-
-func fatalError(err error, text string) {
-	log.Fatalf("FATAL ERROR OCCURRED: %s\n\n%s", text, err.Error())
 }

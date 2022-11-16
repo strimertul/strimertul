@@ -18,21 +18,17 @@ import (
 	"github.com/strimertul/strimertul/utils"
 )
 
-func makePebbleHub(options dbOptions) (*pebble.DB, *kv.Hub, error) {
-	db, err := pebble.Open(options.directory, &pebble.Options{})
-	failOnError(err, "Could not open DB")
-
-	// Create file for autodetect
-	err = ioutil.WriteFile(filepath.Join(options.directory, "stul-driver"), []byte("pebble"), 0644)
-	failOnError(err, "Could not write driver file")
-
-	if options.restore != "" {
-		file, err := os.Open(options.restore)
-		failOnError(err, "Could not open backup")
-		failOnError(pebbleRestoreOverwrite(db, file), "Could not restore database")
-		logger.Info("Restored database from backup")
+func makePebbleHub(directory string, options dbOptions) (*pebble.DB, *kv.Hub, error) {
+	db, err := pebble.Open(directory, &pebble.Options{})
+	if err != nil {
+		return nil, nil, fmt.Errorf("Could not open DB: %w", err)
 	}
 
+	// Create file for autodetect
+	err = ioutil.WriteFile(filepath.Join(directory, "stul-driver"), []byte("pebble"), 0644)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Could not write driver file: %w", err)
+	}
 	// Backup database periodically
 	go func() {
 		if options.backupDir == "" {
@@ -89,9 +85,68 @@ func makePebbleHub(options dbOptions) (*pebble.DB, *kv.Hub, error) {
 	return db, hub, err
 }
 
-func pebbleClose(db *pebble.DB) {
+func pebbleImport(directory string, entries map[string]string) error {
+	db, err := pebble.Open(directory, &pebble.Options{})
+	if err != nil {
+		return fmt.Errorf("Could not open DB: %w", err)
+	}
+	defer db.Close()
+
+	batch := db.NewBatch()
+	for key, value := range entries {
+		batch.Set([]byte(key), []byte(value), &pebble.WriteOptions{})
+	}
+	err = batch.Commit(&pebble.WriteOptions{})
+	if err != nil {
+		return fmt.Errorf("Could not commit changes to database: %w", err)
+	}
+	return nil
+}
+
+func pebbleExport(directory string, file io.Writer) error {
+	db, err := pebble.Open(directory, &pebble.Options{})
+	if err != nil {
+		return fmt.Errorf("Could not open DB: %w", err)
+	}
+	defer db.Close()
+
+	return pebbleBackup(db, file)
+}
+
+func pebbleRestore(directory string, file io.Reader) error {
+	db, err := pebble.Open(directory, &pebble.Options{})
+	if err != nil {
+		return fmt.Errorf("Could not open DB: %w", err)
+	}
+	defer db.Close()
+
+	in := make(map[string]string)
+	err = jsoniter.ConfigFastest.NewDecoder(file).Decode(&in)
+	if err != nil {
+		return fmt.Errorf("Could not decode backup: %w", err)
+	}
+
+	b := db.NewBatch()
+	for k, v := range in {
+		err = b.Set([]byte(k), []byte(v), nil)
+		if err != nil {
+			return fmt.Errorf("Could not set key %s: %w", k, err)
+		}
+	}
+
+	err = b.Commit(&pebble.WriteOptions{Sync: true})
+	if err != nil {
+		return fmt.Errorf("Could not commit changes to database: %w", err)
+	}
+	return nil
+}
+
+func pebbleClose(db *pebble.DB) error {
 	err := db.Close()
-	failOnError(err, "Could not close database")
+	if err != nil {
+		return fmt.Errorf("Could not close database: %w", err)
+	}
+	return nil
 }
 
 func pebbleBackup(db *pebble.DB, file io.Writer) error {
@@ -101,22 +156,4 @@ func pebbleBackup(db *pebble.DB, file io.Writer) error {
 		out[string(iter.Key())] = string(iter.Value())
 	}
 	return jsoniter.ConfigFastest.NewEncoder(file).Encode(out)
-}
-
-func pebbleRestoreOverwrite(db *pebble.DB, r io.Reader) error {
-	in := make(map[string]string)
-	err := jsoniter.ConfigFastest.NewDecoder(r).Decode(&in)
-	if err != nil {
-		return err
-	}
-
-	b := db.NewBatch()
-	for k, v := range in {
-		err = b.Set([]byte(k), []byte(v), nil)
-		if err != nil {
-			return err
-		}
-	}
-
-	return b.Commit(&pebble.WriteOptions{Sync: true})
 }

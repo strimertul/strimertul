@@ -1,6 +1,7 @@
 {
   "name": "strimertul-frontend",
   "version": "1.0.0",
+  "type": "module",
   "dependencies": {
     "@billjs/event-emitter": "^1.0.3",
     "@fontsource/space-mono": "^4.5.0",
@@ -39,6 +40,7 @@
   },
   "scripts": {
     "start": "vite",
+    "dev": "vite",
     "build": "vite build"
   },
   "browserslist": [

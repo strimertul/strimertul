@@ -19,7 +19,7 @@ globalStyles();
 
 ReactDOM.render(
   <Provider store={store}>
-    <BrowserRouter basename="/ui">
+    <BrowserRouter>
       <App />
     </BrowserRouter>
   </Provider>,
