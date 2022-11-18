@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 import { useModule, useStatus } from '../../lib/react-utils';
+import { useAppDispatch } from '../../store';
 import apiReducer, { modules } from '../../store/api/reducer';
 import SaveButton from '../components/utils/SaveButton';
 import {
@@ -19,7 +19,7 @@ export default function ServerSettingsPage(): React.ReactElement {
     modules.httpConfig,
   );
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const status = useStatus(loadStatus.save);
   const busy =
     loadStatus.load?.type !== 'success' || loadStatus.save?.type === 'pending';
@@ -31,7 +31,7 @@ export default function ServerSettingsPage(): React.ReactElement {
       </PageHeader>
       <form
         onSubmit={(ev) => {
-          dispatch(setServerConfig(serverConfig));
+          void dispatch(setServerConfig(serverConfig));
           ev.preventDefault();
         }}
       >

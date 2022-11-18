@@ -2,6 +2,15 @@ export interface StulbeOptions {
   controller: AbortController;
 }
 
+type stulbeAuthResult =
+  | {
+      ok: true;
+      token: string;
+    }
+  | {
+      error: string;
+    };
+
 export default class Stulbe {
   private token: string;
 
@@ -12,7 +21,7 @@ export default class Stulbe {
   ) {}
 
   public async auth(user: string, key: string): Promise<boolean> {
-    const res = await (
+    const res: stulbeAuthResult = (await (
       await fetch(`${this.endpoint}/api/auth`, {
         method: 'POST',
         headers: {
@@ -24,23 +33,23 @@ export default class Stulbe {
         }),
         signal: this.options?.controller.signal,
       })
-    ).json();
-    if (!res.ok) {
+    ).json()) as stulbeAuthResult;
+    if ('error' in res) {
       throw new Error(res.error);
     }
     this.token = res.token;
     return res.ok;
   }
 
-  public async makeRequest<T>(
+  public async makeRequest<T, B extends BodyInit | URLSearchParams>(
     method: string,
     path: string,
-    body?: any,
+    body?: B,
   ): Promise<T> {
     if (!this.token) {
       throw new Error('not authenticated');
     }
-    const res = await (
+    const res = (await (
       await fetch(`${this.endpoint}/${path}`, {
         method,
         headers: {
@@ -50,7 +59,7 @@ export default class Stulbe {
         body,
         signal: this.options?.controller.signal,
       })
-    ).json();
+    ).json()) as T;
     return res;
   }
 }

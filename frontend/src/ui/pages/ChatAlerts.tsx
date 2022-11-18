@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 import { CheckIcon } from '@radix-ui/react-icons';
 import { useModule, useStatus } from '../../lib/react-utils';
 import apiReducer, { modules } from '../../store/api/reducer';
@@ -21,10 +20,11 @@ import {
   TextBlock,
 } from '../theme';
 import SaveButton from '../components/utils/SaveButton';
+import { useAppDispatch } from '../../store';
 
 export default function ChatAlertsPage(): React.ReactElement {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [alerts, setAlerts, loadStatus] = useModule(modules.twitchBotAlerts);
   const status = useStatus(loadStatus.save);
 
@@ -32,7 +32,7 @@ export default function ChatAlertsPage(): React.ReactElement {
     <PageContainer>
       <form
         onSubmit={(ev) => {
-          dispatch(setAlerts(alerts));
+          void dispatch(setAlerts(alerts));
           ev.preventDefault();
         }}
       >
@@ -61,8 +61,8 @@ export default function ChatAlertsPage(): React.ReactElement {
               <FlexRow spacing={1} align="left">
                 <Checkbox
                   checked={alerts?.follow?.enabled ?? false}
-                  onCheckedChange={(ev) =>
-                    dispatch(
+                  onCheckedChange={(ev) => {
+                    void dispatch(
                       apiReducer.actions.twitchBotAlertsChanged({
                         ...alerts,
                         follow: {
@@ -70,8 +70,8 @@ export default function ChatAlertsPage(): React.ReactElement {
                           enabled: !!ev,
                         },
                       }),
-                    )
-                  }
+                    );
+                  }}
                   id="follow-enabled"
                 >
                   <CheckboxIndicator>
@@ -107,8 +107,8 @@ export default function ChatAlertsPage(): React.ReactElement {
               <FlexRow spacing={1} align="left">
                 <Checkbox
                   checked={alerts?.subscription?.enabled ?? false}
-                  onCheckedChange={(ev) =>
-                    dispatch(
+                  onCheckedChange={(ev) => {
+                    void dispatch(
                       apiReducer.actions.twitchBotAlertsChanged({
                         ...alerts,
                         subscription: {
@@ -116,8 +116,8 @@ export default function ChatAlertsPage(): React.ReactElement {
                           enabled: !!ev,
                         },
                       }),
-                    )
-                  }
+                    );
+                  }}
                   id="subscription-enabled"
                 >
                   <CheckboxIndicator>
@@ -138,7 +138,7 @@ export default function ChatAlertsPage(): React.ReactElement {
                 disabled={!alerts?.subscription?.enabled ?? true}
                 required={alerts?.subscription?.enabled ?? false}
                 onChange={(messages) => {
-                  dispatch(
+                  void dispatch(
                     apiReducer.actions.twitchBotAlertsChanged({
                       ...alerts,
                       subscription: { ...alerts.subscription, messages },
@@ -154,8 +154,8 @@ export default function ChatAlertsPage(): React.ReactElement {
               <FlexRow spacing={1} align="left">
                 <Checkbox
                   checked={alerts?.gift_sub?.enabled ?? false}
-                  onCheckedChange={(ev) =>
-                    dispatch(
+                  onCheckedChange={(ev) => {
+                    void dispatch(
                       apiReducer.actions.twitchBotAlertsChanged({
                         ...alerts,
                         gift_sub: {
@@ -163,8 +163,8 @@ export default function ChatAlertsPage(): React.ReactElement {
                           enabled: !!ev,
                         },
                       }),
-                    )
-                  }
+                    );
+                  }}
                   id="gift_sub-enabled"
                 >
                   <CheckboxIndicator>
@@ -185,7 +185,7 @@ export default function ChatAlertsPage(): React.ReactElement {
                 disabled={!alerts?.gift_sub?.enabled ?? true}
                 required={alerts?.gift_sub?.enabled ?? false}
                 onChange={(messages) => {
-                  dispatch(
+                  void dispatch(
                     apiReducer.actions.twitchBotAlertsChanged({
                       ...alerts,
                       gift_sub: { ...alerts.gift_sub, messages },
@@ -201,8 +201,8 @@ export default function ChatAlertsPage(): React.ReactElement {
               <FlexRow spacing={1} align="left">
                 <Checkbox
                   checked={alerts?.raid?.enabled ?? false}
-                  onCheckedChange={(ev) =>
-                    dispatch(
+                  onCheckedChange={(ev) => {
+                    void dispatch(
                       apiReducer.actions.twitchBotAlertsChanged({
                         ...alerts,
                         raid: {
@@ -210,8 +210,8 @@ export default function ChatAlertsPage(): React.ReactElement {
                           enabled: !!ev,
                         },
                       }),
-                    )
-                  }
+                    );
+                  }}
                   id="raid-enabled"
                 >
                   <CheckboxIndicator>
@@ -232,7 +232,7 @@ export default function ChatAlertsPage(): React.ReactElement {
                 disabled={!alerts?.raid?.enabled ?? true}
                 required={alerts?.raid?.enabled ?? false}
                 onChange={(messages) => {
-                  dispatch(
+                  void dispatch(
                     apiReducer.actions.twitchBotAlertsChanged({
                       ...alerts,
                       raid: { ...alerts.raid, messages },
@@ -248,8 +248,8 @@ export default function ChatAlertsPage(): React.ReactElement {
               <FlexRow spacing={1} align="left">
                 <Checkbox
                   checked={alerts?.cheer?.enabled ?? false}
-                  onCheckedChange={(ev) =>
-                    dispatch(
+                  onCheckedChange={(ev) => {
+                    void dispatch(
                       apiReducer.actions.twitchBotAlertsChanged({
                         ...alerts,
                         cheer: {
@@ -257,8 +257,8 @@ export default function ChatAlertsPage(): React.ReactElement {
                           enabled: !!ev,
                         },
                       }),
-                    )
-                  }
+                    );
+                  }}
                   id="raid-enabled"
                 >
                   <CheckboxIndicator>
@@ -279,7 +279,7 @@ export default function ChatAlertsPage(): React.ReactElement {
                 disabled={!alerts?.cheer?.enabled ?? true}
                 required={alerts?.cheer?.enabled ?? false}
                 onChange={(messages) => {
-                  dispatch(
+                  void dispatch(
                     apiReducer.actions.twitchBotAlertsChanged({
                       ...alerts,
                       cheer: { ...alerts.cheer, messages },

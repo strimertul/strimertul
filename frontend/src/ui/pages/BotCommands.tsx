@@ -1,8 +1,8 @@
 import { PlusIcon } from '@radix-ui/react-icons';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 import { useModule } from '../../lib/react-utils';
+import { useAppDispatch } from '../../store';
 import { modules } from '../../store/api/reducer';
 import {
   accessLevels,
@@ -213,7 +213,7 @@ function CommandDialog({
               ...item,
               description,
               response,
-              access_level: accessLevel as AccessLevelType,
+              access_level: accessLevel,
             });
           }
         }}
@@ -290,14 +290,14 @@ export default function TwitchBotCommandsPage(): React.ReactElement {
   const [filter, setFilter] = useState('');
   const [activeDialog, setActiveDialog] = useState<DialogPrompt>(null);
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const filterLC = filter.toLowerCase();
 
   const setCommand = (newName: string, data: TwitchBotCustomCommand): void => {
     switch (activeDialog.kind) {
       case 'new':
-        dispatch(
+        void dispatch(
           setCommands({
             ...commands,
             [newName]: {
@@ -309,7 +309,7 @@ export default function TwitchBotCommandsPage(): React.ReactElement {
         break;
       case 'edit': {
         const oldName = activeDialog.name;
-        dispatch(
+        void dispatch(
           setCommands({
             ...commands,
             [oldName]: undefined,
@@ -323,7 +323,7 @@ export default function TwitchBotCommandsPage(): React.ReactElement {
   };
 
   const deleteCommand = (cmd: string): void => {
-    dispatch(
+    void dispatch(
       setCommands({
         ...commands,
         [cmd]: undefined,
@@ -332,7 +332,7 @@ export default function TwitchBotCommandsPage(): React.ReactElement {
   };
 
   const toggleCommand = (cmd: string): void => {
-    dispatch(
+    void dispatch(
       setCommands({
         ...commands,
         [cmd]: {

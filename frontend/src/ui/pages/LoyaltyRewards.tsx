@@ -1,8 +1,8 @@
 import { CheckIcon, PlusIcon } from '@radix-ui/react-icons';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 import { useModule } from '../../lib/react-utils';
+import { useAppDispatch } from '../../store';
 import { modules } from '../../store/api/reducer';
 import { LoyaltyGoal, LoyaltyReward } from '../../store/api/types';
 import AlertContent from '../components/AlertContent';
@@ -267,7 +267,7 @@ function GoalItem({
 
 function RewardsPage() {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [config] = useModule(modules.loyaltyConfig);
   const [rewards, setRewards] = useModule(modules.loyaltyRewards);
   const [filter, setFilter] = useState('');
@@ -282,12 +282,12 @@ function RewardsPage() {
   });
   const filterLC = filter.toLowerCase();
 
-  const deleteReward = (id: string): void => {
-    dispatch(setRewards(rewards?.filter((r) => r.id !== id) ?? []));
+  const deleteReward = (id: string) => {
+    void dispatch(setRewards(rewards?.filter((r) => r.id !== id) ?? []));
   };
 
-  const toggleReward = (id: string): void => {
-    dispatch(
+  const toggleReward = (id: string) => {
+    void dispatch(
       setRewards(
         rewards?.map((r) => {
           if (r.id === id) {
@@ -324,17 +324,17 @@ function RewardsPage() {
               if (!(e.target as HTMLFormElement).checkValidity()) {
                 return;
               }
-              const reward = dialogReward.reward;
+              const { reward } = dialogReward;
               if (requiredInfo.enabled) {
                 reward.required_info = requiredInfo.text;
               }
-              const index = rewards?.findIndex((t) => t.id == reward.id);
+              const index = rewards?.findIndex((r) => r.id === reward.id);
               if (index >= 0) {
                 const newRewards = rewards.slice(0);
                 newRewards[index] = reward;
-                dispatch(setRewards(newRewards));
+                void dispatch(setRewards(newRewards));
               } else {
-                dispatch(setRewards([...(rewards ?? []), reward]));
+                void dispatch(setRewards([...(rewards ?? []), reward]));
               }
               setDialogReward({ ...dialogReward, open: false });
             }}
@@ -450,7 +450,7 @@ function RewardsPage() {
                     ...dialogReward,
                     reward: {
                       ...dialogReward?.reward,
-                      price: parseInt(e.target.value),
+                      price: parseInt(e.target.value, 10),
                     },
                   });
                 }}
@@ -600,7 +600,7 @@ function RewardsPage() {
 
 function GoalsPage() {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [config] = useModule(modules.loyaltyConfig);
   const [goals, setGoals] = useModule(modules.loyaltyGoals);
   const [filter, setFilter] = useState('');
@@ -609,18 +609,18 @@ function GoalsPage() {
     new: boolean;
     goal: LoyaltyGoal;
   }>({ open: false, new: false, goal: null });
-  const [requiredInfo, setRequiredInfo] = useState({
+  const [_requiredInfo, setRequiredInfo] = useState({
     enabled: false,
     text: '',
   });
   const filterLC = filter.toLowerCase();
 
   const deleteGoal = (id: string): void => {
-    dispatch(setGoals(goals?.filter((r) => r.id !== id) ?? []));
+    void dispatch(setGoals(goals?.filter((r) => r.id !== id) ?? []));
   };
 
   const toggleGoal = (id: string): void => {
-    dispatch(
+    void dispatch(
       setGoals(
         goals?.map((r) => {
           if (r.id === id) {
@@ -655,14 +655,14 @@ function GoalsPage() {
               if (!(e.target as HTMLFormElement).checkValidity()) {
                 return;
               }
-              const goal = dialogGoal.goal;
-              const index = goals?.findIndex((t) => t.id == goal.id);
+              const { goal } = dialogGoal;
+              const index = goals?.findIndex((g) => g.id === goal.id);
               if (index >= 0) {
                 const newGoals = goals.slice(0);
                 newGoals[index] = goal;
-                dispatch(setGoals(newGoals));
+                void dispatch(setGoals(newGoals));
               } else {
-                dispatch(setGoals([...(goals ?? []), goal]));
+                void dispatch(setGoals([...(goals ?? []), goal]));
               }
               setDialogGoal({ ...dialogGoal, open: false });
             }}
@@ -776,7 +776,7 @@ function GoalsPage() {
                     ...dialogGoal,
                     goal: {
                       ...dialogGoal?.goal,
-                      total: parseInt(e.target.value),
+                      total: parseInt(e.target.value, 10),
                     },
                   });
                 }}

@@ -1,4 +1,4 @@
-import { CircleIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons';
+import { CircleIcon } from '@radix-ui/react-icons';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageContainer, SectionHeader, styled } from '../theme';
@@ -67,7 +67,7 @@ const Darken = styled('a', {
 function TwitchSection() {
   const { t } = useTranslation();
   const twitchInfo = useLiveKey<StreamInfo[]>('twitch/stream-info');
-  //const twitchActivity = useLiveKey<StreamInfo[]>('twitch/chat-activity');
+  // const twitchActivity = useLiveKey<StreamInfo[]>('twitch/chat-activity');
 
   return (
     <>

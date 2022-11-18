@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 
 import 'inter-ui/inter.css';
 import '@fontsource/space-mono/index.css';
 import 'normalize.css/normalize.css';
 import 'react-toastify/dist/ReactToastify.css';
-import 'overlayscrollbars/css/OverlayScrollbars.css';
+import 'overlayscrollbars/overlayscrollbars.css';
 
 import './locale/setup';
 
@@ -19,9 +19,9 @@ globalStyles();
 
 ReactDOM.render(
   <Provider store={store}>
-    <BrowserRouter>
+    <HashRouter>
       <App />
-    </BrowserRouter>
+    </HashRouter>
   </Provider>,
   document.getElementById('main'),
 );

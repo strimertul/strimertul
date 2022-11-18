@@ -155,8 +155,9 @@ export default function Sidebar({
   const matchApp = useMatch({ path: resolved.pathname, end: true });
   const client = useSelector((state: RootState) => state.api.client);
   const [version, setVersion] = useState<string>(null);
-  const [lastVersion, setLastVersion] =
-    useState<{ url: string; name: string }>(null);
+  const [lastVersion, setLastVersion] = useState<{ url: string; name: string }>(
+    null,
+  );
   const dev = version && version.startsWith('v0.0.0');
 
   async function fetchVersion() {
@@ -174,7 +175,7 @@ export default function Sidebar({
           },
         },
       );
-      const data = await req.json();
+      const data = (await req.json()) as { html_url: string; name: string };
       setLastVersion({
         url: data.html_url,
         name: data.name,
@@ -186,12 +187,12 @@ export default function Sidebar({
   }
 
   useEffect(() => {
-    fetchLastVersion();
+    void fetchLastVersion();
   }, []);
 
   useEffect(() => {
     if (client) {
-      fetchVersion();
+      void fetchVersion();
     }
   }, [client]);
 
@@ -205,7 +206,7 @@ export default function Sidebar({
           <AppLink to={'/about'} status={matchApp ? 'active' : 'default'}>
             <AppName>
               <img
-                src={logo}
+                src={logo as string}
                 style={{ height: '28px', marginBottom: '-2px' }}
               />
               {APPNAME}

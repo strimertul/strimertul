@@ -1,7 +1,6 @@
 import React from 'react';
 import { CheckIcon } from '@radix-ui/react-icons';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 import { useModule, useStatus } from '../../lib/react-utils';
 import apiReducer, { modules } from '../../store/api/reducer';
 import {
@@ -19,11 +18,12 @@ import {
 } from '../theme';
 import SaveButton from '../components/utils/SaveButton';
 import Interval from '../components/Interval';
+import { useAppDispatch } from '../../store';
 
 export default function LoyaltySettingsPage(): React.ReactElement {
   const { t } = useTranslation();
   const [config, setConfig, loadStatus] = useModule(modules.loyaltyConfig);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const status = useStatus(loadStatus.save);
   const busy =
     loadStatus.load?.type !== 'success' || loadStatus.save?.type === 'pending';
@@ -40,14 +40,14 @@ export default function LoyaltySettingsPage(): React.ReactElement {
           <FlexRow spacing={1}>
             <Checkbox
               checked={active}
-              onCheckedChange={(ev) =>
-                dispatch(
+              onCheckedChange={(ev) => {
+                void dispatch(
                   setConfig({
                     ...config,
                     enabled: !!ev,
                   }),
-                )
-              }
+                );
+              }}
               id="enable"
             >
               <CheckboxIndicator>{active && <CheckIcon />}</CheckboxIndicator>
@@ -62,7 +62,7 @@ export default function LoyaltySettingsPage(): React.ReactElement {
           if (!(e.target as HTMLFormElement).checkValidity()) {
             return;
           }
-          dispatch(setConfig(config));
+          void dispatch(setConfig(config));
         }}
       >
         <Field size="fullWidth">
@@ -76,14 +76,14 @@ export default function LoyaltySettingsPage(): React.ReactElement {
             value={config?.currency ?? ''}
             disabled={!active || busy}
             required={true}
-            onChange={(e) =>
-              dispatch(
+            onChange={(e) => {
+              void dispatch(
                 apiReducer.actions.loyaltyConfigChanged({
                   ...config,
                   currency: e.target.value,
                 }),
-              )
-            }
+              );
+            }}
           />
           <FieldNote>
             {t('pages.loyalty-settings.currency-name-hint')}
@@ -112,7 +112,7 @@ export default function LoyaltySettingsPage(): React.ReactElement {
                 if (Number.isNaN(intNum)) {
                   return;
                 }
-                dispatch(
+                void dispatch(
                   apiReducer.actions.loyaltyConfigChanged({
                     ...config,
                     points: {
@@ -128,7 +128,7 @@ export default function LoyaltySettingsPage(): React.ReactElement {
               id="timer-interval"
               value={config?.points?.interval ?? 120}
               onChange={(interval) => {
-                dispatch(
+                void dispatch(
                   apiReducer.actions.loyaltyConfigChanged({
                     ...(config ?? {}),
                     points: {
@@ -161,7 +161,7 @@ export default function LoyaltySettingsPage(): React.ReactElement {
               if (Number.isNaN(intNum)) {
                 return;
               }
-              dispatch(
+              void dispatch(
                 apiReducer.actions.loyaltyConfigChanged({
                   ...config,
                   points: {

@@ -40,7 +40,7 @@ export default function DebugPage(): React.ReactElement {
   const [readValue, setReadValue] = useState('');
   const [writeKey, setWriteKey] = useState('');
   const [writeValue, setWriteValue] = useState('');
-  const [writeErrorMsg, setWriteErrorMsg] = useState(null);
+  const [writeErrorMsg, setWriteErrorMsg] = useState<string>(null);
   const api = useSelector((state: RootState) => state.api.client);
 
   const performRead = async () => {
@@ -54,8 +54,10 @@ export default function DebugPage(): React.ReactElement {
     try {
       setWriteValue(JSON.stringify(JSON.parse(writeValue)));
       setWriteErrorMsg(null);
-    } catch (e) {
-      setWriteErrorMsg(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setWriteErrorMsg(e.message);
+      }
     }
   };
   const dumpKeys = async () => {
@@ -86,10 +88,20 @@ export default function DebugPage(): React.ReactElement {
       <Field size="fullWidth">
         <Label htmlFor="read-key">{t('pages.debug.console-ops')}</Label>
         <FlexRow align="left" spacing="1">
-          <Button type="button" onClick={() => dumpKeys()}>
+          <Button
+            type="button"
+            onClick={() => {
+              void dumpKeys();
+            }}
+          >
             {t('pages.debug.dump-keys')}
           </Button>
-          <Button type="button" onClick={() => dumpAll()}>
+          <Button
+            type="button"
+            onClick={() => {
+              void dumpAll();
+            }}
+          >
             {t('pages.debug.dump-all')}
           </Button>
         </FlexRow>
@@ -98,7 +110,7 @@ export default function DebugPage(): React.ReactElement {
         onSubmit={(e) => {
           e.preventDefault();
           if ((e.target as HTMLFormElement).checkValidity()) {
-            performRead();
+            void performRead();
           }
         }}
       >
@@ -124,7 +136,7 @@ export default function DebugPage(): React.ReactElement {
         onSubmit={(e) => {
           e.preventDefault();
           if ((e.target as HTMLFormElement).checkValidity()) {
-            performWrite();
+            void performWrite();
           }
         }}
       >

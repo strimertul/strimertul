@@ -1,8 +1,9 @@
 import { PlusIcon } from '@radix-ui/react-icons';
+import { TFunction } from 'i18next';
 import React, { useState } from 'react';
-import { TFunction, useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { useModule } from '../../lib/react-utils';
+import { useAppDispatch } from '../../store';
 import { modules } from '../../store/api/reducer';
 import { TwitchBotTimer } from '../../store/api/types';
 import AlertContent from '../components/AlertContent';
@@ -303,14 +304,14 @@ export default function TwitchBotTimersPage(): React.ReactElement {
   const [filter, setFilter] = useState('');
   const [activeDialog, setActiveDialog] = useState<DialogPrompt>(null);
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const filterLC = filter.toLowerCase();
 
   const setTimer = (newName: string, data: TwitchBotTimer): void => {
     switch (activeDialog.kind) {
       case 'new':
-        dispatch(
+        void dispatch(
           setTimerConfig({
             ...timerConfig,
             timers: {
@@ -325,7 +326,7 @@ export default function TwitchBotTimersPage(): React.ReactElement {
         break;
       case 'edit': {
         const oldName = activeDialog.name;
-        dispatch(
+        void dispatch(
           setTimerConfig({
             ...timerConfig,
             timers: {
@@ -342,7 +343,7 @@ export default function TwitchBotTimersPage(): React.ReactElement {
   };
 
   const deleteTimer = (cmd: string): void => {
-    dispatch(
+    void dispatch(
       setTimerConfig({
         ...timerConfig,
         timers: {
@@ -354,7 +355,7 @@ export default function TwitchBotTimersPage(): React.ReactElement {
   };
 
   const toggleTimer = (cmd: string): void => {
-    dispatch(
+    void dispatch(
       setTimerConfig({
         ...timerConfig,
         timers: {
@@ -391,7 +392,7 @@ export default function TwitchBotTimersPage(): React.ReactElement {
         />
       </FlexRow>
       <TimerList>
-        {!!timerConfig?.timers ? (
+        {timerConfig?.timers ? (
           Object.keys(timerConfig?.timers ?? {})
             ?.filter((cmd) => cmd.toLowerCase().includes(filterLC))
             .sort()

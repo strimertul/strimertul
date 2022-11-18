@@ -1,4 +1,4 @@
-import { theme, styled } from './theme';
+import { styled } from './theme';
 
 export const Table = styled('table', {
   borderCollapse: 'collapse',

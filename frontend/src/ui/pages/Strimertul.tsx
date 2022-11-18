@@ -1,11 +1,11 @@
 import React from 'react';
 import { keyframes } from '@stitches/react';
 import { Trans, useTranslation } from 'react-i18next';
+import { GitHubLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
 import { APPNAME, PageContainer, PageHeader, styled } from '../theme';
 
 // @ts-expect-error Asset import
 import logo from '../../assets/icon-logo.svg';
-import { GitHubLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
 
 const gradientAnimation = keyframes({
   '0%': {
@@ -22,10 +22,10 @@ const gradientAnimation = keyframes({
 const LogoPic = styled('div', {
   minHeight: '170px',
   width: '270px',
-  maskImage: `url(${logo})`,
+  maskImage: `url(${logo as string})`,
   maskRepeat: 'no-repeat',
   maskPosition: 'center',
-  animation: `${gradientAnimation} 12s ease infinite`,
+  animation: `${gradientAnimation()} 12s ease infinite`,
   backgroundSize: '400% 400%',
   backgroundImage: `linear-gradient(
 	45deg,

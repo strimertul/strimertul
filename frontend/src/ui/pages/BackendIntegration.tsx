@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
 import { useModule, useStatus } from '../../lib/react-utils';
@@ -25,7 +25,7 @@ import {
   TextBlock,
 } from '../theme';
 import eventsubTests from '../../data/eventsub-tests';
-import { RootState } from '../../store';
+import { RootState, useAppDispatch } from '../../store';
 
 interface UserData {
   id: string;
@@ -41,36 +41,6 @@ interface SyncError {
   error: string;
 }
 
-const eventSubTestFn = {
-  'channel.update': (send) => {
-    send(eventsubTests['channel.update']);
-  },
-  'channel.follow': (send) => {
-    send(eventsubTests['channel.follow']);
-  },
-  'channel.subscribe': (send) => {
-    send(eventsubTests['channel.subscribe']);
-  },
-  'channel.subscription.gift': (send) => {
-    send(eventsubTests['channel.subscription.gift']);
-    setTimeout(() => {
-      send(eventsubTests['channel.subscribe']);
-    }, 2000);
-  },
-  'channel.subscription.message': (send) => {
-    send(eventsubTests['channel.subscribe']);
-    setTimeout(() => {
-      send(eventsubTests['channel.subscription.message']);
-    }, 2000);
-  },
-  'channel.cheer': (send) => {
-    send(eventsubTests['channel.cheer']);
-  },
-  'channel.raid': (send) => {
-    send(eventsubTests['channel.raid']);
-  },
-};
-
 const TwitchUser = styled('div', {
   display: 'flex',
   gap: '0.8rem',
@@ -84,6 +54,11 @@ const TwitchPic = styled('img', {
 });
 const TwitchName = styled('p', { fontWeight: 'bold' });
 
+interface authChallengeRequest {
+  // eslint-disable-next-line camelcase
+  auth_url: string;
+}
+
 function WebhookIntegration() {
   const { t } = useTranslation();
   const [stulbeConfig] = useModule(modules.stulbeConfig);
@@ -93,21 +68,21 @@ function WebhookIntegration() {
 
   const getUserInfo = async () => {
     try {
-      const res = (await client.makeRequest(
+      const res = await client.makeRequest<UserData, null>(
         'GET',
         'api/twitch/user',
-      )) as UserData;
+      );
       setUserStatus(res);
     } catch (e) {
-      setUserStatus({ ok: false, error: e.message });
+      setUserStatus({ ok: false, error: (e as Error).message });
     }
   };
 
   const startAuthFlow = async () => {
-    const res = (await client.makeRequest('POST', 'api/twitch/authorize')) as {
-      // eslint-disable-next-line camelcase
-      auth_url: string;
-    };
+    const res = await client.makeRequest<authChallengeRequest, null>(
+      'POST',
+      'api/twitch/authorize',
+    );
     const win = window.open(
       res.auth_url,
       '_blank',
@@ -118,20 +93,19 @@ function WebhookIntegration() {
       if (win.closed) {
         clearInterval(iv);
         setUserStatus(null);
-        getUserInfo();
+        void getUserInfo();
       }
     }, 1000);
   };
 
-  const sendFakeEvent = async (event: keyof typeof eventSubTestFn) => {
-    eventSubTestFn[event]((data) => {
-      kv.putJSON('stulbe/ev/webhook', {
-        ...data,
-        subscription: {
-          ...data.subscription,
-          created_at: new Date().toISOString(),
-        },
-      });
+  const sendFakeEvent = async (event: keyof typeof eventsubTests) => {
+    const data = eventsubTests[event];
+    await kv.putJSON('stulbe/ev/webhook', {
+      ...data,
+      subscription: {
+        ...data.subscription,
+        created_at: new Date().toISOString(),
+      },
     });
   };
 
@@ -139,7 +113,7 @@ function WebhookIntegration() {
   useEffect(() => {
     if (client) {
       // Get user info
-      getUserInfo();
+      void getUserInfo();
     } else if (
       stulbeConfig &&
       stulbeConfig.enabled &&
@@ -153,7 +127,7 @@ function WebhookIntegration() {
         await stulbeClient.auth(stulbeConfig.username, stulbeConfig.auth_key);
         setClient(stulbeClient);
       };
-      tryAuth();
+      void tryAuth();
     }
   }, [stulbeConfig, client]);
 
@@ -177,21 +151,32 @@ function WebhookIntegration() {
         </>
       );
     } else {
-      userBlock = t('pages.stulbe.err-no-user');
+      userBlock = <span>{t('pages.stulbe.err-no-user')}</span>;
     }
   }
   return (
     <>
       <p>{t('pages.stulbe.auth-message')}</p>
-      <Button variation="primary" onClick={startAuthFlow} disabled={!client}>
+      <Button
+        variation="primary"
+        onClick={() => {
+          void startAuthFlow();
+        }}
+        disabled={!client}
+      >
         <ExternalLinkIcon /> {t('pages.stulbe.auth-button')}
       </Button>
       <SectionHeader>{t('pages.stulbe.current-status')}</SectionHeader>
       {userBlock}
       <SectionHeader>{t('pages.stulbe.sim-events')}</SectionHeader>
       <ButtonGroup>
-        {Object.keys(eventSubTestFn).map((ev: keyof typeof eventsubTests) => (
-          <Button key={ev} onClick={() => sendFakeEvent(ev)}>
+        {Object.keys(eventsubTests).map((ev: keyof typeof eventsubTests) => (
+          <Button
+            key={ev}
+            onClick={() => {
+              void sendFakeEvent(ev);
+            }}
+          >
             {t(`pages.stulbe.sim.${ev}`, { defaultValue: ev })}
           </Button>
         ))}
@@ -205,7 +190,7 @@ function BackendConfiguration() {
     modules.stulbeConfig,
   );
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const status = useStatus(loadStatus.save);
   const active = stulbeConfig?.enabled ?? false;
   const busy =
@@ -217,14 +202,14 @@ function BackendConfiguration() {
       await client.auth(stulbeConfig.username, stulbeConfig.auth_key);
       toast.success(t('pages.stulbe.test-success'));
     } catch (e) {
-      toast.error(e.message);
+      toast.error((e as Error).message);
     }
   };
 
   return (
     <form
       onSubmit={(ev) => {
-        dispatch(setStulbeConfig(stulbeConfig));
+        void dispatch(setStulbeConfig(stulbeConfig));
         ev.preventDefault();
       }}
     >
@@ -236,15 +221,15 @@ function BackendConfiguration() {
           placeholder={t('pages.stulbe.bind-placeholder')}
           value={stulbeConfig?.endpoint ?? ''}
           disabled={busy}
-          onChange={(e) =>
-            dispatch(
+          onChange={(e) => {
+            void dispatch(
               apiReducer.actions.stulbeConfigChanged({
                 ...stulbeConfig,
                 enabled: e.target.value.length > 0,
                 endpoint: e.target.value,
               }),
-            )
-          }
+            );
+          }}
         />
       </Field>
       <Field size="fullWidth">
@@ -255,14 +240,14 @@ function BackendConfiguration() {
           value={stulbeConfig?.username ?? ''}
           required={true}
           disabled={!active || busy}
-          onChange={(e) =>
-            dispatch(
+          onChange={(e) => {
+            void dispatch(
               apiReducer.actions.stulbeConfigChanged({
                 ...stulbeConfig,
                 username: e.target.value,
               }),
-            )
-          }
+            );
+          }}
         />
       </Field>
       <Field size="fullWidth">
@@ -273,19 +258,25 @@ function BackendConfiguration() {
           value={stulbeConfig?.auth_key ?? ''}
           disabled={!active || busy}
           required={true}
-          onChange={(e) =>
-            dispatch(
+          onChange={(e) => {
+            void dispatch(
               apiReducer.actions.stulbeConfigChanged({
                 ...stulbeConfig,
                 auth_key: e.target.value,
               }),
-            )
-          }
+            );
+          }}
         />
       </Field>
       <ButtonGroup>
         <SaveButton status={status} />
-        <Button type="button" disabled={!active || busy} onClick={() => test()}>
+        <Button
+          type="button"
+          disabled={!active || busy}
+          onClick={() => {
+            void test();
+          }}
+        >
           {t('pages.stulbe.test-button')}
         </Button>
       </ButtonGroup>

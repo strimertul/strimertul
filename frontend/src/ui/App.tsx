@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
   ChatBubbleIcon,
   DashboardIcon,
@@ -17,7 +17,7 @@ import { ToastContainer } from 'react-toastify';
 import Dashboard from './pages/Dashboard';
 import Sidebar, { RouteSection } from './components/Sidebar';
 import ServerSettingsPage from './pages/ServerSettings';
-import { RootState } from '../store';
+import { RootState, useAppDispatch } from '../store';
 import { createWSClient } from '../store/api/reducer';
 import { ConnectionStatus } from '../store/api/types';
 import { styled } from './theme';
@@ -50,7 +50,7 @@ const Spinner = styled('img', {
 function Loading() {
   return (
     <LoadingDiv>
-      <Spinner src={spinner} alt="Loading..." />
+      <Spinner src={spinner as string} alt="Loading..." />
     </LoadingDiv>
   );
 }
@@ -152,17 +152,17 @@ export default function App(): JSX.Element {
   const connected = useSelector(
     (state: RootState) => state.api.connectionStatus,
   );
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (!client) {
-      dispatch(
+      void dispatch(
         createWSClient({
           address:
             process.env.NODE_ENV === 'development'
               ? 'ws://localhost:4337/ws'
               : `ws://${window.location.host}/ws`,
-          password: localStorage.password,
+          password: localStorage.password as string,
         }),
       );
     }

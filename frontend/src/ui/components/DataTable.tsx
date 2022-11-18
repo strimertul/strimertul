@@ -75,6 +75,7 @@ export function DataTable<T>({
         case 'desc':
           return -result;
       }
+      return 0;
     });
   }
 

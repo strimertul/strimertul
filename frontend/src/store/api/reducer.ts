@@ -1,14 +1,16 @@
 /* eslint-disable no-param-reassign */
 import {
+  AnyAction,
   AsyncThunk,
   CaseReducer,
   createAction,
   createAsyncThunk,
   createSlice,
+  Dispatch,
   PayloadAction,
 } from '@reduxjs/toolkit';
 import KilovoltWS from '@strimertul/kilovolt-client';
-import { kvError } from '@strimertul/kilovolt-client/lib/messages';
+import type { kvError } from '@strimertul/kilovolt-client/types/messages';
 import {
   APIState,
   ConnectionStatus,
@@ -17,8 +19,13 @@ import {
   LoyaltyStorage,
 } from './types';
 
+interface AppThunkAPI {
+  dispatch: Dispatch;
+  getState: () => unknown;
+}
+
 function makeGetterThunk<T>(key: string) {
-  return async (_: void, { getState }) => {
+  return async (_: void, { getState }: AppThunkAPI) => {
     const { api } = getState() as { api: APIState };
     return api.client.getJSON<T>(key);
   };
@@ -29,13 +36,15 @@ function makeSetterThunk<T>(
   // eslint-disable-next-line @typescript-eslint/ban-types
   getter: AsyncThunk<T, void, {}>,
 ) {
-  return async (data: T, { getState, dispatch }) => {
+  return async (data: T, { getState, dispatch }: AppThunkAPI) => {
     const { api } = getState() as { api: APIState };
     const result = await api.client.putJSON(key, data);
     if ('ok' in result) {
       if (result.ok) {
         // Re-load value from KV
-        dispatch(getter());
+        // Need to do type fuckery to avoid cyclic redundancy
+        // (unless there's a better way that I'm missing)
+        void dispatch(getter() as unknown as AnyAction);
       }
     }
     return result;
@@ -84,10 +93,10 @@ export const createWSClient = createAsyncThunk(
   async (options: { address: string; password?: string }, { dispatch }) => {
     const client = new KilovoltWS(options.address, options.password);
     client.on('error', (err) => {
-      dispatch(kvErrorReceived(err.data));
+      void dispatch(kvErrorReceived(err.data as kvError));
     });
     await client.wait();
-    dispatch(setupClientReconnect(client));
+    await dispatch(setupClientReconnect(client));
     return client;
   },
 );
@@ -99,9 +108,9 @@ export const getUserPoints = createAsyncThunk(
     const keys = await api.client.getKeysByPrefix(loyaltyPointsPrefix);
     const userpoints: LoyaltyStorage = {};
     Object.entries(keys).forEach(([k, v]) => {
-      userpoints[k.substr(loyaltyPointsPrefix.length)] = JSON.parse(
-        v as string,
-      );
+      userpoints[k.substring(loyaltyPointsPrefix.length)] = JSON.parse(
+        v,
+      ) as LoyaltyPointsEntry;
     });
     return userpoints;
   },
@@ -131,6 +140,7 @@ export const modules = {
     'http/config',
     (state) => state.moduleConfigs?.httpConfig,
     (state, { payload }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       state.moduleConfigs.httpConfig = payload;
     },
   ),
@@ -138,6 +148,7 @@ export const modules = {
     'twitch/config',
     (state) => state.moduleConfigs?.twitchConfig,
     (state, { payload }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       state.moduleConfigs.twitchConfig = payload;
     },
   ),
@@ -145,6 +156,7 @@ export const modules = {
     'twitch/bot-config',
     (state) => state.moduleConfigs?.twitchBotConfig,
     (state, { payload }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       state.moduleConfigs.twitchBotConfig = payload;
     },
   ),
@@ -152,6 +164,7 @@ export const modules = {
     'twitch/bot-custom-commands',
     (state) => state.twitchBot?.commands,
     (state, { payload }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       state.twitchBot.commands = payload;
     },
   ),
@@ -159,6 +172,7 @@ export const modules = {
     'twitch/bot-modules/timers/config',
     (state) => state.twitchBot?.timers,
     (state, { payload }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       state.twitchBot.timers = payload;
     },
   ),
@@ -166,6 +180,7 @@ export const modules = {
     'twitch/bot-modules/alerts/config',
     (state) => state.twitchBot?.alerts,
     (state, { payload }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       state.twitchBot.alerts = payload;
     },
   ),
@@ -173,6 +188,7 @@ export const modules = {
     'stulbe/config',
     (state) => state.moduleConfigs?.stulbeConfig,
     (state, { payload }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       state.moduleConfigs.stulbeConfig = payload;
     },
   ),
@@ -180,6 +196,7 @@ export const modules = {
     'loyalty/config',
     (state) => state.moduleConfigs?.loyaltyConfig,
     (state, { payload }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       state.moduleConfigs.loyaltyConfig = payload;
     },
   ),
@@ -187,6 +204,7 @@ export const modules = {
     loyaltyRewardsKey,
     (state) => state.loyalty.rewards,
     (state, { payload }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       state.loyalty.rewards = payload;
     },
   ),
@@ -194,6 +212,7 @@ export const modules = {
     'loyalty/goals',
     (state) => state.loyalty.goals,
     (state, { payload }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       state.loyalty.goals = payload;
     },
   ),
@@ -201,6 +220,7 @@ export const modules = {
     'loyalty/redeem-queue',
     (state) => state.loyalty.redeemQueue,
     (state, { payload }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       state.loyalty.redeemQueue = payload;
     },
   ),
@@ -344,9 +364,9 @@ const apiReducer = createSlice({
 
 setupClientReconnect = createAsyncThunk(
   'api/setupClientReconnect',
-  async (client: KilovoltWS, { dispatch }) => {
+  (client: KilovoltWS, { dispatch }) => {
     client.on('close', () => {
-      setTimeout(async () => {
+      setTimeout(() => {
         console.info('Attempting reconnection');
         client.reconnect();
       }, 5000);
@@ -366,7 +386,7 @@ setupClientReconnect = createAsyncThunk(
 
 kvErrorReceived = createAsyncThunk(
   'api/kvErrorReceived',
-  async (error: kvError, { dispatch }) => {
+  (error: kvError, { dispatch }) => {
     switch (error.error) {
       case 'authentication required':
       case 'authentication failed':

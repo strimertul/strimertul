@@ -193,7 +193,8 @@
       "no-redeems": "No pending redeems",
       "no-users": "No viewers found",
       "refund": "Refund",
-      "accept": "Accept"
+      "accept": "Accept",
+      "hardcoded": "My Random hardcoded text"
     },
     "debug": {
       "dismiss-warning": "I am not afraid! ...well ok maybe a little",

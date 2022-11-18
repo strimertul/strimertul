@@ -21,7 +21,7 @@ export const DialogOverlay = styled(DialogPrimitive.Overlay, {
   position: 'fixed',
   inset: 0,
   '@media (prefers-reduced-motion: no-preference)': {
-    animation: `${overlayShow} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
+    animation: `${overlayShow()} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
   },
 });
 
@@ -40,7 +40,7 @@ export const DialogContainer = styled(DialogPrimitive.Content, {
   padding: '1rem',
   overflow: 'auto',
   '@media (prefers-reduced-motion: no-preference)': {
-    animation: `${contentShow} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
+    animation: `${contentShow()} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
   },
   '&:focus': { outline: 'none' },
 });

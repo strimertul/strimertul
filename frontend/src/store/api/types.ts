@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 
 import KilovoltWS from '@strimertul/kilovolt-client';
-import { kvError } from '@strimertul/kilovolt-client/lib/messages';
+import type { kvError } from '@strimertul/kilovolt-client/types/messages';
 
 interface HTTPConfig {
   bind: string;

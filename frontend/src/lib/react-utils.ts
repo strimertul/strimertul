@@ -1,13 +1,22 @@
-import { ActionCreatorWithOptionalPayload, AsyncThunk } from '@reduxjs/toolkit';
+import {
+  ActionCreatorWithOptionalPayload,
+  AsyncThunk,
+  Draft,
+} from '@reduxjs/toolkit';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
   KilovoltMessage,
   SubscriptionHandler,
 } from '@strimertul/kilovolt-client';
-import { RootState } from '../store';
+import { RootState, useAppDispatch } from '../store';
 import apiReducer, { getUserPoints } from '../store/api/reducer';
-import { APIState, LoyaltyStorage, RequestStatus } from '../store/api/types';
+import {
+  APIState,
+  LoyaltyPointsEntry,
+  LoyaltyStorage,
+  RequestStatus,
+} from '../store/api/types';
 
 interface LoadStatus {
   load: RequestStatus;
@@ -20,9 +29,9 @@ export function useLiveKeyRaw(key: string) {
 
   useEffect(() => {
     const subscriber: SubscriptionHandler = (v) => setData(v);
-    client.subscribeKey(key, subscriber);
+    void client.subscribeKey(key, subscriber);
     return () => {
-      client.unsubscribeKey(key, subscriber);
+      void client.unsubscribeKey(key, subscriber);
     };
   }, []);
 
@@ -31,7 +40,7 @@ export function useLiveKeyRaw(key: string) {
 
 export function useLiveKey<T>(key: string): T {
   const data = useLiveKeyRaw(key);
-  return data ? JSON.parse(data) : null;
+  return data ? (JSON.parse(data) as T) : null;
 }
 
 export function useModule<T>({
@@ -42,7 +51,7 @@ export function useModule<T>({
   asyncSetter,
 }: {
   key: string;
-  selector: (state: APIState) => T;
+  selector: (state: Draft<APIState>) => T;
   // eslint-disable-next-line @typescript-eslint/ban-types
   getter: AsyncThunk<T, void, {}>;
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -62,15 +71,15 @@ export function useModule<T>({
   const saveStatus = useSelector(
     (state: RootState) => state.api.requestStatus[`save-${key}`],
   );
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   useEffect(() => {
-    dispatch(getter());
-    const subscriber = (newValue) => {
-      dispatch(asyncSetter(JSON.parse(newValue) as T));
+    void dispatch(getter());
+    const subscriber: SubscriptionHandler = (newValue) => {
+      void dispatch(asyncSetter(JSON.parse(newValue) as T));
     };
-    client.subscribeKey(key, subscriber);
+    void client.subscribeKey(key, subscriber);
     return () => {
-      client.unsubscribeKey(key, subscriber);
+      void client.unsubscribeKey(key, subscriber);
       dispatch(
         apiReducer.actions.requestKeysRemoved([`save-${key}`, `load-${key}`]),
       );
@@ -93,7 +102,7 @@ export function useStatus(
   const [localStatus, setlocalStatus] = useState(status);
   const maxTime = Date.now() - interval;
   useEffect(() => {
-    const remaining = status?.updated.getTime() - maxTime;
+    const remaining = status ? status.updated.getTime() - maxTime : null;
     if (remaining) {
       setTimeout(() => {
         setlocalStatus(null);
@@ -109,17 +118,19 @@ export function useUserPoints(): LoyaltyStorage {
   const prefix = 'loyalty/points/';
   const client = useSelector((state: RootState) => state.api.client);
   const data = useSelector((state: RootState) => state.api.loyalty.users);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   useEffect(() => {
-    dispatch(getUserPoints());
+    void dispatch(getUserPoints());
     const subscriber: SubscriptionHandler = (newValue, key) => {
       const user = key.substring(prefix.length);
-      const entry = JSON.parse(newValue);
-      dispatch(apiReducer.actions.loyaltyUserPointsChanged({ user, entry }));
+      const entry = JSON.parse(newValue) as LoyaltyPointsEntry;
+      void dispatch(
+        apiReducer.actions.loyaltyUserPointsChanged({ user, entry }),
+      );
     };
-    client.subscribePrefix(prefix, subscriber);
+    void client.subscribePrefix(prefix, subscriber);
     return () => {
-      client.unsubscribePrefix(prefix, subscriber);
+      void client.unsubscribePrefix(prefix, subscriber);
     };
   }, []);
   return data;

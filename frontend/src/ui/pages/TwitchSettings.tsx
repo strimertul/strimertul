@@ -1,8 +1,8 @@
 import { CheckIcon } from '@radix-ui/react-icons';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 import { useModule, useStatus } from '../../lib/react-utils';
+import { useAppDispatch } from '../../store';
 import apiReducer, { modules } from '../../store/api/reducer';
 import DefinitionTable from '../components/DefinitionTable';
 import SaveButton from '../components/utils/SaveButton';
@@ -48,15 +48,15 @@ function TwitchBotSettings() {
   );
   const [twitchConfig, setTwitchConfig] = useModule(modules.twitchConfig);
   const status = useStatus(loadStatus.save);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const active = twitchConfig?.enable_bot ?? false;
 
   return (
     <form
       onSubmit={(ev) => {
-        dispatch(setTwitchConfig(twitchConfig));
-        dispatch(setBotConfig(botConfig));
+        void dispatch(setTwitchConfig(twitchConfig));
+        void dispatch(setBotConfig(botConfig));
         ev.preventDefault();
       }}
     >
@@ -189,12 +189,12 @@ function TwitchAPISettings() {
     modules.twitchConfig,
   );
   const status = useStatus(loadStatus.save);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   return (
     <form
       onSubmit={(ev) => {
-        dispatch(setTwitchConfig(twitchConfig));
+        void dispatch(setTwitchConfig(twitchConfig));
         ev.preventDefault();
       }}
     >
@@ -281,7 +281,7 @@ function TwitchAPISettings() {
 export default function TwitchSettingsPage(): React.ReactElement {
   const { t } = useTranslation();
   const [twitchConfig, setTwitchConfig] = useModule(modules.twitchConfig);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const active = twitchConfig?.enabled ?? false;
 
@@ -294,14 +294,14 @@ export default function TwitchSettingsPage(): React.ReactElement {
           <FlexRow spacing={1}>
             <Checkbox
               checked={active}
-              onCheckedChange={(ev) =>
-                dispatch(
+              onCheckedChange={(ev) => {
+                void dispatch(
                   setTwitchConfig({
                     ...twitchConfig,
                     enabled: !!ev,
                   }),
-                )
-              }
+                );
+              }}
               id="enable"
             >
               <CheckboxIndicator>{active && <CheckIcon />}</CheckboxIndicator>

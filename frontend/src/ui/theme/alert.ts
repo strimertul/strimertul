@@ -22,7 +22,7 @@ export const AlertOverlay = styled(AlertDialogPrimitive.Overlay, {
   position: 'fixed',
   inset: 0,
   '@media (prefers-reduced-motion: no-preference)': {
-    animation: `${overlayShow} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
+    animation: `${overlayShow()} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
   },
 });
 
@@ -40,7 +40,7 @@ export const AlertContainer = styled(AlertDialogPrimitive.Content, {
   maxHeight: '85vh',
   padding: '1rem',
   '@media (prefers-reduced-motion: no-preference)': {
-    animation: `${contentShow} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
+    animation: `${contentShow()} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
   },
   border: '2px solid $teal8',
   '&:focus': { outline: 'none' },

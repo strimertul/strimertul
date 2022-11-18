@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 import { useModule, useUserPoints } from '../../lib/react-utils';
 import { SortFunction } from '../../lib/type-utils';
+import { useAppDispatch } from '../../store';
 import { modules, removeRedeem, setUserPoints } from '../../store/api/reducer';
 import { DataTable } from '../components/DataTable';
 import DialogContent from '../components/DialogContent';
@@ -28,7 +28,7 @@ import { TableCell, TableRow } from '../theme/table';
 function RewardQueue() {
   const { t } = useTranslation();
   const [queue] = useModule(modules.loyaltyRedeemQueue);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   // Big hack but this is required or refunds break
   useUserPoints();
@@ -42,11 +42,13 @@ function RewardQueue() {
         return a.display_name?.localeCompare(b.display_name);
       }
       case 'when': {
-        return a.date?.getTime() - b.date?.getTime();
+        return a.date && b.date ? a.date.getTime() - b.date.getTime() : 0;
       }
       case 'reward': {
         return a.reward?.name?.localeCompare(b.reward.name);
       }
+      default:
+        return 0;
     }
   };
 
@@ -96,7 +98,7 @@ function RewardQueue() {
           ]}
           defaultSort={{ key: 'when', order: 'desc' }}
           view={(entry) => (
-            <TableRow key={entry.when + entry.username}>
+            <TableRow key={`${entry.when.toString()}${entry.username}`}>
               <TableCell css={{ width: '22%', fontSize: '0.8rem' }}>
                 {entry.date.toLocaleString()}
               </TableCell>
@@ -108,7 +110,7 @@ function RewardQueue() {
                   <Button
                     size="small"
                     onClick={() => {
-                      dispatch(removeRedeem(entry));
+                      void dispatch(removeRedeem(entry));
                     }}
                   >
                     {t('pages.loyalty-queue.accept')}
@@ -117,7 +119,7 @@ function RewardQueue() {
                     size="small"
                     onClick={() => {
                       // Give points back to the viewer
-                      dispatch(
+                      void dispatch(
                         setUserPoints({
                           user: entry.username,
                           points: entry.reward.price,
@@ -125,7 +127,7 @@ function RewardQueue() {
                         }),
                       );
                       // Take the redeem off the list
-                      dispatch(removeRedeem(entry));
+                      void dispatch(removeRedeem(entry));
                     }}
                   >
                     {t('pages.loyalty-queue.refund')}
@@ -143,7 +145,7 @@ function RewardQueue() {
 function UserList() {
   const { t } = useTranslation();
   const users = useUserPoints();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const [currentEntry, setCurrentEntry] = useState<UserEntry>(null);
   const [givePointDialog, setGivePointDialog] = useState({
@@ -188,7 +190,7 @@ function UserList() {
             onSubmit={(e) => {
               e.preventDefault();
               if ((e.target as HTMLFormElement).checkValidity()) {
-                dispatch(
+                void dispatch(
                   setUserPoints({
                     ...givePointDialog,
                     relative: true,
@@ -225,7 +227,7 @@ function UserList() {
                 onChange={(e) =>
                   setGivePointDialog({
                     ...givePointDialog,
-                    points: parseInt(e.target.value),
+                    points: parseInt(e.target.value, 10),
                   })
                 }
               />
@@ -258,7 +260,7 @@ function UserList() {
             onSubmit={(e) => {
               e.preventDefault();
               if ((e.target as HTMLFormElement).checkValidity()) {
-                dispatch(
+                void dispatch(
                   setUserPoints({
                     user: currentEntry.username,
                     points: currentEntry.points,
@@ -290,7 +292,7 @@ function UserList() {
                 onChange={(e) =>
                   setCurrentEntry({
                     ...currentEntry,
-                    points: parseInt(e.target.value),
+                    points: parseInt(e.target.value, 10),
                   })
                 }
               />
