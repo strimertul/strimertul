@@ -16,7 +16,7 @@ import (
 
 	"go.uber.org/zap"
 
-	kv "github.com/strimertul/kilovolt/v8"
+	kv "github.com/strimertul/kilovolt/v9"
 	"github.com/strimertul/strimertul/modules"
 )
 

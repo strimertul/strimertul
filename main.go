@@ -6,10 +6,8 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"path/filepath"
 	"time"
 
-	"github.com/cockroachdb/pebble"
 	"github.com/urfave/cli/v2"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -17,11 +15,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	kv "github.com/strimertul/kilovolt/v8"
-
 	"github.com/strimertul/strimertul/modules"
-	"github.com/strimertul/strimertul/modules/database"
-	"github.com/strimertul/strimertul/modules/http"
 	"github.com/strimertul/strimertul/modules/loyalty"
 	"github.com/strimertul/strimertul/modules/stulbe"
 	"github.com/strimertul/strimertul/modules/twitch"
@@ -44,12 +38,6 @@ var moduleList = map[modules.ModuleID]ModuleConstructor{
 	modules.ModuleStulbe:  stulbe.Register,
 	modules.ModuleLoyalty: loyalty.Register,
 	modules.ModuleTwitch:  twitch.Register,
-}
-
-type dbOptions struct {
-	backupDir      string
-	backupInterval int
-	maxBackups     int
 }
 
 func main() {
@@ -105,7 +93,7 @@ func main() {
 			return nil
 		},
 		After: func(ctx *cli.Context) error {
-			logger.Sync()
+			_ = logger.Sync()
 			zap.RedirectStdLog(logger)()
 			return nil
 		},
@@ -134,94 +122,12 @@ func initLogger(debug bool, json bool) {
 	}
 }
 
-func getDatabaseDriver(ctx *cli.Context) string {
-	driver := ctx.String("driver")
-	if driver != "auto" {
-		return driver
-	}
-
-	dbdir := ctx.String("database-dir")
-	file, err := os.ReadFile(filepath.Join(dbdir, "stul-driver"))
-	if err != nil {
-		// No driver file found (or file corrupted), use default driver
-		return databaseDefaultDriver
-	}
-	return string(file)
-}
-
 func cliMain(ctx *cli.Context) error {
-	// Create module manager
-	manager := modules.NewManager(logger)
-
-	// Make KV hub
-	var hub *kv.Hub
-	var err error
-	dbopts := dbOptions{
-		backupDir:      ctx.String("backup-dir"),
-		backupInterval: ctx.Int("backup-interval"),
-		maxBackups:     ctx.Int("max-backups"),
-	}
-
-	dbdir := ctx.String("database-dir")
-	driver := getDatabaseDriver(ctx)
-	logger.Info("opening database", zap.String("driver", driver))
-	switch driver {
-	case "badger":
-		return cli.Exit("Badger is not supported anymore as a database driver", 64)
-	case "pebble":
-		var db *pebble.DB
-		db, hub, err = makePebbleHub(dbdir, dbopts)
-		if err != nil {
-			return fatalError(err, "failed to open database")
-		}
-		defer pebbleClose(db)
-	default:
-		return cli.Exit(fmt.Sprintf("Unknown database driver: %s", driver), 64)
-	}
-
-	go hub.Run()
-
-	db, err := database.NewDBModule(hub, manager)
-	if err != nil {
-		return fatalError(err, "Failed to initialize database module")
-	}
-
-	// Set meta keys
-	_ = db.PutKey("stul-meta/version", appVersion)
-
-	for module, constructor := range moduleList {
-		err := constructor(manager)
-		if err != nil {
-			logger.Error("Could not register module", zap.String("module", string(module)), zap.Error(err))
-		} else {
-			//goland:noinspection GoDeferInLoop
-			defer func() {
-				if err := manager.Modules[module].Close(); err != nil {
-					logger.Error("Could not close module", zap.String("module", string(module)), zap.Error(err))
-				}
-			}()
-		}
-	}
-
-	// Create logger and endpoints
-	httpServer, err := http.NewServer(manager)
-	if err != nil {
-		return fatalError(err, "Could not initialize http server")
-	}
-	defer func() {
-		if err := httpServer.Close(); err != nil {
-			logger.Error("Could not close DB", zap.Error(err))
-		}
-	}()
-
-	// Run HTTP server
-	go failOnError(httpServer.Listen(), "HTTP server stopped")
-
 	// Create an instance of the app structure
-	app := NewApp()
+	app := NewApp(ctx)
 
 	// Create application with options
-	err = wails.Run(&options.App{
+	err := wails.Run(&options.App{
 		Title:  "strimertul",
 		Width:  1024,
 		Height: 768,
@@ -230,23 +136,23 @@ func cliMain(ctx *cli.Context) error {
 		},
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		OnStartup:        app.startup,
+		OnShutdown:       app.stop,
 		Bind: []interface{}{
 			app,
 		},
 	})
-
 	if err != nil {
-		return fatalError(err, "App exited unexpectedly")
+		return cli.Exit(fmt.Errorf("%s: %w", "App exited unexpectedly", err), 1)
 	}
 	return nil
 }
 
-func fatalError(err error, text string) error {
-	return cli.Exit(fmt.Errorf("%s: %w", text, err), 1)
-}
-
 func failOnError(err error, text string) {
 	if err != nil {
-		log.Fatal(fatalError(err, text))
+		logger.Fatal(text, zap.Error(err))
 	}
+}
+
+func fatalError(err error, text string) error {
+	return cli.Exit(fmt.Errorf("%s: %w", text, err), 1)
 }
