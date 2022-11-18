@@ -78,13 +78,16 @@ func NewServer(manager *modules.Manager) (*Server, error) {
 	return server, nil
 }
 
+// StatusData contains status info for the HTTP module
+type StatusData struct {
+	Bind string
+}
+
 func (s *Server) Status() modules.ModuleStatus {
 	return modules.ModuleStatus{
 		Enabled: true,
 		Working: s.server != nil,
-		Data: struct {
-			Bind string
-		}{
+		Data: StatusData{
 			s.server.Addr,
 		},
 		StatusString: s.server.Addr,

@@ -11,6 +11,8 @@ import {
 } from '@reduxjs/toolkit';
 import KilovoltWS from '@strimertul/kilovolt-client';
 import type { kvError } from '@strimertul/kilovolt-client/types/messages';
+import { AuthenticateKVClient, IsServerReady } from '@wailsapp/go/main/App';
+import { delay } from '../../lib/time-utils';
 import {
   APIState,
   ConnectionStatus,
@@ -91,6 +93,18 @@ const loyaltyRemoveRedeemKey = 'loyalty/@remove-redeem';
 export const createWSClient = createAsyncThunk(
   'api/createClient',
   async (options: { address: string; password?: string }, { dispatch }) => {
+    // Wait for server to be ready
+    let ready = false;
+    while (!ready) {
+      // eslint-disable-next-line no-await-in-loop
+      ready = await IsServerReady();
+      if (ready) {
+        break;
+      }
+      // eslint-disable-next-line no-await-in-loop
+      await delay(1000);
+    }
+    // Connect to websocket
     const client = new KilovoltWS(options.address, options.password);
     client.on('error', (err) => {
       void dispatch(kvErrorReceived(err.data as kvError));
@@ -399,7 +413,21 @@ kvErrorReceived = createAsyncThunk(
       default:
         // Unsupported error
         dispatch(apiReducer.actions.kvErrorReceived(error));
-        console.error(error);
+    }
+  },
+);
+
+export const useAuthBypass = createAsyncThunk(
+  'api/authBypass',
+  async (_: void, { getState, dispatch }) => {
+    const { api } = getState() as { api: APIState };
+    const response = await api.client.send({ command: '_uid' });
+    if ('ok' in response && response.ok && 'data' in response) {
+      const uid = response.data;
+      await AuthenticateKVClient(uid.toString());
+      dispatch(
+        apiReducer.actions.connectionStatusChanged(ConnectionStatus.Connected),
+      );
     }
   },
 );

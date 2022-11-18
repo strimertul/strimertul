@@ -26,6 +26,7 @@ import {
 } from '../theme';
 import eventsubTests from '../../data/eventsub-tests';
 import { RootState, useAppDispatch } from '../../store';
+import BrowserLink from '../components/BrowserLink';
 
 interface UserData {
   id: string;
@@ -294,7 +295,9 @@ export default function BackendIntegrationPage(): React.ReactElement {
         <TextBlock>
           <Trans i18nKey="pages.stulbe.subtitle">
             {' '}
-            <a href="https://github.com/strimertul/stulbe/">stulbe</a>
+            <BrowserLink href="https://github.com/strimertul/stulbe/">
+              stulbe
+            </BrowserLink>
           </Trans>
         </TextBlock>
       </PageHeader>

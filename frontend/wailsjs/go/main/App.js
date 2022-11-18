@@ -5,3 +5,11 @@
 export function AuthenticateKVClient(arg1) {
   return window['go']['main']['App']['AuthenticateKVClient'](arg1);
 }
+
+export function GetKilovoltBind() {
+  return window['go']['main']['App']['GetKilovoltBind']();
+}
+
+export function IsServerReady() {
+  return window['go']['main']['App']['IsServerReady']();
+}

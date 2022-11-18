@@ -3,6 +3,7 @@ import { keyframes } from '@stitches/react';
 import { Trans, useTranslation } from 'react-i18next';
 import { GitHubLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
 import { APPNAME, PageContainer, PageHeader, styled } from '../theme';
+import BrowserLink from '../components/BrowserLink';
 
 // @ts-expect-error Asset import
 import logo from '../../assets/icon-logo.svg';
@@ -63,7 +64,7 @@ const Channel = styled('li', {
   marginBottom: '1rem',
   fontSize: '1.5rem',
 });
-const ChannelLink = styled('a', {
+const ChannelLink = styled(BrowserLink, {
   textDecoration: 'none',
   color: '$teal11',
   display: 'inline-flex',
@@ -127,9 +128,9 @@ export default function StrimertulPage(): React.ReactElement {
             values={{ APPNAME }}
             components={{
               license: (
-                <a href="https://github.com/strimertul/strimertul/blob/master/LICENSE">
+                <BrowserLink href="https://github.com/strimertul/strimertul/blob/master/LICENSE">
                   GNU Affero General Public License v3.0
-                </a>
+                </BrowserLink>
               ),
             }}
           />

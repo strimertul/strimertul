@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { PageContainer, SectionHeader, styled } from '../theme';
 import { useLiveKey } from '../../lib/react-utils';
 import WIPNotice from '../components/utils/WIPNotice';
+import BrowserLink from '../components/BrowserLink';
 
 interface StreamInfo {
   id: string;
@@ -47,7 +48,7 @@ const LiveIndicator = styled('div', {
   backgroundSize: 'cover',
   backgroundPosition: 'center',
 });
-const Darken = styled('a', {
+const Darken = styled(BrowserLink, {
   flex: 1,
   display: 'flex',
   alignItems: 'center',

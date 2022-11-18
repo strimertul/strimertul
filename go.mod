@@ -10,7 +10,7 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/labstack/gommon v0.3.1
 	github.com/nicklaw5/helix/v2 v2.11.0
-	github.com/strimertul/kilovolt/v9 v9.0.0
+	github.com/strimertul/kilovolt/v9 v9.0.1
 	github.com/strimertul/kv-pebble v1.2.0
 	github.com/strimertul/stulbe-client-go v0.7.2
 	github.com/urfave/cli/v2 v2.23.5

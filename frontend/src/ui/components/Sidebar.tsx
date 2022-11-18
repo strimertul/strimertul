@@ -9,6 +9,7 @@ import { APPNAME, APPREPO } from '../theme';
 
 // @ts-expect-error Asset import
 import logo from '../../assets/icon-logo.svg';
+import BrowserLink from './BrowserLink';
 
 export interface RouteSection {
   title: string;
@@ -76,7 +77,7 @@ const VersionLabel = styled('div', {
   paddingBottom: '0.4rem',
 });
 
-const UpdateButton = styled('a', {
+const UpdateButton = styled(BrowserLink, {
   textTransform: 'uppercase',
   fontSize: '0.75rem',
   fontWeight: 'bold',

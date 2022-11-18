@@ -13,12 +13,13 @@ import {
 } from '@radix-ui/react-icons';
 import { Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
+import { GetKilovoltBind } from '@wailsapp/go/main/App';
 
 import Dashboard from './pages/Dashboard';
 import Sidebar, { RouteSection } from './components/Sidebar';
 import ServerSettingsPage from './pages/ServerSettings';
 import { RootState, useAppDispatch } from '../store';
-import { createWSClient } from '../store/api/reducer';
+import { createWSClient, useAuthBypass } from '../store/api/reducer';
 import { ConnectionStatus } from '../store/api/types';
 import { styled } from './theme';
 
@@ -154,17 +155,21 @@ export default function App(): JSX.Element {
   );
   const dispatch = useAppDispatch();
 
+  const connectToKV = async () => {
+    const address = await GetKilovoltBind();
+    await dispatch(
+      createWSClient({
+        address: `ws://${address}/ws`,
+      }),
+    );
+  };
+
   useEffect(() => {
     if (!client) {
-      void dispatch(
-        createWSClient({
-          address:
-            process.env.NODE_ENV === 'development'
-              ? 'ws://localhost:4337/ws'
-              : `ws://${window.location.host}/ws`,
-          password: localStorage.password as string,
-        }),
-      );
+      void connectToKV();
+    }
+    if (connected === ConnectionStatus.AuthenticationNeeded) {
+      void dispatch(useAuthBypass());
     }
   });
 

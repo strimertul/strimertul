@@ -4,6 +4,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { useModule, useStatus } from '../../lib/react-utils';
 import { useAppDispatch } from '../../store';
 import apiReducer, { modules } from '../../store/api/reducer';
+import BrowserLink from '../components/BrowserLink';
 import DefinitionTable from '../components/DefinitionTable';
 import SaveButton from '../components/utils/SaveButton';
 import {
@@ -148,9 +149,9 @@ function TwitchBotSettings() {
         <FieldNote>
           <Trans i18nKey="pages.twitch-settings.bot-oauth-note">
             {' '}
-            <a href="https://twitchapps.com/tmi/">
+            <BrowserLink href="https://twitchapps.com/tmi/">
               https://twitchapps.com/tmi/
-            </a>
+            </BrowserLink>
           </Trans>
         </FieldNote>
       </Field>
@@ -206,9 +207,9 @@ function TwitchAPISettings() {
         <Step>
           <Trans i18nKey="pages.twitch-settings.apiguide-2">
             {' '}
-            <a href="https://dev.twitch.tv/console/apps/create">
+            <BrowserLink href="https://dev.twitch.tv/console/apps/create">
               https://dev.twitch.tv/console/apps/create
-            </a>
+            </BrowserLink>
           </Trans>
         </Step>
         <Step>
