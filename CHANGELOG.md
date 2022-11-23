@@ -16,7 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `game` command not working when the specified channel contained the @ symbol at the beginning.
 - Fixed strimertul crashing at start if the database folder didn't exist and a database driver was not manually specified
 - Fixed strimertul crashing after a minute of being open if Twitch was not configured.
-- Hotfix for MIME bug in Windows (`.js` files erraneously being interpreted as `text/plain`). This is fixed will be Go 1.19, but is still provided for Go 1.18 builds.
 
 ## [2.1.1] - 2022-03-24
 
