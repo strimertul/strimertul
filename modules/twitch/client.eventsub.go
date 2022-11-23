@@ -188,8 +188,8 @@ type WelcomeMessagePayload struct {
 }
 
 type NotificationMessagePayload struct {
-	Subscription helix.EventSubSubscription
-	Event        jsoniter.RawMessage `json:"event"`
+	Subscription helix.EventSubSubscription `json:"subscription"`
+	Event        jsoniter.RawMessage        `json:"event"`
 }
 
 type EventSubMetadata struct {
