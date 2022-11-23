@@ -11,8 +11,7 @@
         "dashboard": "Dashboard"
       },
       "strimertul": {
-        "settings": "Server settings",
-        "stulbe": "Back-end integration"
+        "settings": "Server settings"
       },
       "twitch": {
         "configuration": "Configuration",
@@ -83,7 +82,7 @@
         },
         "sim-events": "Send test event",
         "auth-button": "Authenticate with Twitch",
-        "auth-message": "Click the following button to authenticate the back-end with your Twitch account:",
+        "auth-message": "Click the following button to authenticate strimertul with your Twitch account:",
         "current-status": "Current status"
       }
     },

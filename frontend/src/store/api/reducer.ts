@@ -198,14 +198,6 @@ export const modules = {
       state.twitchBot.alerts = payload;
     },
   ),
-  stulbeConfig: makeModule(
-    'stulbe/config',
-    (state) => state.moduleConfigs?.stulbeConfig,
-    (state, { payload }) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      state.moduleConfigs.stulbeConfig = payload;
-    },
-  ),
   loyaltyConfig: makeModule(
     'loyalty/config',
     (state) => state.moduleConfigs?.loyaltyConfig,
@@ -286,7 +278,6 @@ const initialState: APIState = {
     httpConfig: null,
     twitchConfig: null,
     twitchBotConfig: null,
-    stulbeConfig: null,
     loyaltyConfig: null,
   },
   requestStatus: {},

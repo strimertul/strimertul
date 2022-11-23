@@ -43,13 +43,6 @@ export interface TwitchBotCustomCommand {
 
 type TwitchBotCustomCommands = Record<string, TwitchBotCustomCommand>;
 
-interface StulbeConfig {
-  enabled: boolean;
-  endpoint: string;
-  username: string;
-  auth_key: string;
-}
-
 interface LoyaltyConfig {
   enabled: boolean;
   currency: string;
@@ -181,7 +174,6 @@ export interface APIState {
     httpConfig: HTTPConfig;
     twitchConfig: TwitchConfig;
     twitchBotConfig: TwitchBotConfig;
-    stulbeConfig: StulbeConfig;
     loyaltyConfig: LoyaltyConfig;
   };
   requestStatus: Record<string, RequestStatus>;

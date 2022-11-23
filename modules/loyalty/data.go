@@ -63,9 +63,11 @@ type Redeem struct {
 	RequestText string    `json:"request_text"`
 }
 
-const CreateRedeemRPC = "loyalty/@create-redeem"
-const RemoveRedeemRPC = "loyalty/@remove-redeem"
-const RedeemEvent = "loyalty/ev/new-redeem"
+const (
+	CreateRedeemRPC = "loyalty/@create-redeem"
+	RemoveRedeemRPC = "loyalty/@remove-redeem"
+	RedeemEvent     = "loyalty/ev/new-redeem"
+)
 
 // Stulbe events
 
@@ -84,6 +86,3 @@ type ExLoyaltyContribute struct {
 	GoalID      string `json:"goal_id"`
 	Amount      int64  `json:"amount"`
 }
-
-const KVExLoyaltyRedeem = "stulbe/loyalty/@redeem-rpc"
-const KVExLoyaltyContribute = "stulbe/loyalty/@contribute-rpc"

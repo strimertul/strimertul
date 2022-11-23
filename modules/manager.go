@@ -30,7 +30,6 @@ const (
 
 	// Feature modules
 	ModuleLoyalty ModuleID = "loyalty"
-	ModuleStulbe  ModuleID = "stulbe"
 
 	// Streaming providers
 	ModuleTwitch ModuleID = "twitch"

@@ -235,7 +235,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 	}
 
 	go bot.api.db.Subscribe(func(key, value string) {
-		if key == "stulbe/ev/webhook" {
+		if key == EventSubEventKey {
 			var ev eventSubNotification
 			err := json.UnmarshalFromString(value, &ev)
 			if err != nil {
@@ -417,7 +417,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 				writeTemplate(bot, tpl, &giftEv)
 			}
 		}
-	}, "stulbe/ev/webhook")
+	}, EventSubEventKey)
 
 	bot.logger.Debug("loaded bot alerts")
 
