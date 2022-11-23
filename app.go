@@ -4,9 +4,12 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/nicklaw5/helix/v2"
+
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/database"
 	"github.com/strimertul/strimertul/modules/http"
+	"github.com/strimertul/strimertul/modules/twitch"
 
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
@@ -83,8 +86,6 @@ func (a *App) startup(ctx context.Context) {
 
 	// Run HTTP server
 	go failOnError(httpServer.Listen(), "HTTP server stopped")
-
-	// Wait until server is up
 }
 
 func (a *App) stop(context.Context) {
@@ -104,5 +105,19 @@ func (a *App) IsServerReady() bool {
 }
 
 func (a *App) GetKilovoltBind() string {
-	return a.manager.Modules[modules.ModuleHTTP].Status().Data.(http.StatusData).Bind
+	if a.manager == nil {
+		return ""
+	}
+	if httpModule, ok := a.manager.Modules[modules.ModuleHTTP]; ok {
+		return httpModule.Status().Data.(http.StatusData).Bind
+	}
+	return ""
+}
+
+func (a *App) GetTwitchAuthURL() string {
+	return a.manager.Modules[modules.ModuleTwitch].(*twitch.Client).GetAuthorizationURL()
+}
+
+func (a *App) GetTwitchLoggedUser() (helix.User, error) {
+	return a.manager.Modules[modules.ModuleTwitch].(*twitch.Client).GetLoggedUser()
 }

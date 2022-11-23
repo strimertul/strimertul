@@ -10,6 +10,14 @@ export function GetKilovoltBind() {
   return window['go']['main']['App']['GetKilovoltBind']();
 }
 
+export function GetTwitchAuthURL() {
+  return window['go']['main']['App']['GetTwitchAuthURL']();
+}
+
+export function GetTwitchLoggedUser() {
+  return window['go']['main']['App']['GetTwitchLoggedUser']();
+}
+
 export function IsServerReady() {
   return window['go']['main']['App']['IsServerReady']();
 }

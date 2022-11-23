@@ -19,7 +19,6 @@ import (
 
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/loyalty"
-	"github.com/strimertul/strimertul/modules/stulbe"
 	"github.com/strimertul/strimertul/modules/twitch"
 
 	_ "net/http/pprof"
@@ -39,7 +38,6 @@ var frontend embed.FS
 type ModuleConstructor = func(manager *modules.Manager) error
 
 var moduleList = map[modules.ModuleID]ModuleConstructor{
-	modules.ModuleStulbe:  stulbe.Register,
 	modules.ModuleLoyalty: loyalty.Register,
 	modules.ModuleTwitch:  twitch.Register,
 }

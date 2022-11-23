@@ -9,7 +9,6 @@ import (
 
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/database"
-	"github.com/strimertul/strimertul/modules/stulbe"
 
 	jsoniter "github.com/json-iterator/go"
 	"go.uber.org/zap"
@@ -94,22 +93,6 @@ func Register(manager *modules.Manager) error {
 
 	// Subscribe for changes
 	go db.Subscribe(loyalty.update, "loyalty/")
-	go db.Subscribe(loyalty.handleRemote, "stulbe/loyalty/")
-
-	// Replicate keys on stulbe if available
-	if stulbeManager, ok := manager.Modules["stulbe"].(*stulbe.Manager); ok {
-		go func() {
-			err := stulbeManager.ReplicateKeys([]string{
-				ConfigKey,
-				RewardsKey,
-				GoalsKey,
-				PointsPrefix,
-			})
-			if err != nil {
-				logger.Error("failed to replicate keys", zap.Error(err))
-			}
-		}()
-	}
 
 	// Register module
 	manager.Modules[modules.ModuleLoyalty] = loyalty
@@ -198,54 +181,6 @@ func (m *Manager) update(key, value string) {
 		m.logger.Error("subscribe error: invalid JSON received on key", zap.Error(err), zap.String("key", key))
 	} else {
 		m.logger.Debug("updated key", zap.String("key", key))
-	}
-}
-
-func (m *Manager) handleRemote(key, value string) {
-	m.logger.Debug("loyalty request from stulbe", zap.String("key", key))
-	switch key {
-	case KVExLoyaltyRedeem:
-		// Parse request
-		var redeemRequest ExLoyaltyRedeem
-		err := json.UnmarshalFromString(value, &redeemRequest)
-		if err != nil {
-			m.logger.Warn("error decoding redeem request", zap.Error(err))
-			break
-		}
-		// Find reward
-		reward := m.GetReward(redeemRequest.RewardID)
-		if reward.ID == "" {
-			m.logger.Warn("redeem request contains invalid reward id", zap.String("reward-id", redeemRequest.RewardID))
-			break
-		}
-		err = m.PerformRedeem(Redeem{
-			Username:    redeemRequest.Username,
-			DisplayName: redeemRequest.DisplayName,
-			Reward:      reward,
-			When:        time.Now(),
-			RequestText: redeemRequest.RequestText,
-		})
-		if err != nil {
-			m.logger.Warn("error performing redeem request", zap.Error(err))
-		}
-	case KVExLoyaltyContribute:
-		// Parse request
-		var contributeRequest ExLoyaltyContribute
-		err := json.UnmarshalFromString(value, &contributeRequest)
-		if err != nil {
-			m.logger.Warn("error decoding contribution request", zap.Error(err))
-			break
-		}
-		// Find goal
-		goal := m.GetGoal(contributeRequest.GoalID)
-		if goal.ID == "" {
-			m.logger.Warn("contribute request contains invalid goal id", zap.String("goal-id", contributeRequest.GoalID))
-			break
-		}
-		err = m.PerformContribution(goal, contributeRequest.Username, contributeRequest.Amount)
-		if err != nil {
-			m.logger.Warn("error performing contribution request", zap.Error(err))
-		}
 	}
 }
 

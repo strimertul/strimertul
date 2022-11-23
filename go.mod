@@ -7,16 +7,19 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/cockroachdb/pebble v0.0.0-20221116223310-87eccabb90a3
 	github.com/gempir/go-twitch-irc/v3 v3.2.0
+	github.com/gorilla/websocket v1.5.0
+	github.com/hashicorp/golang-lru v0.5.1
 	github.com/json-iterator/go v1.1.12
 	github.com/labstack/gommon v0.3.1
 	github.com/nicklaw5/helix/v2 v2.11.0
 	github.com/strimertul/kilovolt/v9 v9.0.1
 	github.com/strimertul/kv-pebble v1.2.0
-	github.com/strimertul/stulbe-client-go v0.7.2
 	github.com/urfave/cli/v2 v2.23.5
 	github.com/wailsapp/wails/v2 v2.2.0
 	go.uber.org/zap v1.23.0
 )
+
+replace github.com/nicklaw5/helix/v2 => github.com/ashkeel/helix/v2 v2.11.0-ws
 
 require (
 	github.com/DataDog/zstd v1.5.2 // indirect
@@ -36,7 +39,6 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/huandu/xstrings v1.3.1 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
@@ -54,7 +56,6 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/orcaman/concurrent-map v0.0.0-20210501183033-44dafcb38ecc // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.14.0 // indirect
@@ -66,8 +67,6 @@ require (
 	github.com/samber/lo v1.27.1 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
-	github.com/strimertul/kilovolt-client-go/v8 v8.0.0 // indirect
-	github.com/strimertul/kilovolt/v8 v8.0.5 // indirect
 	github.com/tkrajina/go-reflector v0.5.5 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect

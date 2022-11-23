@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"git.sr.ht/~hamcha/containers"
+	lru "github.com/hashicorp/golang-lru"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix/v2"
 	"github.com/strimertul/strimertul/modules/database"
@@ -18,11 +19,13 @@ import (
 var json = jsoniter.ConfigFastest
 
 type Client struct {
-	Config Config
-	Bot    *Bot
-	db     *database.DBModule
-	API    *helix.Client
-	logger *zap.Logger
+	Config     Config
+	Bot        *Bot
+	db         *database.DBModule
+	API        *helix.Client
+	logger     *zap.Logger
+	manager    *modules.Manager
+	eventCache *lru.Cache
 
 	restart      chan bool
 	streamOnline *containers.RWSync[bool]
@@ -36,9 +39,14 @@ func Register(manager *modules.Manager) error {
 
 	logger := manager.Logger(modules.ModuleTwitch)
 
+	eventCache, err := lru.New(128)
+	if err != nil {
+		return fmt.Errorf("could not create LRU cache for events: %w", err)
+	}
+
 	// Get Twitch config
 	var config Config
-	err := db.GetJSON(ConfigKey, &config)
+	err = db.GetJSON(ConfigKey, &config)
 	if err != nil {
 		if !errors.Is(err, database.ErrEmptyKey) {
 			return fmt.Errorf("failed to get twitch config: %w", err)
@@ -47,52 +55,14 @@ func Register(manager *modules.Manager) error {
 	}
 
 	// Create Twitch client
-	var api *helix.Client
-
-	if config.Enabled {
-		api, err = getHelixAPI(config.APIClientID, config.APIClientSecret)
-		if err != nil {
-			return fmt.Errorf("failed to create twitch client: %w", err)
-		}
-	}
-
 	client := &Client{
 		Config:       config,
 		db:           db,
-		API:          api,
 		logger:       logger,
 		restart:      make(chan bool, 128),
 		streamOnline: containers.NewRWSync(false),
-	}
-
-	if client.Config.EnableBot {
-		if err := client.startBot(manager); err != nil {
-			if !errors.Is(err, database.ErrEmptyKey) {
-				return err
-			}
-		}
-	}
-
-	go client.runStatusPoll()
-
-	go func() {
-		for {
-			if client.Config.EnableBot && client.Bot != nil {
-				err := client.RunBot()
-				if err != nil {
-					logger.Error("failed to connect to Twitch IRC", zap.Error(err))
-					// Wait for config change before retrying
-					<-client.restart
-				}
-			} else {
-				<-client.restart
-			}
-		}
-	}()
-
-	// If loyalty module is enabled, set-up loyalty commands
-	if loyaltyManager, ok := manager.Modules[modules.ModuleLoyalty].(*loyalty.Manager); ok && client.Bot != nil {
-		client.Bot.SetupLoyalty(loyaltyManager)
+		manager:      manager,
+		eventCache:   eventCache,
 	}
 
 	// Listen for config changes
@@ -104,12 +74,13 @@ func Register(manager *modules.Manager) error {
 				logger.Error("failed to unmarshal config", zap.Error(err))
 				return
 			}
-			api, err := getHelixAPI(config.APIClientID, config.APIClientSecret)
+			api, err := client.getHelixAPI()
 			if err != nil {
 				logger.Warn("failed to create new twitch client, keeping old credentials", zap.Error(err))
 				return
 			}
 			client.API = api
+
 			logger.Info("reloaded/updated Twitch API")
 		case BotConfigKey:
 			var twitchBotConfig BotConfig
@@ -134,7 +105,45 @@ func Register(manager *modules.Manager) error {
 		}
 	}, ConfigKey, BotConfigKey)
 
+	if config.Enabled {
+		client.API, err = client.getHelixAPI()
+		if err != nil {
+			client.logger.Error("failed to create twitch client", zap.Error(err))
+		}
+	}
+
+	if client.Config.EnableBot {
+		if err := client.startBot(manager); err != nil {
+			if !errors.Is(err, database.ErrEmptyKey) {
+				return err
+			}
+		}
+	}
+
+	go client.runStatusPoll()
+	go client.connectWebsocket()
+
+	go func() {
+		for {
+			if client.Config.EnableBot && client.Bot != nil {
+				err := client.RunBot()
+				if err != nil {
+					logger.Error("failed to connect to Twitch IRC", zap.Error(err))
+					// Wait for config change before retrying
+					<-client.restart
+				}
+			} else {
+				<-client.restart
+			}
+		}
+	}()
+
 	manager.Modules[modules.ModuleTwitch] = client
+
+	// If loyalty module is enabled, set-up loyalty commands
+	if loyaltyManager, ok := client.manager.Modules[modules.ModuleLoyalty].(*loyalty.Manager); ok && client.Bot != nil {
+		client.Bot.SetupLoyalty(loyaltyManager)
+	}
 
 	return nil
 }
@@ -191,11 +200,17 @@ func (c *Client) startBot(manager *modules.Manager) error {
 	return nil
 }
 
-func getHelixAPI(clientID string, clientSecret string) (*helix.Client, error) {
+func (c *Client) getHelixAPI() (*helix.Client, error) {
+	redirectURI, err := c.getRedirectURI()
+	if err != nil {
+		return nil, err
+	}
+
 	// Create Twitch client
 	api, err := helix.NewClient(&helix.Options{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
+		ClientID:     c.Config.APIClientID,
+		ClientSecret: c.Config.APIClientSecret,
+		RedirectURI:  redirectURI,
 	})
 	if err != nil {
 		return nil, err

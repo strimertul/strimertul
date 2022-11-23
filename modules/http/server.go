@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/http/pprof"
 
+	"github.com/strimertul/strimertul/modules/twitch"
+
 	"git.sr.ht/~hamcha/containers"
 	jsoniter "github.com/json-iterator/go"
 
@@ -30,6 +32,7 @@ type Server struct {
 	frontend fs.FS
 	hub      *kv.Hub
 	mux      *http.ServeMux
+	manager  *modules.Manager
 }
 
 func NewServer(manager *modules.Manager) (*Server, error) {
@@ -47,9 +50,10 @@ func NewServer(manager *modules.Manager) (*Server, error) {
 	}
 
 	server := &Server{
-		logger: logger,
-		db:     db,
-		server: &http.Server{},
+		logger:  logger,
+		db:      db,
+		server:  &http.Server{},
+		manager: manager,
 	}
 	err = db.GetJSON(ServerConfigKey, &server.Config)
 	if err != nil {
@@ -124,6 +128,9 @@ func (s *Server) makeMux() *http.ServeMux {
 	}
 	if s.Config.EnableStaticServer {
 		mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.Config.Path))))
+	}
+	if s.manager.Modules[modules.ModuleTwitch].Status().Enabled {
+		mux.HandleFunc("/twitch/callback", s.manager.Modules[modules.ModuleTwitch].(*twitch.Client).AuthorizeCallback)
 	}
 
 	return mux

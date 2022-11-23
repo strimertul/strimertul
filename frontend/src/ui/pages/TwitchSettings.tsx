@@ -1,13 +1,20 @@
-import { CheckIcon } from '@radix-ui/react-icons';
-import React from 'react';
+import { CheckIcon, ExternalLinkIcon } from '@radix-ui/react-icons';
+import { GetTwitchAuthURL, GetTwitchLoggedUser } from '@wailsapp/go/main/App';
+import { helix } from '@wailsapp/go/models';
+import { BrowserOpenURL } from '@wailsapp/runtime/runtime';
+import React, { useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import eventsubTests from '../../data/eventsub-tests';
 import { useModule, useStatus } from '../../lib/react-utils';
-import { useAppDispatch } from '../../store';
+import { RootState, useAppDispatch } from '../../store';
 import apiReducer, { modules } from '../../store/api/reducer';
 import BrowserLink from '../components/BrowserLink';
 import DefinitionTable from '../components/DefinitionTable';
 import SaveButton from '../components/utils/SaveButton';
 import {
+  Button,
+  ButtonGroup,
   Checkbox,
   CheckboxIndicator,
   Field,
@@ -221,7 +228,7 @@ function TwitchAPISettings() {
                 httpConfig?.bind.indexOf(':') > 0
                   ? httpConfig.bind
                   : `localhost${httpConfig?.bind ?? ':4337'}`
-              }/oauth`,
+              }/twitch/callback`,
               Category: 'Broadcasting Suite',
             }}
           />
@@ -279,6 +286,111 @@ function TwitchAPISettings() {
   );
 }
 
+interface SyncError {
+  ok: false;
+  error: string;
+}
+
+const TwitchUser = styled('div', {
+  display: 'flex',
+  gap: '0.8rem',
+  alignItems: 'center',
+  fontSize: '14pt',
+  fontWeight: '300',
+});
+const TwitchPic = styled('img', {
+  width: '48px',
+  borderRadius: '50%',
+});
+const TwitchName = styled('p', { fontWeight: 'bold' });
+
+
+function TwitchEventSubSettings() {
+  const { t } = useTranslation();
+  const [userStatus, setUserStatus] = useState<helix.User | SyncError>(null);
+  const kv = useSelector((state: RootState) => state.api.client);
+
+  const getUserInfo = async () => {
+    try {
+      const res = await GetTwitchLoggedUser();
+      setUserStatus(res);
+    } catch (e) {
+      console.error(e);
+      setUserStatus({ ok: false, error: (e as Error).message });
+    }
+  };
+
+  const startAuthFlow = async () => {
+    const url = await GetTwitchAuthURL();
+    BrowserOpenURL(url);
+  };
+
+  const sendFakeEvent = async (event: keyof typeof eventsubTests) => {
+    const data = eventsubTests[event];
+    await kv.putJSON('twitch/ev/eventsub-event', {
+      ...data,
+      subscription: {
+        ...data.subscription,
+        created_at: new Date().toISOString(),
+      },
+    });
+  };
+
+  useEffect(() => {
+      // Get user info
+      void getUserInfo();
+  }, []);
+
+  let userBlock = <i>{t('pages.twitch-settings.events.loading-data')}</i>;
+  if (userStatus !== null) {
+    if ('id' in userStatus) {
+      userBlock = (
+        <>
+          <TwitchUser>
+            <p>{t('pages.twitch-settings.events.authenticated-as')}</p>
+            <TwitchPic
+              src={userStatus.profile_image_url}
+              alt={t('pages.twitch-settings.events.profile-picture')}
+            />
+            <TwitchName>{userStatus.display_name}</TwitchName>
+          </TwitchUser>
+        </>
+      );
+    } else {
+      userBlock = <span>{t('pages.twitch-settings.events.err-no-user')}</span>;
+    }
+  }
+  return (
+    <>
+      <p>{t('pages.twitch-settings.events.auth-message')}</p>
+      <Button
+        variation="primary"
+        onClick={() => {
+          void startAuthFlow();
+        }}
+      >
+        <ExternalLinkIcon /> {t('pages.twitch-settings.events.auth-button')}
+      </Button>
+      <SectionHeader>{t('pages.twitch-settings.events.current-status')}</SectionHeader>
+      {userBlock}
+      <SectionHeader>{t('pages.twitch-settings.events.sim-events')}</SectionHeader>
+      <ButtonGroup>
+        {Object.keys(eventsubTests).map((ev: keyof typeof eventsubTests) => (
+          <Button
+            key={ev}
+            onClick={() => {
+              void sendFakeEvent(ev);
+            }}
+          >
+            {t(`pages.twitch-settings.events.sim.${ev}`, { defaultValue: ev })}
+          </Button>
+        ))}
+      </ButtonGroup>
+    </>
+  );
+}
+
+
 export default function TwitchSettingsPage(): React.ReactElement {
   const { t } = useTranslation();
   const [twitchConfig, setTwitchConfig] = useModule(modules.twitchConfig);
@@ -318,12 +430,18 @@ export default function TwitchSettingsPage(): React.ReactElement {
             <TabButton value="api-config">
               {t('pages.twitch-settings.api-configuration')}
             </TabButton>
+            <TabButton value="eventsub">
+              {t('pages.twitch-settings.eventsub')}
+            </TabButton>
             <TabButton value="bot-settings">
               {t('pages.twitch-settings.bot-settings')}
             </TabButton>
           </TabList>
           <TabContent value="api-config">
             <TwitchAPISettings />
+          </TabContent>
+          <TabContent value="eventsub">
+            <TwitchEventSubSettings />
           </TabContent>
           <TabContent value="bot-settings">
             <TwitchBotSettings />

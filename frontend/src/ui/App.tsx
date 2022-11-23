@@ -5,7 +5,6 @@ import {
   DashboardIcon,
   FrameIcon,
   GearIcon,
-  Link2Icon,
   MixerHorizontalIcon,
   StarIcon,
   TableIcon,
@@ -15,6 +14,7 @@ import { Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { GetKilovoltBind } from '@wailsapp/go/main/App';
 
+import { delay } from 'src/lib/time-utils';
 import Dashboard from './pages/Dashboard';
 import Sidebar, { RouteSection } from './components/Sidebar';
 import ServerSettingsPage from './pages/ServerSettings';
@@ -25,7 +25,6 @@ import { styled } from './theme';
 
 // @ts-expect-error Asset import
 import spinner from '../assets/icon-loading.svg';
-import BackendIntegrationPage from './pages/BackendIntegration';
 import TwitchSettingsPage from './pages/TwitchSettings';
 import TwitchBotCommandsPage from './pages/BotCommands';
 import TwitchBotTimersPage from './pages/BotTimers';
@@ -73,11 +72,6 @@ const sections: RouteSection[] = [
         title: 'menu.pages.strimertul.settings',
         url: '/http',
         icon: <GearIcon />,
-      },
-      {
-        title: 'menu.pages.strimertul.stulbe',
-        url: '/backend',
-        icon: <Link2Icon />,
       },
     ],
   },
@@ -156,7 +150,16 @@ export default function App(): JSX.Element {
   const dispatch = useAppDispatch();
 
   const connectToKV = async () => {
-    const address = await GetKilovoltBind();
+    let address = '';
+    while (address === '') {
+      // eslint-disable-next-line no-await-in-loop
+      address = await GetKilovoltBind();
+      if (address === '') {
+        // Server not ready yet, wait a second
+        // eslint-disable-next-line no-await-in-loop
+        await delay(1000);
+      }
+    }
     await dispatch(
       createWSClient({
         address: `ws://${address}/ws`,
@@ -191,7 +194,6 @@ export default function App(): JSX.Element {
             <Route path="/about" element={<StrimertulPage />} />
             <Route path="/debug" element={<DebugPage />} />
             <Route path="/http" element={<ServerSettingsPage />} />
-            <Route path="/backend" element={<BackendIntegrationPage />} />
             <Route path="/twitch/settings" element={<TwitchSettingsPage />} />
             <Route
               path="/twitch/bot/commands"

@@ -43,36 +43,6 @@
       "static-help": "Will be served at the following URL: {{url}}",
       "saving": "Saving webserver settings..."
     },
-    "stulbe": {
-      "title": "Back-end integration",
-      "test-success": "Connection test was successful!",
-      "test-button": "Test connection",
-      "endpoint": "Back-end endpoint",
-      "auth-key": "Authorization key",
-      "username": "User name",
-      "subtitle": "Optional back-end integration (using <1>stulbe</1> or any Kilovolt compatible endpoint) for syncing keys and obtaining webhook events.",
-      "bind-placeholder": "HTTP endpoint, leave empty to disable integration",
-      "configuration": "Configuration",
-      "twitch-events": "Twitch events",
-      "err-not-enabled": "Please configure the back-end before accessing this page",
-      "loading-data": "Querying user data from backend…",
-      "authenticated-as": "Authenticated as",
-      "profile-picture": "Profile picture",
-      "err-no-user": "No twitch user is currently associated (and therefore webhooks are disabled!)",
-      "sim": {
-        "channel.update": "Channel update",
-        "channel.follow": "New follow",
-        "channel.subscribe": "New sub",
-        "channel.subscription.gift": "Gift sub",
-        "channel.subscription.message": "Re-sub with message",
-        "channel.cheer": "Cheer",
-        "channel.raid": "Raid"
-      },
-      "sim-events": "Send test event",
-      "auth-button": "Authenticate with Twitch",
-      "auth-message": "Click the following button to authenticate the back-end with your Twitch account:",
-      "current-status": "Current status"
-    },
     "twitch-settings": {
       "title": "Twitch configuration",
       "enable": "Enable Twitch integration",
@@ -86,6 +56,7 @@
       "subtitle": "Twitch integration with streams including chat bot and API access. If you stream on Twitch, you definitely want this on.",
       "api-subheader": "Application info",
       "api-configuration": "API access",
+      "eventsub": "Events",
       "bot-settings": "Bot settings",
       "enable-bot": "Enable Twitch bot",
       "bot-channel": "Twitch channel",
@@ -95,7 +66,26 @@
       "bot-info-header": "Bot account info",
       "bot-settings-copy": "A bot can interact with chat messages and provide extra events for the platform (chat events, some notifications) but requires access to a Twitch account. You can use your own or make a new one (if enabled on your main account, you can re-use the same email for your second account!)",
       "bot-chat-header": "Chat logging",
-      "bot-chat-history": "How many messages to keep in history (0 to disable)"
+      "bot-chat-history": "How many messages to keep in history (0 to disable)",
+      "events": {
+        "loading-data": "Querying user data from Twitch APIs…",
+        "authenticated-as": "Authenticated as",
+        "profile-picture": "Profile picture",
+        "err-no-user": "No twitch user is currently associated (and therefore events are disabled!)",
+        "sim": {
+          "channel.update": "Channel update",
+          "channel.follow": "New follow",
+          "channel.subscribe": "New sub",
+          "channel.subscription.gift": "Gift sub",
+          "channel.subscription.message": "Re-sub with message",
+          "channel.cheer": "Cheer",
+          "channel.raid": "Raid"
+        },
+        "sim-events": "Send test event",
+        "auth-button": "Authenticate with Twitch",
+        "auth-message": "Click the following button to authenticate the back-end with your Twitch account:",
+        "current-status": "Current status"
+      }
     },
     "botcommands": {
       "title": "Bot commands",

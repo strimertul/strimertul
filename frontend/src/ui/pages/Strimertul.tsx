@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { keyframes } from '@stitches/react';
 import { Trans, useTranslation } from 'react-i18next';
 import { GitHubLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
+import { useNavigate } from 'react-router-dom';
 import { APPNAME, PageContainer, PageHeader, styled } from '../theme';
 import BrowserLink from '../components/BrowserLink';
 
@@ -77,7 +78,17 @@ const ChannelLink = styled(BrowserLink, {
 });
 
 export default function StrimertulPage(): React.ReactElement {
+  const navigate = useNavigate();
   const { t } = useTranslation();
+  const [debugCount, setDebugCount] = useState(0);
+  const countForDebug = () => {
+    if (debugCount < 5) {
+      setDebugCount(debugCount+1);
+    } else {
+      navigate("/debug");
+    }
+  };
+
   return (
     <PageContainer>
       <PageHeader
@@ -96,6 +107,7 @@ export default function StrimertulPage(): React.ReactElement {
             WebkitMaskRepeat: 'no-repeat',
             WebkitMaskPosition: 'center',
           }}
+          onClick={countForDebug}
         />
         <LogoName>{APPNAME}</LogoName>
       </PageHeader>

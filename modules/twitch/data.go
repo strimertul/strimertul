@@ -38,3 +38,12 @@ const CustomCommandsKey = "twitch/bot-custom-commands"
 const WriteMessageRPC = "twitch/@send-chat-message"
 
 const BotCounterPrefix = "twitch/bot-counters/"
+
+const AuthKey = "twitch/auth-keys"
+
+const (
+	EventSubEventKey   = "twitch/ev/eventsub-event"
+	EventSubHistoryKey = "twitch/eventsub-history"
+)
+
+const EventSubHistorySize = 50
