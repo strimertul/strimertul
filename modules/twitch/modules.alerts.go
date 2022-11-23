@@ -2,7 +2,6 @@ package twitch
 
 import (
 	"bytes"
-	"encoding/json"
 	"math/rand"
 	"sync"
 	"text/template"
@@ -20,7 +19,7 @@ const BotAlertsKey = "twitch/bot-modules/alerts/config"
 type eventSubNotification struct {
 	Subscription helix.EventSubSubscription `json:"subscription"`
 	Challenge    string                     `json:"challenge"`
-	Event        json.RawMessage            `json:"event"`
+	Event        jsoniter.RawMessage        `json:"event"`
 }
 
 type BotAlertsConfig struct {
@@ -114,7 +113,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 
 	go bot.api.db.Subscribe(func(key, value string) {
 		if key == BotAlertsKey {
-			err := jsoniter.ConfigFastest.UnmarshalFromString(value, &mod.Config)
+			err := json.UnmarshalFromString(value, &mod.Config)
 			if err != nil {
 				bot.logger.Debug("error reloading timer config", zap.Error(err))
 			} else {
@@ -238,7 +237,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 	go bot.api.db.Subscribe(func(key, value string) {
 		if key == "stulbe/ev/webhook" {
 			var ev eventSubNotification
-			err := jsoniter.ConfigFastest.UnmarshalFromString(value, &ev)
+			err := json.UnmarshalFromString(value, &ev)
 			if err != nil {
 				bot.logger.Debug("error parsing webhook payload", zap.Error(err))
 				return
@@ -251,7 +250,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 				}
 				// Parse as follow event
 				var followEv helix.EventSubChannelFollowEvent
-				err := jsoniter.ConfigFastest.Unmarshal(ev.Event, &followEv)
+				err := json.Unmarshal(ev.Event, &followEv)
 				if err != nil {
 					bot.logger.Debug("error parsing follow event", zap.Error(err))
 					return
@@ -272,7 +271,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 				}
 				// Parse as raid event
 				var raidEv helix.EventSubChannelRaidEvent
-				err := jsoniter.ConfigFastest.Unmarshal(ev.Event, &raidEv)
+				err := json.Unmarshal(ev.Event, &raidEv)
 				if err != nil {
 					bot.logger.Debug("error parsing raid event", zap.Error(err))
 					return
@@ -309,7 +308,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 				}
 				// Parse as cheer event
 				var cheerEv helix.EventSubChannelCheerEvent
-				err := jsoniter.ConfigFastest.Unmarshal(ev.Event, &cheerEv)
+				err := json.Unmarshal(ev.Event, &cheerEv)
 				if err != nil {
 					bot.logger.Debug("error parsing cheer event", zap.Error(err))
 					return
@@ -346,7 +345,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 				}
 				// Parse as subscription event
 				var subEv helix.EventSubChannelSubscribeEvent
-				err := jsoniter.ConfigFastest.Unmarshal(ev.Event, &subEv)
+				err := json.Unmarshal(ev.Event, &subEv)
 				if err != nil {
 					bot.logger.Debug("error parsing sub event", zap.Error(err))
 					return
@@ -359,7 +358,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 				}
 				// Parse as subscription event
 				var subEv helix.EventSubChannelSubscriptionMessageEvent
-				err := jsoniter.ConfigFastest.Unmarshal(ev.Event, &subEv)
+				err := json.Unmarshal(ev.Event, &subEv)
 				if err != nil {
 					bot.logger.Debug("error parsing sub event", zap.Error(err))
 					return
@@ -372,7 +371,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 				}
 				// Parse as gift event
 				var giftEv helix.EventSubChannelSubscriptionGiftEvent
-				err := jsoniter.ConfigFastest.Unmarshal(ev.Event, &giftEv)
+				err := json.Unmarshal(ev.Event, &giftEv)
 				if err != nil {
 					bot.logger.Debug("error parsing raid event", zap.Error(err))
 					return

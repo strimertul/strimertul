@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
+
 	"github.com/urfave/cli/v2"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -22,6 +24,8 @@ import (
 
 	_ "net/http/pprof"
 )
+
+var json = jsoniter.ConfigFastest
 
 const databaseDefaultDriver = "pebble"
 

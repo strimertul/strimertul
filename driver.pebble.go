@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/cockroachdb/pebble"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/labstack/gommon/log"
 	kv "github.com/strimertul/kilovolt/v9"
 	pebble_driver "github.com/strimertul/kv-pebble"
@@ -69,7 +68,7 @@ func (p *PebbleDatabase) Export(file io.Writer) error {
 
 func (p *PebbleDatabase) Restore(file io.Reader) error {
 	in := make(map[string]string)
-	err := jsoniter.ConfigFastest.NewDecoder(file).Decode(&in)
+	err := json.NewDecoder(file).Decode(&in)
 	if err != nil {
 		return fmt.Errorf("Could not decode backup: %w", err)
 	}
@@ -91,5 +90,5 @@ func (p *PebbleDatabase) Backup(file io.Writer) error {
 	for iter.First(); iter.Valid(); iter.Next() {
 		out[string(iter.Key())] = string(iter.Value())
 	}
-	return jsoniter.ConfigFastest.NewEncoder(file).Encode(out)
+	return json.NewEncoder(file).Encode(out)
 }

@@ -11,7 +11,6 @@ import (
 
 	"github.com/Masterminds/sprig/v3"
 	irc "github.com/gempir/go-twitch-irc/v3"
-	jsoniter "github.com/json-iterator/go"
 )
 
 type Bot struct {
@@ -167,7 +166,7 @@ func (b *Bot) updateCommands(key, value string) {
 		err := func() error {
 			b.mu.Lock()
 			defer b.mu.Unlock()
-			return jsoniter.ConfigFastest.UnmarshalFromString(value, &b.customCommands)
+			return json.UnmarshalFromString(value, &b.customCommands)
 		}()
 		if err != nil {
 			b.logger.Error("failed to decode new custom commands", zap.Error(err))

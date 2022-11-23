@@ -20,6 +20,8 @@ import (
 	"github.com/strimertul/strimertul/modules"
 )
 
+var json = jsoniter.ConfigFastest
+
 type Server struct {
 	Config   ServerConfig
 	db       *database.DBModule
@@ -136,7 +138,7 @@ func (s *Server) Listen() error {
 			if key == ServerConfigKey {
 				oldBind := s.Config.Bind
 				oldPassword := s.Config.KVPassword
-				err := jsoniter.ConfigFastest.Unmarshal([]byte(value), &s.Config)
+				err := json.Unmarshal([]byte(value), &s.Config)
 				if err != nil {
 					s.logger.Error("Failed to unmarshal config", zap.Error(err))
 					return

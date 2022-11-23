@@ -20,9 +20,11 @@ type BotConfig struct {
 	ChatHistory int    `json:"chat_history"`
 }
 
-const ChatEventKey = "twitch/ev/chat-message"
-const ChatHistoryKey = "twitch/chat-history"
-const ChatActivityKey = "twitch/chat-activity"
+const (
+	ChatEventKey    = "twitch/ev/chat-message"
+	ChatHistoryKey  = "twitch/chat-history"
+	ChatActivityKey = "twitch/chat-activity"
+)
 
 type BotCustomCommand struct {
 	Description string          `json:"description"`

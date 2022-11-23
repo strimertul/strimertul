@@ -8,7 +8,6 @@ import (
 	"go.uber.org/zap"
 
 	irc "github.com/gempir/go-twitch-irc/v3"
-	jsoniter "github.com/json-iterator/go"
 )
 
 const BotTimersKey = "twitch/bot-modules/timers/config"
@@ -58,7 +57,7 @@ func SetupTimers(bot *Bot) *BotTimerModule {
 
 	go bot.api.db.Subscribe(func(key, value string) {
 		if key == BotTimersKey {
-			err := jsoniter.ConfigFastest.UnmarshalFromString(value, &mod.Config)
+			err := json.UnmarshalFromString(value, &mod.Config)
 			if err != nil {
 				bot.logger.Debug("error reloading timer config", zap.Error(err))
 			} else {

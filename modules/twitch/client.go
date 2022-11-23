@@ -15,6 +15,8 @@ import (
 	"github.com/strimertul/strimertul/modules/loyalty"
 )
 
+var json = jsoniter.ConfigFastest
+
 type Client struct {
 	Config Config
 	Bot    *Bot
@@ -97,7 +99,7 @@ func Register(manager *modules.Manager) error {
 	go db.Subscribe(func(key, value string) {
 		switch key {
 		case ConfigKey:
-			err := jsoniter.ConfigFastest.UnmarshalFromString(value, &config)
+			err := json.UnmarshalFromString(value, &config)
 			if err != nil {
 				logger.Error("failed to unmarshal config", zap.Error(err))
 				return
@@ -111,7 +113,7 @@ func Register(manager *modules.Manager) error {
 			logger.Info("reloaded/updated Twitch API")
 		case BotConfigKey:
 			var twitchBotConfig BotConfig
-			err := jsoniter.ConfigFastest.UnmarshalFromString(value, &twitchBotConfig)
+			err := json.UnmarshalFromString(value, &twitchBotConfig)
 			if err != nil {
 				logger.Error("failed to unmarshal config", zap.Error(err))
 				return
@@ -151,7 +153,7 @@ func (c *Client) runStatusPoll() {
 		// Check if streamer is online, if possible
 		func() {
 			status, err := c.API.GetStreams(&helix.StreamsParams{
-				UserLogins: []string{c.Bot.config.Channel}, //TODO Replace with something non bot dependant
+				UserLogins: []string{c.Bot.config.Channel}, // TODO Replace with something non bot dependant
 			})
 			if err != nil {
 				c.logger.Error("Error checking stream status", zap.Error(err))

@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/urfave/cli/v2"
 )
 
@@ -19,7 +18,7 @@ func cliImport(ctx *cli.Context) error {
 		inStream = file
 	}
 	var entries map[string]string
-	err := jsoniter.ConfigFastest.NewDecoder(inStream).Decode(&entries)
+	err := json.NewDecoder(inStream).Decode(&entries)
 	if err != nil {
 		return fatalError(err, "could not decode import file")
 	}

@@ -15,6 +15,8 @@ import (
 	"go.uber.org/zap"
 )
 
+var json = jsoniter.ConfigFastest
+
 var (
 	ErrRedeemInCooldown   = errors.New("redeem is on cooldown")
 	ErrGoalNotFound       = errors.New("goal not found")
@@ -83,7 +85,7 @@ func Register(manager *modules.Manager) error {
 	loyalty.points = make(map[string]PointsEntry)
 	for k, v := range points {
 		var entry PointsEntry
-		err := jsoniter.ConfigFastest.UnmarshalFromString(v, &entry)
+		err := json.UnmarshalFromString(v, &entry)
 		if err != nil {
 			return err
 		}
@@ -132,7 +134,7 @@ func (m *Manager) Status() modules.ModuleStatus {
 }
 
 func (m *Manager) Close() error {
-	//TODO Stop subscriptions?
+	// TODO Stop subscriptions?
 	return nil
 }
 
@@ -145,35 +147,35 @@ func (m *Manager) update(key, value string) {
 		err = func() error {
 			m.mu.Lock()
 			defer m.mu.Unlock()
-			return jsoniter.ConfigFastest.UnmarshalFromString(value, &m.config)
+			return json.UnmarshalFromString(value, &m.config)
 		}()
 	case GoalsKey:
 		err = func() error {
 			m.mu.Lock()
 			defer m.mu.Unlock()
-			return jsoniter.ConfigFastest.UnmarshalFromString(value, &m.goals)
+			return json.UnmarshalFromString(value, &m.goals)
 		}()
 	case RewardsKey:
 		err = func() error {
 			m.mu.Lock()
 			defer m.mu.Unlock()
-			return jsoniter.ConfigFastest.UnmarshalFromString(value, &m.rewards)
+			return json.UnmarshalFromString(value, &m.rewards)
 		}()
 	case QueueKey:
 		err = func() error {
 			m.mu.Lock()
 			defer m.mu.Unlock()
-			return jsoniter.ConfigFastest.UnmarshalFromString(value, &m.queue)
+			return json.UnmarshalFromString(value, &m.queue)
 		}()
 	case CreateRedeemRPC:
 		var redeem Redeem
-		err = jsoniter.ConfigFastest.UnmarshalFromString(value, &redeem)
+		err = json.UnmarshalFromString(value, &redeem)
 		if err == nil {
 			err = m.AddRedeem(redeem)
 		}
 	case RemoveRedeemRPC:
 		var redeem Redeem
-		err = jsoniter.ConfigFastest.UnmarshalFromString(value, &redeem)
+		err = json.UnmarshalFromString(value, &redeem)
 		if err == nil {
 			err = m.RemoveRedeem(redeem)
 		}
@@ -183,7 +185,7 @@ func (m *Manager) update(key, value string) {
 		// User point changed
 		case strings.HasPrefix(key, PointsPrefix):
 			var entry PointsEntry
-			err = jsoniter.ConfigFastest.UnmarshalFromString(value, &entry)
+			err = json.UnmarshalFromString(value, &entry)
 			user := key[len(PointsPrefix):]
 			func() {
 				m.mu.Lock()
@@ -205,7 +207,7 @@ func (m *Manager) handleRemote(key, value string) {
 	case KVExLoyaltyRedeem:
 		// Parse request
 		var redeemRequest ExLoyaltyRedeem
-		err := jsoniter.ConfigFastest.UnmarshalFromString(value, &redeemRequest)
+		err := json.UnmarshalFromString(value, &redeemRequest)
 		if err != nil {
 			m.logger.Warn("error decoding redeem request", zap.Error(err))
 			break
@@ -229,7 +231,7 @@ func (m *Manager) handleRemote(key, value string) {
 	case KVExLoyaltyContribute:
 		// Parse request
 		var contributeRequest ExLoyaltyContribute
-		err := jsoniter.ConfigFastest.UnmarshalFromString(value, &contributeRequest)
+		err := json.UnmarshalFromString(value, &contributeRequest)
 		if err != nil {
 			m.logger.Warn("error decoding contribution request", zap.Error(err))
 			break
