@@ -118,16 +118,11 @@ func (c *Client) processEvent(message EventSubWebsocketMessage) {
 }
 
 func (c *Client) addSubscriptionsForSession(session string) error {
-	var authResp AuthResponse
-	err := c.db.GetJSON(AuthKey, &authResp)
+	client, err := c.GetUserClient()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed getting API client for user: %w", err)
 	}
-	client, err := helix.NewClient(&helix.Options{
-		ClientID:        c.Config.APIClientID,
-		ClientSecret:    c.Config.APIClientSecret,
-		UserAccessToken: authResp.AccessToken,
-	})
+
 	users, err := client.GetUsers(&helix.UsersParams{})
 	if err != nil {
 		return fmt.Errorf("failed looking up user: %w", err)
@@ -136,6 +131,7 @@ func (c *Client) addSubscriptionsForSession(session string) error {
 		return fmt.Errorf("no users found")
 	}
 	user := users.Data.Users[0]
+	
 	transport := helix.EventSubTransport{
 		Method:    "websocket",
 		SessionID: session,

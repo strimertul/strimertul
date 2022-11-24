@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
+
 	"github.com/nicklaw5/helix/v2"
 )
 
@@ -26,17 +28,42 @@ func (c *Client) GetAuthorizationURL() string {
 	})
 }
 
-func (c *Client) GetLoggedUser() (helix.User, error) {
+func (c *Client) GetUserClient() (*helix.Client, error) {
 	var authResp AuthResponse
 	err := c.db.GetJSON(AuthKey, &authResp)
 	if err != nil {
-		return helix.User{}, err
+		return nil, err
 	}
-	client, err := helix.NewClient(&helix.Options{
+	// Handle token expiration
+	if time.Now().After(authResp.Time.Add(time.Duration(authResp.ExpiresIn) * time.Second)) {
+		// Refresh tokens
+		refreshed, err := c.refreshAccessToken(authResp.RefreshToken)
+		if err != nil {
+			return nil, err
+		}
+		authResp.AccessToken = refreshed.AccessToken
+		authResp.RefreshToken = refreshed.RefreshToken
+
+		// Save new token pair
+		err = c.db.PutJSON(AuthKey, authResp)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return helix.NewClient(&helix.Options{
 		ClientID:        c.Config.APIClientID,
 		ClientSecret:    c.Config.APIClientSecret,
 		UserAccessToken: authResp.AccessToken,
 	})
+}
+
+func (c *Client) GetLoggedUser() (helix.User, error) {
+	client, err := c.GetUserClient()
+	if err != nil {
+		return helix.User{}, fmt.Errorf("failed getting API client for user: %w", err)
+	}
+
 	users, err := client.GetUsers(&helix.UsersParams{})
 	if err != nil {
 		return helix.User{}, fmt.Errorf("failed looking up user: %w", err)
@@ -44,6 +71,7 @@ func (c *Client) GetLoggedUser() (helix.User, error) {
 	if len(users.Data.Users) < 1 {
 		return helix.User{}, fmt.Errorf("no users found")
 	}
+	
 	return users.Data.Users[0], nil
 }
 
@@ -93,6 +121,35 @@ func (c *Client) AuthorizeCallback(w http.ResponseWriter, req *http.Request) {
 	}
 	w.Header().Add("Content-Type", "text/html")
 	fmt.Fprintf(w, `<html><body><h2>All done, you can close me now!</h2><script>window.close();</script></body></html>`)
+}
+
+type RefreshResponse struct {
+	AccessToken  string   `json:"access_token"`
+	RefreshToken string   `json:"refresh_token"`
+	TokenType    string   `json:"token_type"`
+	Scope        []string `json:"scope"`
+}
+
+func (c *Client) refreshAccessToken(refreshToken string) (r RefreshResponse, err error) {
+	// Exchange code for access/refresh tokens
+	query := url.Values{
+		"client_id":     {c.Config.APIClientID},
+		"client_secret": {c.Config.APIClientSecret},
+		"grant_type":    {"refresh_token"},
+		"refresh_token": {refreshToken},
+	}
+	authRequest, err := http.NewRequest("POST", "https://id.twitch.tv/oauth2/token?"+query.Encode(), nil)
+	if err != nil {
+		return RefreshResponse{}, err
+	}
+	resp, err := http.DefaultClient.Do(authRequest)
+	if err != nil {
+		return RefreshResponse{}, err
+	}
+	defer resp.Body.Close()
+	var refreshResp RefreshResponse
+	err = jsoniter.ConfigFastest.NewDecoder(resp.Body).Decode(&refreshResp)
+	return refreshResp, err
 }
 
 func (c *Client) getRedirectURI() (string, error) {
