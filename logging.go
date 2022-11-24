@@ -18,14 +18,14 @@ var (
 	incomingLogs chan LogEntry
 )
 
-func initLogger() {
+func initLogger(level zapcore.Level) {
 	lastLogs = make([]LogEntry, 0)
 	incomingLogs = make(chan LogEntry, 100)
-	logStorage := NewLogStorage(zap.InfoLevel)
+	logStorage := NewLogStorage(level)
 	consoleLogger := zapcore.NewCore(
 		zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()),
 		zapcore.Lock(os.Stderr),
-		zap.InfoLevel,
+		level,
 	)
 	fileLogger := zapcore.NewCore(
 		zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
@@ -35,7 +35,7 @@ func initLogger() {
 			MaxBackups: 3,
 			MaxAge:     28,
 		}),
-		zap.DebugLevel,
+		level,
 	)
 	core := zapcore.NewTee(
 		consoleLogger,

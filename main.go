@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 
+	"go.uber.org/zap/zapcore"
+
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/loyalty"
 	"github.com/strimertul/strimertul/modules/twitch"
@@ -45,6 +47,7 @@ func main() {
 		Version: appVersion,
 		Action:  cliMain,
 		Flags: []cli.Flag{
+			&cli.StringFlag{Name: "log-level", Usage: "logging level (debug,info,warn,error)", Value: "info"},
 			&cli.StringFlag{Name: "driver", Usage: "specify database driver", Value: "auto"},
 			&cli.StringFlag{Name: "database-dir", Aliases: []string{"db-dir"}, Usage: "specify database directory", Value: "data"},
 			&cli.StringFlag{Name: "backup-dir", Aliases: []string{"b-dir"}, Usage: "specify backup directory", Value: "backups"},
@@ -85,7 +88,11 @@ func main() {
 			rand.Seed(time.Now().UnixNano())
 
 			// Initialize logger with global flags
-			initLogger()
+			level, err := zapcore.ParseLevel(ctx.String("log-level"))
+			if err != nil {
+				level = zapcore.InfoLevel
+			}
+			initLogger(level)
 			return nil
 		},
 		After: func(ctx *cli.Context) error {
