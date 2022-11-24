@@ -1,5 +1,6 @@
 import * as UnstyledLabel from '@radix-ui/react-label';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
+import * as ToggleGroup from '@radix-ui/react-toggle-group';
 import { styled } from './theme';
 import { theme } from '.';
 
@@ -115,15 +116,15 @@ export const MultiButton = styled('div', {
   display: 'flex',
 });
 
-export const Button = styled('button', {
+const button = {
   all: 'unset',
   cursor: 'pointer',
   userSelect: 'none',
   color: '$gray12',
   fontWeight: '300',
-  padding: '0.5rem 1rem',
   borderRadius: theme.borderRadius.form,
   fontSize: '1.1rem',
+  padding: '0.5rem 1rem',
   border: '1px solid $gray6',
   backgroundColor: '$gray4',
   display: 'flex',
@@ -220,6 +221,37 @@ export const Button = styled('button', {
       },
     },
   },
+};
+
+export const MultiToggle = styled(ToggleGroup.Root, {
+  display: 'inline-flex',
+  borderRadius: theme.borderRadius.form,
+  backgroundColor: '$gray4',
+});
+
+export const MultiToggleItem = styled(ToggleGroup.Item, {
+  ...button,
+  borderRadius: 0,
+  border: 0,
+  '&:first-child': {
+    borderTopLeftRadius: theme.borderRadius.form,
+    borderBottomLeftRadius: theme.borderRadius.form,
+  },
+  '&:last-child': {
+    borderTopRightRadius: theme.borderRadius.form,
+    borderBottomRightRadius: theme.borderRadius.form,
+  },
+  '&:hover': {
+    ...button['&:hover'],
+  },
+  "&[data-state='on']": {
+    ...button['&:active'],
+    background: '$gray8',
+  },
+});
+
+export const Button = styled('button', {
+  ...button,
 });
 
 export const ComboBox = styled('select', {

@@ -3,13 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Link, useMatch, useResolvedPath } from 'react-router-dom';
-import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
+
 import { RootState } from '../../store';
 import { APPNAME, APPREPO } from '../theme';
+import BrowserLink from './BrowserLink';
+import Scrollbar from './utils/Scrollbar';
 
 // @ts-expect-error Asset import
 import logo from '../../assets/icon-logo.svg';
-import BrowserLink from './BrowserLink';
 
 export interface RouteSection {
   title: string;
@@ -38,6 +39,7 @@ const Header = styled('div', {
 });
 
 const AppName = styled('h1', {
+  userSelect: 'none',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -49,6 +51,7 @@ const AppName = styled('h1', {
 });
 
 const AppLink = styled(Link, {
+  userSelect: 'none',
   all: 'unset',
   cursor: 'pointer',
   color: '$teal12',
@@ -69,6 +72,7 @@ const AppLink = styled(Link, {
 });
 
 const VersionLabel = styled('div', {
+  userSelect: 'none',
   textTransform: 'uppercase',
   fontSize: '0.75rem',
   fontWeight: 'bold',
@@ -106,8 +110,10 @@ const MenuHeader = styled('header', {
   fontWeight: 'bold',
   padding: '0.5rem 0 0.5rem 0.8rem',
   color: '$teal9',
+  userSelect: 'none',
 });
 const MenuLink = styled(Link, {
+  userSelect: 'none',
   color: '$teal13 !important',
   display: 'flex',
   alignItems: 'center',
@@ -199,10 +205,7 @@ export default function Sidebar({
 
   return (
     <Container>
-      <OverlayScrollbarsComponent
-        style={{ maxHeight: '100vh' }}
-        options={{ scrollbars: { autoHide: 'scroll' } }}
-      >
+      <Scrollbar vertical={true} viewport={{ maxHeight: '100vh' }}>
         <Header>
           <AppLink to={'/about'} status={matchApp ? 'active' : 'default'}>
             <AppName>
@@ -230,7 +233,7 @@ export default function Sidebar({
             ))}
           </MenuSection>
         ))}
-      </OverlayScrollbarsComponent>
+      </Scrollbar>
     </Container>
   );
 }

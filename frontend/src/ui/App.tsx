@@ -13,7 +13,6 @@ import { t } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
 
 import {
   GetKilovoltBind,
@@ -43,6 +42,8 @@ import { APPNAME, styled } from './theme';
 
 // @ts-expect-error Asset import
 import spinner from '../assets/icon-loading.svg';
+import Scrollbar from './components/utils/Scrollbar';
+import LogViewer from './components/LogViewer';
 
 const LoadingDiv = styled('div', {
   display: 'flex',
@@ -218,31 +219,37 @@ export default function App(): JSX.Element {
 
   return (
     <Container>
+      <LogViewer />
       <Sidebar sections={sections} />
-      <PageContent>
-        <PageWrapper role="main">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/about" element={<StrimertulPage />} />
-            <Route path="/debug" element={<DebugPage />} />
-            <Route path="/http" element={<ServerSettingsPage />} />
-            <Route path="/twitch/settings" element={<TwitchSettingsPage />} />
-            <Route
-              path="/twitch/bot/commands"
-              element={<TwitchBotCommandsPage />}
-            />
-            <Route
-              path="/twitch/bot/timers"
-              element={<TwitchBotTimersPage />}
-            />
-            <Route path="/twitch/bot/alerts" element={<ChatAlertsPage />} />
-            <Route path="/loyalty/settings" element={<LoyaltyConfigPage />} />
-            <Route path="/loyalty/users" element={<LoyaltyQueuePage />} />
-            <Route path="/loyalty/rewards" element={<LoyaltyRewardsPage />} />
-          </Routes>
-        </PageWrapper>
-      </PageContent>
-      <ToastContainer position="bottom-center" autoClose={5000} theme="dark" />
+      <Scrollbar
+        vertical={true}
+        root={{ flex: 1 }}
+        viewport={{ height: '100vh', flex: '1' }}
+      >
+        <PageContent>
+          <PageWrapper role="main">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/about" element={<StrimertulPage />} />
+              <Route path="/debug" element={<DebugPage />} />
+              <Route path="/http" element={<ServerSettingsPage />} />
+              <Route path="/twitch/settings" element={<TwitchSettingsPage />} />
+              <Route
+                path="/twitch/bot/commands"
+                element={<TwitchBotCommandsPage />}
+              />
+              <Route
+                path="/twitch/bot/timers"
+                element={<TwitchBotTimersPage />}
+              />
+              <Route path="/twitch/bot/alerts" element={<ChatAlertsPage />} />
+              <Route path="/loyalty/settings" element={<LoyaltyConfigPage />} />
+              <Route path="/loyalty/users" element={<LoyaltyQueuePage />} />
+              <Route path="/loyalty/rewards" element={<LoyaltyRewardsPage />} />
+            </Routes>
+          </PageWrapper>
+        </PageContent>
+      </Scrollbar>
     </Container>
   );
 }

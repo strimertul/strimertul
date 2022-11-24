@@ -6,8 +6,6 @@ import { HashRouter } from 'react-router-dom';
 import 'inter-ui/inter.css';
 import '@fontsource/space-mono/index.css';
 import 'normalize.css/normalize.css';
-import 'react-toastify/dist/ReactToastify.css';
-import 'overlayscrollbars/overlayscrollbars.css';
 
 import './locale/setup';
 

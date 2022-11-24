@@ -286,5 +286,14 @@
       "text": "This page is still under construction, apologies for the lackluster view :("
     },
     "loading": "{{APPNAME}} is starting up, please wait!"
+  },
+  "logging": {
+    "dialog-title": "Application logs",
+    "levelFilter": "Filter per log severity",
+    "level": {
+      "info": "Info",
+      "warn": "Warning",
+      "error": "Error"
+    }
   }
 }
