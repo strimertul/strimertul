@@ -13,6 +13,7 @@ import BrowserLink from '../components/BrowserLink';
 import DefinitionTable from '../components/DefinitionTable';
 import SaveButton from '../components/utils/SaveButton';
 import {
+  APPNAME,
   Button,
   ButtonGroup,
   Checkbox,
@@ -304,7 +305,6 @@ const TwitchPic = styled('img', {
 });
 const TwitchName = styled('p', { fontWeight: 'bold' });
 
-
 function TwitchEventSubSettings() {
   const { t } = useTranslation();
   const [userStatus, setUserStatus] = useState<helix.User | SyncError>(null);
@@ -337,8 +337,8 @@ function TwitchEventSubSettings() {
   };
 
   useEffect(() => {
-      // Get user info
-      void getUserInfo();
+    // Get user info
+    void getUserInfo();
   }, []);
 
   let userBlock = <i>{t('pages.twitch-settings.events.loading-data')}</i>;
@@ -362,7 +362,7 @@ function TwitchEventSubSettings() {
   }
   return (
     <>
-      <p>{t('pages.twitch-settings.events.auth-message')}</p>
+      <p>{t('pages.twitch-settings.events.auth-message', { APPNAME })}</p>
       <Button
         variation="primary"
         onClick={() => {
@@ -371,9 +371,13 @@ function TwitchEventSubSettings() {
       >
         <ExternalLinkIcon /> {t('pages.twitch-settings.events.auth-button')}
       </Button>
-      <SectionHeader>{t('pages.twitch-settings.events.current-status')}</SectionHeader>
+      <SectionHeader>
+        {t('pages.twitch-settings.events.current-status')}
+      </SectionHeader>
       {userBlock}
-      <SectionHeader>{t('pages.twitch-settings.events.sim-events')}</SectionHeader>
+      <SectionHeader>
+        {t('pages.twitch-settings.events.sim-events')}
+      </SectionHeader>
       <ButtonGroup>
         {Object.keys(eventsubTests).map((ev: keyof typeof eventsubTests) => (
           <Button
@@ -389,7 +393,6 @@ function TwitchEventSubSettings() {
     </>
   );
 }
-
 
 export default function TwitchSettingsPage(): React.ReactElement {
   const { t } = useTranslation();

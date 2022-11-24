@@ -54,3 +54,28 @@ export namespace helix {
 
 }
 
+export namespace main {
+	
+	export class LogEntry {
+	    caller: string;
+	    time: string;
+	    level: string;
+	    message: string;
+	    data: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new LogEntry(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.caller = source["caller"];
+	        this.time = source["time"];
+	        this.level = source["level"];
+	        this.message = source["message"];
+	        this.data = source["data"];
+	    }
+	}
+
+}
+

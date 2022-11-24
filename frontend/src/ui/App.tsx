@@ -1,5 +1,3 @@
-import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import {
   ChatBubbleIcon,
   DashboardIcon,
@@ -10,34 +8,45 @@ import {
   TableIcon,
   TimerIcon,
 } from '@radix-ui/react-icons';
+import { EventsOff, EventsOn } from '@wailsapp/runtime/runtime';
+import { t } from 'i18next';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
-import { GetKilovoltBind } from '@wailsapp/go/main/App';
 
-import { delay } from 'src/lib/time-utils';
-import Dashboard from './pages/Dashboard';
-import Sidebar, { RouteSection } from './components/Sidebar';
-import ServerSettingsPage from './pages/ServerSettings';
+import {
+  GetKilovoltBind,
+  GetLastLogs,
+  IsServerReady,
+} from '@wailsapp/go/main/App';
+import { main } from '@wailsapp/go/models';
+
 import { RootState, useAppDispatch } from '../store';
 import { createWSClient, useAuthBypass } from '../store/api/reducer';
 import { ConnectionStatus } from '../store/api/types';
-import { styled } from './theme';
+import loggingReducer from '../store/logging/reducer';
+import Sidebar, { RouteSection } from './components/Sidebar';
+import AuthDialog from './pages/AuthDialog';
+import TwitchBotCommandsPage from './pages/BotCommands';
+import TwitchBotTimersPage from './pages/BotTimers';
+import ChatAlertsPage from './pages/ChatAlerts';
+import Dashboard from './pages/Dashboard';
+import DebugPage from './pages/Debug';
+import LoyaltyConfigPage from './pages/LoyaltyConfig';
+import LoyaltyQueuePage from './pages/LoyaltyQueue';
+import LoyaltyRewardsPage from './pages/LoyaltyRewards';
+import ServerSettingsPage from './pages/ServerSettings';
+import StrimertulPage from './pages/Strimertul';
+import TwitchSettingsPage from './pages/TwitchSettings';
+import { APPNAME, styled } from './theme';
 
 // @ts-expect-error Asset import
 import spinner from '../assets/icon-loading.svg';
-import TwitchSettingsPage from './pages/TwitchSettings';
-import TwitchBotCommandsPage from './pages/BotCommands';
-import TwitchBotTimersPage from './pages/BotTimers';
-import AuthDialog from './pages/AuthDialog';
-import ChatAlertsPage from './pages/ChatAlerts';
-import LoyaltyConfigPage from './pages/LoyaltyConfig';
-import LoyaltyQueuePage from './pages/LoyaltyQueue';
-import StrimertulPage from './pages/Strimertul';
-import DebugPage from './pages/Debug';
-import LoyaltyRewardsPage from './pages/LoyaltyRewards';
 
 const LoadingDiv = styled('div', {
   display: 'flex',
+  flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center',
   minHeight: '100vh',
@@ -47,10 +56,15 @@ const Spinner = styled('img', {
   maxWidth: '100px',
 });
 
-function Loading() {
+interface LoadingProps {
+  message: string;
+}
+
+function Loading({ message }: React.PropsWithChildren<LoadingProps>) {
   return (
     <LoadingDiv>
       <Spinner src={spinner as string} alt="Loading..." />
+      <p>{message}</p>
     </LoadingDiv>
   );
 }
@@ -143,6 +157,7 @@ const PageWrapper = styled('div', {
 });
 
 export default function App(): JSX.Element {
+  const [ready, setReady] = useState(false);
   const client = useSelector((state: RootState) => state.api.client);
   const connected = useSelector(
     (state: RootState) => state.api.connectionStatus,
@@ -150,16 +165,7 @@ export default function App(): JSX.Element {
   const dispatch = useAppDispatch();
 
   const connectToKV = async () => {
-    let address = '';
-    while (address === '') {
-      // eslint-disable-next-line no-await-in-loop
-      address = await GetKilovoltBind();
-      if (address === '') {
-        // Server not ready yet, wait a second
-        // eslint-disable-next-line no-await-in-loop
-        await delay(1000);
-      }
-    }
+    const address = await GetKilovoltBind();
     await dispatch(
       createWSClient({
         address: `ws://${address}/ws`,
@@ -167,17 +173,43 @@ export default function App(): JSX.Element {
     );
   };
 
+  // Get application logs
   useEffect(() => {
+    void GetLastLogs().then((logs) => {
+      dispatch(loggingReducer.actions.loadedLogData(logs));
+    });
+    EventsOn('log-event', (event: main.LogEntry) => {
+      dispatch(loggingReducer.actions.receivedEvent(event));
+    });
+    return () => {
+      EventsOff('log-event');
+    };
+  }, []);
+
+  useEffect(() => {
+    void IsServerReady().then(setReady);
+    EventsOn('ready', (newValue: boolean) => {
+      setReady(newValue);
+    });
+    return () => {
+      EventsOff('ready');
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
     if (!client) {
       void connectToKV();
     }
     if (connected === ConnectionStatus.AuthenticationNeeded) {
       void dispatch(useAuthBypass());
     }
-  });
+  }, [ready, connected]);
 
   if (connected === ConnectionStatus.NotConnected) {
-    return <Loading />;
+    return <Loading message={t('special.loading', { APPNAME })} />;
   }
 
   if (connected === ConnectionStatus.AuthenticationNeeded) {

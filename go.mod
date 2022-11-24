@@ -17,6 +17,7 @@ require (
 	github.com/urfave/cli/v2 v2.23.5
 	github.com/wailsapp/wails/v2 v2.2.0
 	go.uber.org/zap v1.23.0
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
 
 replace github.com/nicklaw5/helix/v2 => github.com/ashkeel/helix/v2 v2.11.0-ws

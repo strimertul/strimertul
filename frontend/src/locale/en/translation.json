@@ -36,7 +36,7 @@
       "bind": "Webserver Bind",
       "kilovolt-password": "Kilovolt password",
       "kilovolt-placeholder": "Leave empty to disable authentication",
-      "bind-help": "Every application that uses strimertul will need to be updated, your browser will be redirected to the new URL automatically.",
+      "bind-help": "Every application that uses {{APPNAME}} will need to be updated!",
       "static-path": "Static assets (leave empty to disable)",
       "static-placeholder": "Absolute path to static assets",
       "static-help": "Will be served at the following URL: {{url}}",
@@ -82,7 +82,7 @@
         },
         "sim-events": "Send test event",
         "auth-button": "Authenticate with Twitch",
-        "auth-message": "Click the following button to authenticate strimertul with your Twitch account:",
+        "auth-message": "Click the following button to authenticate {{APPNAME}} with your Twitch account:",
         "current-status": "Current status"
       }
     },
@@ -130,7 +130,7 @@
     },
     "auth": {
       "title": "Authentication required",
-      "desc": "The installation of strimertül you are trying to reach is protected with a password. Please write the password below to access the control panel.",
+      "desc": "The installation of {{APPNAME}} you are trying to reach is protected with a password. Please write the password below to access the control panel.",
       "no-pwd-note": " If the database has no password (for example, it was recently changed from having one to none), leave the field empty.",
       "password": "Password",
       "submit": "Authenticate"
@@ -284,6 +284,7 @@
     "wip": {
       "header": "WIP - Page under development",
       "text": "This page is still under construction, apologies for the lackluster view :("
-    }
+    },
+    "loading": "{{APPNAME}} is starting up, please wait!"
   }
 }

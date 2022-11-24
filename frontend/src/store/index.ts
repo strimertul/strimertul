@@ -2,10 +2,12 @@ import { configureStore } from '@reduxjs/toolkit';
 import { useDispatch } from 'react-redux';
 import thunkMiddleware from 'redux-thunk';
 import apiReducer from './api/reducer';
+import loggingReducer from './logging/reducer';
 
 const store = configureStore({
   reducer: {
     api: apiReducer.reducer,
+    logging: loggingReducer.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

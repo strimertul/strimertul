@@ -10,6 +10,10 @@ export function GetKilovoltBind() {
   return window['go']['main']['App']['GetKilovoltBind']();
 }
 
+export function GetLastLogs() {
+  return window['go']['main']['App']['GetLastLogs']();
+}
+
 export function GetTwitchAuthURL() {
   return window['go']['main']['App']['GetTwitchAuthURL']();
 }

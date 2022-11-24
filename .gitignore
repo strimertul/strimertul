@@ -7,3 +7,4 @@
 .idea
 strimertul_*
 build/bin
+*.log

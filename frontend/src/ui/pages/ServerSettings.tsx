@@ -5,6 +5,7 @@ import { useAppDispatch } from '../../store';
 import apiReducer, { modules } from '../../store/api/reducer';
 import SaveButton from '../components/utils/SaveButton';
 import {
+  APPNAME,
   Field,
   FieldNote,
   InputBox,
@@ -53,7 +54,7 @@ export default function ServerSettingsPage(): React.ReactElement {
               )
             }
           />
-          <FieldNote>{t('pages.http.bind-help')}</FieldNote>
+          <FieldNote>{t('pages.http.bind-help', { APPNAME })}</FieldNote>
         </Field>
         <Field size="fullWidth">
           <Label htmlFor="kvpassword">

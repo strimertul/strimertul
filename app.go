@@ -4,14 +4,15 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/nicklaw5/helix/v2"
-
 	"github.com/strimertul/strimertul/modules"
 	"github.com/strimertul/strimertul/modules/database"
 	"github.com/strimertul/strimertul/modules/http"
 	"github.com/strimertul/strimertul/modules/twitch"
 
+	"git.sr.ht/~hamcha/containers"
+	"github.com/nicklaw5/helix/v2"
 	"github.com/urfave/cli/v2"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.uber.org/zap"
 )
 
@@ -21,12 +22,14 @@ type App struct {
 	cliParams *cli.Context
 	driver    DatabaseDriver
 	manager   *modules.Manager
+	ready     *containers.RWSync[bool]
 }
 
 // NewApp creates a new App application struct
 func NewApp(cliParams *cli.Context) *App {
 	return &App{
 		cliParams: cliParams,
+		ready:     containers.NewRWSync(false),
 	}
 }
 
@@ -84,8 +87,19 @@ func (a *App) startup(ctx context.Context) {
 		}
 	}()
 
+	a.ready.Set(true)
+	runtime.EventsEmit(ctx, "ready", true)
+	logger.Info("app is ready")
+
+	// Start redirecting logs to UI
+	go func() {
+		for entry := range incomingLogs {
+			runtime.EventsEmit(ctx, "log-event", entry)
+		}
+	}()
+
 	// Run HTTP server
-	go failOnError(httpServer.Listen(), "HTTP server stopped")
+	failOnError(httpServer.Listen(), "HTTP server stopped")
 }
 
 func (a *App) stop(context.Context) {
@@ -101,6 +115,9 @@ func (a *App) AuthenticateKVClient(id string) {
 }
 
 func (a *App) IsServerReady() bool {
+	if !a.ready.Get() {
+		return false
+	}
 	return a.manager.Modules[modules.ModuleHTTP].Status().Working
 }
 
@@ -120,4 +137,8 @@ func (a *App) GetTwitchAuthURL() string {
 
 func (a *App) GetTwitchLoggedUser() (helix.User, error) {
 	return a.manager.Modules[modules.ModuleTwitch].(*twitch.Client).GetLoggedUser()
+}
+
+func (a *App) GetLastLogs() []LogEntry {
+	return lastLogs
 }

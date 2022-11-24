@@ -8,18 +8,16 @@ import (
 	"os"
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/strimertul/strimertul/modules"
+	"github.com/strimertul/strimertul/modules/loyalty"
+	"github.com/strimertul/strimertul/modules/twitch"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/urfave/cli/v2"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-
-	"github.com/strimertul/strimertul/modules"
-	"github.com/strimertul/strimertul/modules/loyalty"
-	"github.com/strimertul/strimertul/modules/twitch"
 
 	_ "net/http/pprof"
 )
@@ -29,8 +27,6 @@ var json = jsoniter.ConfigFastest
 const databaseDefaultDriver = "pebble"
 
 var appVersion = "v0.0.0-UNKNOWN"
-
-var logger *zap.Logger
 
 //go:embed frontend/dist/*
 var frontend embed.FS
@@ -49,8 +45,6 @@ func main() {
 		Version: appVersion,
 		Action:  cliMain,
 		Flags: []cli.Flag{
-			&cli.BoolFlag{Name: "debug", Aliases: []string{"d"}, Usage: "print more logs (for debugging)", Value: false},
-			&cli.BoolFlag{Name: "json-log", Usage: "print logs in JSON format", Value: false},
 			&cli.StringFlag{Name: "driver", Usage: "specify database driver", Value: "auto"},
 			&cli.StringFlag{Name: "database-dir", Aliases: []string{"db-dir"}, Usage: "specify database directory", Value: "data"},
 			&cli.StringFlag{Name: "backup-dir", Aliases: []string{"b-dir"}, Usage: "specify backup directory", Value: "backups"},
@@ -91,7 +85,7 @@ func main() {
 			rand.Seed(time.Now().UnixNano())
 
 			// Initialize logger with global flags
-			initLogger(ctx.Bool("debug"), ctx.Bool("json-log"))
+			initLogger()
 			return nil
 		},
 		After: func(ctx *cli.Context) error {
@@ -103,24 +97,6 @@ func main() {
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
-	}
-}
-
-func initLogger(debug bool, json bool) {
-	if debug {
-		cfg := zap.NewDevelopmentConfig()
-		if json {
-			cfg.Encoding = "json"
-		}
-		logger, _ = cfg.Build()
-	} else {
-		cfg := zap.NewProductionConfig()
-		if !json {
-			cfg.Encoding = "console"
-			cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-			cfg.EncoderConfig.CallerKey = zapcore.OmitKey
-		}
-		logger, _ = cfg.Build()
 	}
 }
 
