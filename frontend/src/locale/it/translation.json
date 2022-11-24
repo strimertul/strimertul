@@ -1,0 +1,71 @@
+{
+  "form-actions": {
+    "save": "Salva",
+    "saving": "Sto salvando...",
+    "error": "Errore",
+    "saved": "Salvato",
+    "cancel": "Annulla",
+    "ok": "OK",
+    "add": "Aggiungi",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "warning-delete": "Questa operazione è irreversibile",
+    "create": "Crea",
+    "enable": "Abilita",
+    "disable": "Disabilita"
+  },
+  "special": {
+    "wip": {
+      "header": "WIP - Pagina non pronta",
+      "text": "Questa pagina è ancora in lavorazione, chiedo venia per la vista scarna :("
+    }
+  },
+  "logging": {
+    "dialog-title": "Log applicazione"
+  },
+  "pagination": {
+    "title": "paginazione",
+    "previous": "Pagina precedente",
+    "next": "Pagina successiva",
+    "items-per-page": "Elementi per pagina",
+    "page": "Pagina {{page}}",
+    "gotofirst": "Vai alla prima pagina",
+    "gotopage": "Vai a pagina {{page}}",
+    "gotolast": "Vai all'ultima pagina"
+  },
+  "debug": {
+    "dev-build": "Build di sviluppo"
+  },
+  "menu": {
+    "messages": {
+      "update-available": "AGGIORNAMENTO DISPONIBILE"
+    }
+  },
+  "pages": {
+    "auth": {
+      "title": "Autenticazione richiesta",
+      "desc": "Questa installazione di {{APPNAME}} è protetta da password. Inserisci la password per accedere al pannello di controllo.",
+      "no-pwd-note": " Se il database non ha password (per esempio, è stata di recente rimossa), lascia il campo vuoto.",
+      "password": "Password",
+      "submit": "Autentica"
+    },
+    "botcommands": {
+      "remove-command-title": "Rimuovere il comando {{name}}?",
+      "command-name": "Nome comando",
+      "command-name-placeholder": "!comando",
+      "command-desc": "Descrizione (opzionale)",
+      "command-desc-placeholder": "Questo comando fa qualcosa",
+      "command-response": "Risposta",
+      "command-response-placeholder": "Ciao {0}!",
+      "command-acl": "Livello d'accesso richiesto",
+      "command-acl-help": "Specifica il livello minimo richiesto, ad esempio se scegli VIP, sia VIP che moderatori che lo streamer potranno usare il comando",
+      "title": "Comandi del bot",
+      "desc": "Crea comandi chat personalizzati per autorisponditori, contatori, ecc.",
+      "add-button": "Crea comando",
+      "search-placeholder": "Cerca comando per nome",
+      "no-commands": "Il bot non ha comandi configurati",
+      "command-header-new": "Nuovo comando",
+      "command-header-edit": "Modifica comando"
+    }
+  }
+}
