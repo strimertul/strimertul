@@ -5,6 +5,7 @@ go 1.19
 require (
 	git.sr.ht/~hamcha/containers v0.0.3
 	github.com/Masterminds/sprig/v3 v3.2.2
+	github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
 	github.com/cockroachdb/pebble v0.0.0-20221116223310-87eccabb90a3
 	github.com/gempir/go-twitch-irc/v3 v3.2.0
 	github.com/gorilla/websocket v1.5.0
@@ -26,6 +27,7 @@ require (
 	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
+	github.com/apenwarr/w32 v0.0.0-20190407065021-aa00fece76ab // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect

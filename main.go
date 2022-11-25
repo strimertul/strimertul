@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/apenwarr/fixconsole"
+
 	"go.uber.org/zap/zapcore"
 
 	"github.com/strimertul/strimertul/modules"
@@ -20,7 +22,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"go.uber.org/zap"
-
 	_ "net/http/pprof"
 )
 
@@ -41,6 +42,11 @@ var moduleList = map[modules.ModuleID]ModuleConstructor{
 }
 
 func main() {
+	err := fixconsole.FixConsoleIfNeeded()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	app := &cli.App{
 		Name:    "strimertul",
 		Usage:   "the small broadcasting suite for Twitch",
