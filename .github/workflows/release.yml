@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "v*.*.*"
+      - "v*.*.*-beta.*"
+      - "v*.*.*-rc.*"
 
 jobs:
   build:
@@ -11,16 +13,17 @@ jobs:
       fail-fast: false
       matrix:
         build: [
-          {name: strimertul, platform: linux/amd64, os: ubuntu-latest},
-          {name: strimertul, platform: windows/amd64, os: windows-latest},
-          {name: strimertul, platform: darwin/universal, os: macos-latest}
+          { platform: linux/amd64, os: ubuntu-latest },
+          { platform: windows/amd64, os: windows-latest },
+          { platform: darwin/universal, os: macos-latest }
         ]
     runs-on: ${{ matrix.build.os }}
     steps:
       - uses: actions/checkout@v2
+      - uses: ashkeel/wails-build-action@3c97c67b0b1afec7ece65ce789a405918d4ec45e
         with:
-          submodules: recursive
-      - uses: dAppServer/wails-build-action@v2
-        with:
-          build-name: ${{ matrix.build.name }}
+          build-name: strimertul
           build-platform: ${{ matrix.build.platform }}
+          windows-nsis-installer: false
+          macos-package-type: dmg
+          go-version: 1.19
