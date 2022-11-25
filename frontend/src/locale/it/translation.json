@@ -12,16 +12,26 @@
     "warning-delete": "Questa operazione è irreversibile",
     "create": "Crea",
     "enable": "Abilita",
-    "disable": "Disabilita"
+    "disable": "Disabilita",
+    "submit": "Invia"
   },
   "special": {
     "wip": {
       "header": "WIP - Pagina non pronta",
       "text": "Questa pagina è ancora in lavorazione, chiedo venia per la vista scarna :("
-    }
+    },
+    "loading": "{{APPNAME}} si sta avviando, un attimo di pazienza..."
   },
   "logging": {
-    "dialog-title": "Log applicazione"
+    "dialog-title": "Log applicazione",
+    "copied": "Copiato!",
+    "copy-to-clipboard": "Copia negli appunti",
+    "levelFilter": "Filtra per livello",
+    "level": {
+      "error": "Errore",
+      "info": "Info",
+      "warn": "Avvertimento"
+    }
   },
   "pagination": {
     "title": "paginazione",
@@ -39,6 +49,31 @@
   "menu": {
     "messages": {
       "update-available": "AGGIORNAMENTO DISPONIBILE"
+    },
+    "pages": {
+      "loyalty": {
+        "configuration": "Configurazione",
+        "points": "Punti e riscatti",
+        "rewards": "Premi e obiettivi"
+      },
+      "monitor": {
+        "dashboard": "Vista generale"
+      },
+      "strimertul": {
+        "settings": "Impostazioni server"
+      },
+      "twitch": {
+        "bot-alerts": "Avvisi in chat",
+        "bot-commands": "Comandi bot",
+        "bot-timers": "Timer bot",
+        "configuration": "Configurazione"
+      }
+    },
+    "sections": {
+      "loyalty": "Punti fedeltà",
+      "monitor": "Monitor",
+      "strimertul": "strimertul",
+      "twitch": "Twitch"
     }
   },
   "pages": {
@@ -65,7 +100,57 @@
       "search-placeholder": "Cerca comando per nome",
       "no-commands": "Il bot non ha comandi configurati",
       "command-header-new": "Nuovo comando",
-      "command-header-edit": "Modifica comando"
+      "command-header-edit": "Modifica comando",
+      "acl": {
+        "everyone": "Chiunque",
+        "moderators": "Moderatori",
+        "streamer": "Solo streamer",
+        "subscribers": "Abbonati",
+        "vip": "VIP"
+      }
+    },
+    "bottimers": {
+      "add-button": "Nuovo timer",
+      "desc": "Definisci promemoria tipo seguire i tuoi social o eventi in corso",
+      "no-timers": "Non ci sono timer configurati",
+      "remove-timer-title": "Rimuovere il timer {{timer}}?",
+      "search-placeholder": "Cerca timer per nome",
+      "timer-activity": "Attività in chat minima (0 per disabilitare)",
+      "timer-activity-desc": "messaggi negli ultimi 5 minuti",
+      "timer-header-edit": "Modifica timer",
+      "timer-header-new": "Nuovo timer",
+      "timer-interval": "Intervallo minimo",
+      "timer-messages": "Messaggi",
+      "timer-name": "Nome timer",
+      "timer-name-placeholder": "mio-timer",
+      "timer-parameters": "ogni {{time}}, ≥ {{messages}} messaggi negli ultimi {{interval}}",
+      "title": "Timer del bot"
+    },
+    "dashboard": {
+      "live": "In onda!",
+      "not-live": "Offline / Non in streaming",
+      "twitch-status": "Stato stream Twitch",
+      "x-viewers": "{{count}} spettatori"
+    },
+    "debug": {
+      "big-ass-warning": "L'utilizzo di questa pagina può danneggiare gravemente il tuo database. \nSpero tu sappia cosa stai facendo!",
+      "console-ops": "Operazioni su console",
+      "disclaimer-header": "Scritta gigante spaventosa",
+      "dismiss-warning": "Non ho paura! \n...beh ok forse un po' sì",
+      "dump-all": "Stampa tutti i valori KV come JSON",
+      "dump-keys": "Stampa tutte le chiavi a DB",
+      "fix-json": "Correggi JSON",
+      "read-key": "Leggi chiave DB",
+      "title": "Operazioni di debug",
+      "write-key": "Scrivi chiave DB"
     }
+  },
+  "time": {
+    "hours": "ore",
+    "minutes": "minuti",
+    "seconds": "secondi",
+    "x-hours": "{{time}} ore",
+    "x-minutes": "{{tempo}} min",
+    "x-seconds": "{{time}} sec"
   }
 }
