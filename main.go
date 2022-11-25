@@ -30,7 +30,7 @@ const databaseDefaultDriver = "pebble"
 
 var appVersion = "v0.0.0-UNKNOWN"
 
-//go:embed frontend/dist/*
+//go:embed frontend/dist
 var frontend embed.FS
 
 type ModuleConstructor = func(manager *modules.Manager) error
