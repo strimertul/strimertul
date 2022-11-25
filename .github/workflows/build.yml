@@ -12,7 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - with:
+      - uses: ashkeel/wails-build-action@3c97c67b0b1afec7ece65ce789a405918d4ec45e
+        with:
           build-name: strimertul
           build-platform: linux/amd64
           package: false
