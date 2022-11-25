@@ -7,8 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [current]
 
+### Removed
+
+- Stulbe support has been nuked across the board, see on Added for more notes
+- Badger has been removed as a possible database, see v3 release notes on migration procedures.
+
+### Added
+
+- Added support for EventSub Websocket subscriptions on Twitch, making Twitch integration fully in-app without having to rely on third party servers. Check the "Events" tab in Twitch configuration for setting it up. The new keys for redeems are `twitch/ev/eventsub-event` and `twitch/eventsub-history`. History has been reduced to 50 to alleviate memory concerns.
+- Application logs are now visible from the UI, check the little floating boxes in the top right!
+
 ### Changed
 
+- Strimertul is now a GUI app using Wails
+- The UI has been more tightly integrated with the underlying service meaning the kilovolt password will never be asked again
+- Database operations (import/export/restore) are now done through a much nicer CLI interface rather than random flags, check `strimertul --help` for more info on usage.
 - Changed behavior of database submodule to always return an empty key instead of NotExist errors.
 
 ### Fixed
