@@ -93,6 +93,20 @@ func (mod *DBModule) Subscribe(fn kv.SubscriptionCallback, prefixes ...string) e
 	return nil
 }
 
+func (mod *DBModule) SubscribeKey(fn func(string), key string) error {
+	_, err := mod.makeRequest(kv.CmdSubscribePrefix, map[string]interface{}{"prefix": key})
+	if err != nil {
+		return err
+	}
+	go mod.client.SetPrefixSubCallback(key, func(changedKey string, value string) {
+		if key != changedKey {
+			return
+		}
+		fn(value)
+	})
+	return nil
+}
+
 func (mod *DBModule) GetJSON(key string, dst interface{}) error {
 	res, err := mod.GetKey(key)
 	if err != nil {

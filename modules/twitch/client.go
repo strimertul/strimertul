@@ -66,44 +66,49 @@ func Register(manager *modules.Manager) error {
 	}
 
 	// Listen for config changes
-	go db.Subscribe(func(key, value string) {
-		switch key {
-		case ConfigKey:
-			err := json.UnmarshalFromString(value, &config)
-			if err != nil {
-				logger.Error("failed to unmarshal config", zap.Error(err))
-				return
-			}
-			api, err := client.getHelixAPI()
-			if err != nil {
-				logger.Warn("failed to create new twitch client, keeping old credentials", zap.Error(err))
-				return
-			}
-			client.API = api
+	err = db.SubscribeKey(func(value string) {
+		err := json.UnmarshalFromString(value, &config)
+		if err != nil {
+			logger.Error("failed to unmarshal config", zap.Error(err))
+			return
+		}
+		api, err := client.getHelixAPI()
+		if err != nil {
+			logger.Warn("failed to create new twitch client, keeping old credentials", zap.Error(err))
+			return
+		}
+		client.API = api
 
-			logger.Info("reloaded/updated Twitch API")
-		case BotConfigKey:
-			var twitchBotConfig BotConfig
-			err := json.UnmarshalFromString(value, &twitchBotConfig)
-			if err != nil {
-				logger.Error("failed to unmarshal config", zap.Error(err))
-				return
-			}
-			err = client.Bot.Client.Disconnect()
-			if err != nil {
-				logger.Warn("failed to disconnect from Twitch IRC", zap.Error(err))
-			}
-			if client.Config.EnableBot {
-				if err := client.startBot(manager); err != nil {
-					if !errors.Is(err, database.ErrEmptyKey) {
-						logger.Error("failed to re-create bot", zap.Error(err))
-					}
+		logger.Info("reloaded/updated Twitch API")
+	}, ConfigKey)
+	if err != nil {
+		client.logger.Error("could not setup twitch config reload subscription", zap.Error(err))
+	}
+
+	err = db.SubscribeKey(func(value string) {
+		var twitchBotConfig BotConfig
+		err := json.UnmarshalFromString(value, &twitchBotConfig)
+		if err != nil {
+			logger.Error("failed to unmarshal config", zap.Error(err))
+			return
+		}
+		err = client.Bot.Client.Disconnect()
+		if err != nil {
+			logger.Warn("failed to disconnect from Twitch IRC", zap.Error(err))
+		}
+		if client.Config.EnableBot {
+			if err := client.startBot(manager); err != nil {
+				if !errors.Is(err, database.ErrEmptyKey) {
+					logger.Error("failed to re-create bot", zap.Error(err))
 				}
 			}
-			client.restart <- true
-			logger.Info("reloaded/restarted Twitch bot")
 		}
-	}, ConfigKey, BotConfigKey)
+		client.restart <- true
+		logger.Info("reloaded/restarted Twitch bot")
+	}, BotConfigKey)
+	if err != nil {
+		client.logger.Error("could not setup twitch bot config reload subscription", zap.Error(err))
+	}
 
 	if config.Enabled {
 		client.API, err = client.getHelixAPI()

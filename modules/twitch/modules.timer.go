@@ -55,16 +55,17 @@ func SetupTimers(bot *Bot) *BotTimerModule {
 		bot.api.db.PutJSON(BotTimersKey, mod.Config)
 	}
 
-	go bot.api.db.Subscribe(func(key, value string) {
-		if key == BotTimersKey {
-			err := json.UnmarshalFromString(value, &mod.Config)
-			if err != nil {
-				bot.logger.Debug("error reloading timer config", zap.Error(err))
-			} else {
-				bot.logger.Info("reloaded timer config")
-			}
+	err = bot.api.db.SubscribeKey(func(value string) {
+		err := json.UnmarshalFromString(value, &mod.Config)
+		if err != nil {
+			bot.logger.Debug("error reloading timer config", zap.Error(err))
+		} else {
+			bot.logger.Info("reloaded timer config")
 		}
 	}, BotTimersKey)
+	if err != nil {
+		bot.logger.Error("could not set-up timer reload subscription", zap.Error(err))
+	}
 
 	bot.logger.Debug("loaded timers", zap.Int("timers", len(mod.Config.Timers)))
 

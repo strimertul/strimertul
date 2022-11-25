@@ -154,37 +154,37 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	if err != nil {
 		bot.logger.Error("failed to parse custom commands", zap.Error(err))
 	}
-	go api.db.Subscribe(bot.updateCommands, CustomCommandsKey)
-	go api.db.Subscribe(bot.handleWriteMessageRPC, WriteMessageRPC)
+	err = api.db.SubscribeKey(bot.updateCommands, CustomCommandsKey)
+	if err != nil {
+		bot.logger.Error("could not set-up bot command reload subscription", zap.Error(err))
+	}
+	err = api.db.SubscribeKey(bot.handleWriteMessageRPC, WriteMessageRPC)
+	if err != nil {
+		bot.logger.Error("could not set-up bot command reload subscription", zap.Error(err))
+	}
 
 	return bot
 }
 
-func (b *Bot) updateCommands(key, value string) {
-	switch key {
-	case CustomCommandsKey:
-		err := func() error {
-			b.mu.Lock()
-			defer b.mu.Unlock()
-			return json.UnmarshalFromString(value, &b.customCommands)
-		}()
-		if err != nil {
-			b.logger.Error("failed to decode new custom commands", zap.Error(err))
-			return
-		}
-		// Recreate templates
-		if err := b.updateTemplates(); err != nil {
-			b.logger.Error("failed to update custom commands templates", zap.Error(err))
-			return
-		}
+func (b *Bot) updateCommands(value string) {
+	err := func() error {
+		b.mu.Lock()
+		defer b.mu.Unlock()
+		return json.UnmarshalFromString(value, &b.customCommands)
+	}()
+	if err != nil {
+		b.logger.Error("failed to decode new custom commands", zap.Error(err))
+		return
+	}
+	// Recreate templates
+	if err := b.updateTemplates(); err != nil {
+		b.logger.Error("failed to update custom commands templates", zap.Error(err))
+		return
 	}
 }
 
-func (b *Bot) handleWriteMessageRPC(key, value string) {
-	switch key {
-	case WriteMessageRPC:
-		b.Client.Say(b.config.Channel, value)
-	}
+func (b *Bot) handleWriteMessageRPC(value string) {
+	b.Client.Say(b.config.Channel, value)
 }
 
 func (b *Bot) updateTemplates() error {

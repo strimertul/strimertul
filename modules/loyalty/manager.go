@@ -92,7 +92,10 @@ func Register(manager *modules.Manager) error {
 	}
 
 	// Subscribe for changes
-	go db.Subscribe(loyalty.update, "loyalty/")
+	err = db.Subscribe(loyalty.update, "loyalty/")
+	if err != nil {
+		logger.Error("could not setup loyalty reload subscription", zap.Error(err))
+	}
 
 	// Register module
 	manager.Modules[modules.ModuleLoyalty] = loyalty

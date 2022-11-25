@@ -134,30 +134,28 @@ func (s *Server) Listen() error {
 	restart := containers.NewRWSync(false)
 	exit := make(chan error)
 	go func() {
-		err := s.db.Subscribe(func(key, value string) {
-			if key == ServerConfigKey {
-				oldBind := s.Config.Bind
-				oldPassword := s.Config.KVPassword
-				err := json.Unmarshal([]byte(value), &s.Config)
+		err := s.db.SubscribeKey(func(value string) {
+			oldBind := s.Config.Bind
+			oldPassword := s.Config.KVPassword
+			err := json.Unmarshal([]byte(value), &s.Config)
+			if err != nil {
+				s.logger.Error("Failed to unmarshal config", zap.Error(err))
+				return
+			}
+			s.mux = s.makeMux()
+			// Restart hub if password changed
+			if oldPassword != s.Config.KVPassword {
+				s.hub.SetOptions(kv.HubOptions{
+					Password: s.Config.KVPassword,
+				})
+			}
+			// Restart server if bind changed
+			if oldBind != s.Config.Bind {
+				restart.Set(true)
+				err = s.server.Shutdown(context.Background())
 				if err != nil {
-					s.logger.Error("Failed to unmarshal config", zap.Error(err))
+					s.logger.Error("Failed to shutdown server", zap.Error(err))
 					return
-				}
-				s.mux = s.makeMux()
-				// Restart hub if password changed
-				if oldPassword != s.Config.KVPassword {
-					s.hub.SetOptions(kv.HubOptions{
-						Password: s.Config.KVPassword,
-					})
-				}
-				// Restart server if bind changed
-				if oldBind != s.Config.Bind {
-					restart.Set(true)
-					err = s.server.Shutdown(context.Background())
-					if err != nil {
-						s.logger.Error("Failed to shutdown server", zap.Error(err))
-						return
-					}
 				}
 			}
 		}, ServerConfigKey)
