@@ -1,4 +1,4 @@
-import { ClipboardCopyIcon, Cross2Icon } from '@radix-ui/react-icons';
+import { ClipboardCopyIcon, Cross2Icon, SizeIcon } from '@radix-ui/react-icons';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -153,25 +153,30 @@ const LogTime = styled('div', {
 const LogMessage = styled('div', {
   gridColumn: '2',
   padding: '0.4rem 0.5rem',
+  wordBreak: 'break-all',
 });
 const LogActions = styled('div', {
   gridColumn: '3',
+  display: 'flex',
+  gap: '0.5rem',
   padding: '0.4rem 0.5rem 0',
-  '&:hover': {
-    color: '$gray12',
-    cursor: 'pointer',
+  '& a': {
+    color: '$gray10',
+    '&:hover': {
+      color: '$gray12',
+      cursor: 'pointer',
+    },
   },
-  color: '$gray10',
   variants: {
     level: {
       info: {},
       warn: {
-        '&:hover': {
+        '& a:hover': {
           color: '$yellow11',
         },
       },
       error: {
-        '&:hover': {
+        '& a:hover': {
           color: '$red11',
         },
       },
@@ -183,10 +188,10 @@ const LogDetails = styled('div', {
   gridColumn: '2/4',
   display: 'flex',
   gap: '1rem',
-  fontSize: '0.7em',
+  fontSize: '0.8em',
   color: '$gray11',
   backgroundColor: '$gray3',
-  padding: '0.2rem 0.3rem 0.1rem 0.5rem',
+  padding: '0.5rem 0.5rem 0.3rem',
   borderBottomRightRadius: theme.borderRadius.form,
   borderBottomLeftRadius: theme.borderRadius.form,
   variants: {
@@ -226,6 +231,7 @@ function LogItem({ data }: LogItemProps) {
   const levelStyle = isSupportedLevel(data.level) ? data.level : null;
   const details = Object.entries(data.data).filter(([key]) => key.length > 1);
   const [copied, setCopied] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const copyToClipboard = async () => {
     await navigator.clipboard.writeText(JSON.stringify(data.data));
     setCopied(true);
@@ -237,11 +243,21 @@ function LogItem({ data }: LogItemProps) {
       <LogTime level={levelStyle}>{formatTime(data.time)}</LogTime>
       <LogMessage>{data.message}</LogMessage>
       <LogActions level={levelStyle}>
+        {details.length > 0 ? (
+          <a
+            aria-label={t('logging.toggle-details')}
+            title={t('logging.toggle-details')}
+            onClick={() => {
+              setShowDetails(!showDetails);
+            }}
+          >
+            <SizeIcon />
+          </a>
+        ) : null}
         {copied ? (
           <span style={{ fontSize: '0.9em' }}>{t('logging.copied')}</span>
         ) : (
           <a
-            style={{ color: 'inherit' }}
             aria-label={t('logging.copy-to-clipboard')}
             title={t('logging.copy-to-clipboard')}
             onClick={() => {
@@ -252,7 +268,7 @@ function LogItem({ data }: LogItemProps) {
           </a>
         )}
       </LogActions>
-      {details.length > 0 ? (
+      {details.length > 0 && showDetails ? (
         <LogDetails level={levelStyle}>
           {details.map(([key, value]) => (
             <LogDetailItem>
@@ -269,7 +285,7 @@ function LogItem({ data }: LogItemProps) {
 const LogEntriesContainer = styled('div', {
   display: 'flex',
   flexDirection: 'column',
-  gap: '5px',
+  gap: '3px',
 });
 
 interface LogDialogProps {

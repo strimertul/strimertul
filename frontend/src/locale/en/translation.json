@@ -296,6 +296,7 @@
       "error": "Error"
     },
     "copy-to-clipboard": "Copy to clipboard",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "toggle-details": "Toggle details"
   }
 }
