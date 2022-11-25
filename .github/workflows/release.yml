@@ -20,10 +20,11 @@ jobs:
     runs-on: ${{ matrix.build.os }}
     steps:
       - uses: actions/checkout@v2
-      - uses: ashkeel/wails-build-action@3c97c67b0b1afec7ece65ce789a405918d4ec45e
+      - uses: ashkeel/wails-build-action@a56973d
         with:
           build-name: strimertul
           build-platform: ${{ matrix.build.platform }}
           windows-nsis-installer: false
           macos-package-type: dmg
+          use-upx: true
           go-version: 1.19
