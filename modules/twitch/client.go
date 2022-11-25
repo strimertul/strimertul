@@ -66,7 +66,7 @@ func Register(manager *modules.Manager) error {
 	}
 
 	// Listen for config changes
-	err = db.SubscribeKey(func(value string) {
+	err = db.SubscribeKey(ConfigKey, func(value string) {
 		err := json.UnmarshalFromString(value, &config)
 		if err != nil {
 			logger.Error("failed to unmarshal config", zap.Error(err))
@@ -80,12 +80,12 @@ func Register(manager *modules.Manager) error {
 		client.API = api
 
 		logger.Info("reloaded/updated Twitch API")
-	}, ConfigKey)
+	})
 	if err != nil {
 		client.logger.Error("could not setup twitch config reload subscription", zap.Error(err))
 	}
 
-	err = db.SubscribeKey(func(value string) {
+	err = db.SubscribeKey(BotConfigKey, func(value string) {
 		var twitchBotConfig BotConfig
 		err := json.UnmarshalFromString(value, &twitchBotConfig)
 		if err != nil {
@@ -105,7 +105,7 @@ func Register(manager *modules.Manager) error {
 		}
 		client.restart <- true
 		logger.Info("reloaded/restarted Twitch bot")
-	}, BotConfigKey)
+	})
 	if err != nil {
 		client.logger.Error("could not setup twitch bot config reload subscription", zap.Error(err))
 	}

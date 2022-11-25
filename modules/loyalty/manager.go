@@ -91,8 +91,8 @@ func Register(manager *modules.Manager) error {
 		loyalty.points[k] = entry
 	}
 
-	// Subscribe for changes
-	err = db.Subscribe(loyalty.update, "loyalty/")
+	// SubscribePrefix for changes
+	err = db.SubscribePrefix(loyalty.update, "loyalty/")
 	if err != nil {
 		logger.Error("could not setup loyalty reload subscription", zap.Error(err))
 	}

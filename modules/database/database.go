@@ -82,7 +82,7 @@ func (mod *DBModule) PutKey(key string, data string) error {
 	return err
 }
 
-func (mod *DBModule) Subscribe(fn kv.SubscriptionCallback, prefixes ...string) error {
+func (mod *DBModule) SubscribePrefix(fn kv.SubscriptionCallback, prefixes ...string) error {
 	for _, prefix := range prefixes {
 		_, err := mod.makeRequest(kv.CmdSubscribePrefix, map[string]interface{}{"prefix": prefix})
 		if err != nil {
@@ -93,7 +93,7 @@ func (mod *DBModule) Subscribe(fn kv.SubscriptionCallback, prefixes ...string) e
 	return nil
 }
 
-func (mod *DBModule) SubscribeKey(fn func(string), key string) error {
+func (mod *DBModule) SubscribeKey(key string, fn func(string)) error {
 	_, err := mod.makeRequest(kv.CmdSubscribePrefix, map[string]interface{}{"prefix": key})
 	if err != nil {
 		return err

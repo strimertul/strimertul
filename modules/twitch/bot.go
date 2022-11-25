@@ -154,11 +154,11 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	if err != nil {
 		bot.logger.Error("failed to parse custom commands", zap.Error(err))
 	}
-	err = api.db.SubscribeKey(bot.updateCommands, CustomCommandsKey)
+	err = api.db.SubscribeKey(CustomCommandsKey, bot.updateCommands)
 	if err != nil {
 		bot.logger.Error("could not set-up bot command reload subscription", zap.Error(err))
 	}
-	err = api.db.SubscribeKey(bot.handleWriteMessageRPC, WriteMessageRPC)
+	err = api.db.SubscribeKey(WriteMessageRPC, bot.handleWriteMessageRPC)
 	if err != nil {
 		bot.logger.Error("could not set-up bot command reload subscription", zap.Error(err))
 	}

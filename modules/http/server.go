@@ -134,7 +134,7 @@ func (s *Server) Listen() error {
 	restart := containers.NewRWSync(false)
 	exit := make(chan error)
 	go func() {
-		err := s.db.SubscribeKey(func(value string) {
+		err := s.db.SubscribeKey(ServerConfigKey, func(value string) {
 			oldBind := s.Config.Bind
 			oldPassword := s.Config.KVPassword
 			err := json.Unmarshal([]byte(value), &s.Config)
@@ -158,7 +158,7 @@ func (s *Server) Listen() error {
 					return
 				}
 			}
-		}, ServerConfigKey)
+		})
 		if err != nil {
 			exit <- fmt.Errorf("error while handling subscription to HTTP config changes: %w", err)
 		}

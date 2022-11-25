@@ -111,7 +111,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 
 	mod.compileTemplates()
 
-	err = bot.api.db.SubscribeKey(func(value string) {
+	err = bot.api.db.SubscribeKey(BotAlertsKey, func(value string) {
 		err := json.UnmarshalFromString(value, &mod.Config)
 		if err != nil {
 			bot.logger.Debug("error reloading timer config", zap.Error(err))
@@ -119,7 +119,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			bot.logger.Info("reloaded alert config")
 		}
 		mod.compileTemplates()
-	}, BotAlertsKey)
+	})
 	if err != nil {
 		bot.logger.Error("could not set-up bot alert reload subscription", zap.Error(err))
 	}
@@ -235,7 +235,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 		}
 	}
 
-	err = bot.api.db.SubscribeKey(func(value string) {
+	err = bot.api.db.SubscribeKey(EventSubEventKey, func(value string) {
 		var ev eventSubNotification
 		err := json.UnmarshalFromString(value, &ev)
 		if err != nil {
@@ -416,7 +416,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			// Compile template and send
 			writeTemplate(bot, tpl, &giftEv)
 		}
-	}, EventSubEventKey)
+	})
 	if err != nil {
 		bot.logger.Error("could not setup twitch alert subscription", zap.Error(err))
 	}
