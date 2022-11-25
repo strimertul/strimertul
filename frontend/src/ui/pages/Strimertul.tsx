@@ -23,7 +23,8 @@ const gradientAnimation = keyframes({
 
 const LogoPic = styled('div', {
   minHeight: '170px',
-  width: '270px',
+  width: '220px',
+  marginRight: '10px',
   maskImage: `url(${logo as string})`,
   maskRepeat: 'no-repeat',
   maskPosition: 'center',
@@ -47,7 +48,7 @@ const LogoPic = styled('div', {
 const LogoName = styled('h1', {
   fontSize: '40pt',
   fontWeight: 200,
-  textAlign: 'center',
+  textAlign: 'left',
   '@medium': {
     fontSize: '80pt',
   },
@@ -83,9 +84,9 @@ export default function StrimertulPage(): React.ReactElement {
   const [debugCount, setDebugCount] = useState(0);
   const countForDebug = () => {
     if (debugCount < 5) {
-      setDebugCount(debugCount+1);
+      setDebugCount(debugCount + 1);
     } else {
-      navigate("/debug");
+      navigate('/debug');
     }
   };
 

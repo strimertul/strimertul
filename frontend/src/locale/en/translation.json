@@ -294,6 +294,8 @@
       "info": "Info",
       "warn": "Warning",
       "error": "Error"
-    }
+    },
+    "copy-to-clipboard": "Copy to clipboard",
+    "copied": "Copied!"
   }
 }

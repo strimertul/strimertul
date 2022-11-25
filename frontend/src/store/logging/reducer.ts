@@ -2,7 +2,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { main } from '@wailsapp/go/models';
 
-interface ProcessedLogEntry {
+export interface ProcessedLogEntry {
   time: Date;
   caller: string;
   level: string;
@@ -39,10 +39,12 @@ const loggingReducer = createSlice({
   initialState,
   reducers: {
     loadedLogData(state, { payload }: PayloadAction<main.LogEntry[]>) {
-      state.messages = payload.map(processEntry);
+      state.messages = payload
+        .map(processEntry)
+        .sort((a, b) => b.time.getTime() - a.time.getTime());
     },
     receivedEvent(state, { payload }: PayloadAction<main.LogEntry>) {
-      state.messages = [...state.messages, processEntry(payload)];
+      state.messages = [processEntry(payload), ...state.messages];
     },
     clearedEvents(state) {
       state.messages = [];
