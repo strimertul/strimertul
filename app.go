@@ -69,12 +69,6 @@ func (a *App) startup(ctx context.Context) {
 		if err != nil {
 			logger.Error("could not register module", zap.String("module", string(module)), zap.Error(err))
 		} else {
-			//goland:noinspection GoDeferInLoop
-			defer func() {
-				if err := a.manager.Modules[module].Close(); err != nil {
-					logger.Error("could not close module", zap.String("module", string(module)), zap.Error(err))
-				}
-			}()
 		}
 	}
 
@@ -103,6 +97,12 @@ func (a *App) startup(ctx context.Context) {
 }
 
 func (a *App) stop(context.Context) {
+	for module := range a.manager.Modules {
+		if err := a.manager.Modules[module].Close(); err != nil {
+			logger.Error("could not close module", zap.String("module", string(module)), zap.Error(err))
+		}
+	}
+
 	failOnError(a.driver.Close(), "could not close driver")
 }
 
