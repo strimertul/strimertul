@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/strimertul/strimertul/modules"
-
 	jsoniter "github.com/json-iterator/go"
 	kv "github.com/strimertul/kilovolt/v9"
 	"go.uber.org/zap"
@@ -21,7 +19,7 @@ var (
 	ErrEmptyKey = errors.New("empty key")
 )
 
-type DBModule struct {
+type LocalDBClient struct {
 	client *kv.LocalClient
 	hub    *kv.Hub
 	logger *zap.Logger
@@ -32,44 +30,38 @@ type KvPair struct {
 	Data string
 }
 
-func NewDBModule(hub *kv.Hub, manager *modules.Manager) (*DBModule, error) {
-	logger := manager.Logger(modules.ModuleDB)
+func NewLocalClient(hub *kv.Hub, logger *zap.Logger) (*LocalDBClient, error) {
+	// Create local client
 	localClient := kv.NewLocalClient(kv.ClientOptions{}, logger)
+
+	// Run client and add it to the hub
 	go localClient.Run()
 	hub.AddClient(localClient)
 	localClient.Wait()
+
+	// Bypass authentication
 	err := hub.SetAuthenticated(localClient.UID(), true)
 	if err != nil {
 		return nil, err
 	}
-	module := &DBModule{
+
+	return &LocalDBClient{
 		client: localClient,
 		hub:    hub,
 		logger: logger,
-	}
-
-	manager.Modules[modules.ModuleDB] = module
-	return module, nil
+	}, nil
 }
 
-func (mod *DBModule) Hub() *kv.Hub {
+func (mod *LocalDBClient) Hub() *kv.Hub {
 	return mod.hub
 }
 
-func (mod *DBModule) Status() modules.ModuleStatus {
-	return modules.ModuleStatus{
-		Enabled:      mod.hub != nil,
-		Working:      mod.client != nil,
-		StatusString: "ok",
-	}
-}
-
-func (mod *DBModule) Close() error {
+func (mod *LocalDBClient) Close() error {
 	mod.hub.RemoveClient(mod.client)
 	return nil
 }
 
-func (mod *DBModule) GetKey(key string) (string, error) {
+func (mod *LocalDBClient) GetKey(key string) (string, error) {
 	res, err := mod.makeRequest(kv.CmdReadKey, map[string]interface{}{"key": key})
 	if err != nil {
 		return "", err
@@ -77,12 +69,12 @@ func (mod *DBModule) GetKey(key string) (string, error) {
 	return res.Data.(string), nil
 }
 
-func (mod *DBModule) PutKey(key string, data string) error {
+func (mod *LocalDBClient) PutKey(key string, data string) error {
 	_, err := mod.makeRequest(kv.CmdWriteKey, map[string]interface{}{"key": key, "data": data})
 	return err
 }
 
-func (mod *DBModule) SubscribePrefix(fn kv.SubscriptionCallback, prefixes ...string) error {
+func (mod *LocalDBClient) SubscribePrefix(fn kv.SubscriptionCallback, prefixes ...string) error {
 	for _, prefix := range prefixes {
 		_, err := mod.makeRequest(kv.CmdSubscribePrefix, map[string]interface{}{"prefix": prefix})
 		if err != nil {
@@ -93,7 +85,7 @@ func (mod *DBModule) SubscribePrefix(fn kv.SubscriptionCallback, prefixes ...str
 	return nil
 }
 
-func (mod *DBModule) SubscribeKey(key string, fn func(string)) error {
+func (mod *LocalDBClient) SubscribeKey(key string, fn func(string)) error {
 	_, err := mod.makeRequest(kv.CmdSubscribePrefix, map[string]interface{}{"prefix": key})
 	if err != nil {
 		return err
@@ -107,7 +99,7 @@ func (mod *DBModule) SubscribeKey(key string, fn func(string)) error {
 	return nil
 }
 
-func (mod *DBModule) GetJSON(key string, dst interface{}) error {
+func (mod *LocalDBClient) GetJSON(key string, dst interface{}) error {
 	res, err := mod.GetKey(key)
 	if err != nil {
 		return err
@@ -118,7 +110,7 @@ func (mod *DBModule) GetJSON(key string, dst interface{}) error {
 	return json.Unmarshal([]byte(res), dst)
 }
 
-func (mod *DBModule) GetAll(prefix string) (map[string]string, error) {
+func (mod *LocalDBClient) GetAll(prefix string) (map[string]string, error) {
 	res, err := mod.makeRequest(kv.CmdReadPrefix, map[string]interface{}{"prefix": prefix})
 	if err != nil {
 		return nil, err
@@ -131,7 +123,7 @@ func (mod *DBModule) GetAll(prefix string) (map[string]string, error) {
 	return out, nil
 }
 
-func (mod *DBModule) PutJSON(key string, data interface{}) error {
+func (mod *LocalDBClient) PutJSON(key string, data interface{}) error {
 	byt, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -140,7 +132,7 @@ func (mod *DBModule) PutJSON(key string, data interface{}) error {
 	return mod.PutKey(key, string(byt))
 }
 
-func (mod *DBModule) PutJSONBulk(kvs map[string]interface{}) error {
+func (mod *LocalDBClient) PutJSONBulk(kvs map[string]interface{}) error {
 	encoded := make(map[string]interface{})
 	for k, v := range kvs {
 		byt, err := json.Marshal(v)
@@ -154,12 +146,12 @@ func (mod *DBModule) PutJSONBulk(kvs map[string]interface{}) error {
 	return err
 }
 
-func (mod *DBModule) RemoveKey(key string) error {
+func (mod *LocalDBClient) RemoveKey(key string) error {
 	// TODO
 	return mod.PutKey(key, "")
 }
 
-func (mod *DBModule) makeRequest(cmd string, data map[string]interface{}) (kv.Response, error) {
+func (mod *LocalDBClient) makeRequest(cmd string, data map[string]interface{}) (kv.Response, error) {
 	req, chn := mod.client.MakeRequest(cmd, data)
 	mod.hub.SendMessage(req)
 	return getResponse(<-chn)

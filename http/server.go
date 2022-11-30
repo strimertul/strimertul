@@ -8,46 +8,36 @@ import (
 	"net/http"
 	"net/http/pprof"
 
-	"github.com/strimertul/strimertul/modules/twitch"
-
 	"git.sr.ht/~hamcha/containers"
 	jsoniter "github.com/json-iterator/go"
-
-	"github.com/strimertul/strimertul/modules/database"
+	"github.com/strimertul/strimertul/database"
 
 	"go.uber.org/zap"
 
 	kv "github.com/strimertul/kilovolt/v9"
-	"github.com/strimertul/strimertul/modules"
 )
 
 var json = jsoniter.ConfigFastest
 
 type Server struct {
-	Config   ServerConfig
-	db       *database.DBModule
-	logger   *zap.Logger
-	server   *http.Server
-	frontend fs.FS
-	hub      *kv.Hub
-	mux      *http.ServeMux
-	manager  *modules.Manager
+	Config          ServerConfig
+	db              *database.LocalDBClient
+	logger          *zap.Logger
+	server          *http.Server
+	frontend        fs.FS
+	hub             *kv.Hub
+	mux             *http.ServeMux
+	requestedRoutes map[string]http.HandlerFunc
 }
 
-func NewServer(manager *modules.Manager) (*Server, error) {
-	db, ok := manager.Modules["db"].(*database.DBModule)
-	if !ok {
-		return nil, errors.New("db module not found")
-	}
-
-	logger := manager.Logger(modules.ModuleHTTP)
-
+func NewServer(db *database.LocalDBClient, logger *zap.Logger) (*Server, error) {
 	server := &Server{
-		logger:  logger,
-		db:      db,
-		server:  &http.Server{},
-		manager: manager,
+		logger:          logger,
+		db:              db,
+		server:          &http.Server{},
+		requestedRoutes: make(map[string]http.HandlerFunc),
 	}
+
 	err := db.GetJSON(ServerConfigKey, &server.Config)
 	if err != nil {
 		// Initialize with default config
@@ -71,26 +61,12 @@ func NewServer(manager *modules.Manager) (*Server, error) {
 		Password: server.Config.KVPassword,
 	})
 
-	// Register module
-	manager.Modules[modules.ModuleHTTP] = server
-
 	return server, nil
 }
 
 // StatusData contains status info for the HTTP module
 type StatusData struct {
 	Bind string
-}
-
-func (s *Server) Status() modules.ModuleStatus {
-	return modules.ModuleStatus{
-		Enabled: true,
-		Working: s.server != nil,
-		Data: StatusData{
-			s.server.Addr,
-		},
-		StatusString: s.server.Addr,
-	}
 }
 
 func (s *Server) Close() error {
@@ -122,11 +98,18 @@ func (s *Server) makeMux() *http.ServeMux {
 	if s.Config.EnableStaticServer {
 		mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.Config.Path))))
 	}
-	if s.manager.Modules[modules.ModuleTwitch].Status().Enabled {
-		mux.HandleFunc("/twitch/callback", s.manager.Modules[modules.ModuleTwitch].(*twitch.Client).AuthorizeCallback)
+	for route, handler := range s.requestedRoutes {
+		mux.HandleFunc(route, handler)
 	}
 
 	return mux
+}
+
+func (s *Server) SetRoute(route string, handler http.HandlerFunc) {
+	s.requestedRoutes[route] = handler
+	if s.mux != nil {
+		s.mux.HandleFunc(route, handler)
+	}
 }
 
 func (s *Server) Listen() error {

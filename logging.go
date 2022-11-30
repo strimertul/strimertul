@@ -9,11 +9,10 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-var logger *zap.Logger
-
 const LogHistory = 50
 
 var (
+	logger       *zap.Logger
 	lastLogs     []LogEntry
 	incomingLogs chan LogEntry
 )

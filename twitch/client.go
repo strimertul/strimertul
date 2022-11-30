@@ -9,11 +9,9 @@ import (
 	lru "github.com/hashicorp/golang-lru"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix/v2"
-	"github.com/strimertul/strimertul/modules/database"
+	"github.com/strimertul/strimertul/database"
+	"github.com/strimertul/strimertul/http"
 	"go.uber.org/zap"
-
-	"github.com/strimertul/strimertul/modules"
-	"github.com/strimertul/strimertul/modules/loyalty"
 )
 
 var json = jsoniter.ConfigFastest
@@ -21,35 +19,27 @@ var json = jsoniter.ConfigFastest
 type Client struct {
 	Config     Config
 	Bot        *Bot
-	db         *database.DBModule
+	db         *database.LocalDBClient
 	API        *helix.Client
 	logger     *zap.Logger
-	manager    *modules.Manager
 	eventCache *lru.Cache
 
 	restart      chan bool
 	streamOnline *containers.RWSync[bool]
 }
 
-func Register(manager *modules.Manager) error {
-	db, ok := manager.Modules["db"].(*database.DBModule)
-	if !ok {
-		return errors.New("db module not found")
-	}
-
-	logger := manager.Logger(modules.ModuleTwitch)
-
+func NewClient(db *database.LocalDBClient, server *http.Server, logger *zap.Logger) (*Client, error) {
 	eventCache, err := lru.New(128)
 	if err != nil {
-		return fmt.Errorf("could not create LRU cache for events: %w", err)
+		return nil, fmt.Errorf("could not create LRU cache for events: %w", err)
 	}
 
-	// Get Twitch config
+	// Get Twitch Config
 	var config Config
 	err = db.GetJSON(ConfigKey, &config)
 	if err != nil {
 		if !errors.Is(err, database.ErrEmptyKey) {
-			return fmt.Errorf("failed to get twitch config: %w", err)
+			return nil, fmt.Errorf("failed to get twitch Config: %w", err)
 		}
 		config.Enabled = false
 	}
@@ -58,83 +48,85 @@ func Register(manager *modules.Manager) error {
 	client := &Client{
 		Config:       config,
 		db:           db,
-		logger:       logger,
+		logger:       logger.With(zap.String("service", "twitch")),
 		restart:      make(chan bool, 128),
 		streamOnline: containers.NewRWSync(false),
-		manager:      manager,
 		eventCache:   eventCache,
 	}
 
-	// Listen for config changes
+	// Listen for Config changes
 	err = db.SubscribeKey(ConfigKey, func(value string) {
 		err := json.UnmarshalFromString(value, &config)
 		if err != nil {
-			logger.Error("failed to unmarshal config", zap.Error(err))
+			client.logger.Error("failed to unmarshal Config", zap.Error(err))
 			return
 		}
-		api, err := client.getHelixAPI()
+		api, err := client.getHelixAPI(config)
 		if err != nil {
-			logger.Warn("failed to create new twitch client, keeping old credentials", zap.Error(err))
+			client.logger.Warn("failed to create new twitch client, keeping old credentials", zap.Error(err))
 			return
 		}
 		client.API = api
+		client.Config = config
 
-		logger.Info("reloaded/updated Twitch API")
+		client.logger.Info("reloaded/updated Twitch API")
 	})
 	if err != nil {
-		client.logger.Error("could not setup twitch config reload subscription", zap.Error(err))
+		client.logger.Error("could not setup twitch Config reload subscription", zap.Error(err))
 	}
 
 	err = db.SubscribeKey(BotConfigKey, func(value string) {
 		var twitchBotConfig BotConfig
 		err := json.UnmarshalFromString(value, &twitchBotConfig)
 		if err != nil {
-			logger.Error("failed to unmarshal config", zap.Error(err))
+			client.logger.Error("failed to unmarshal Config", zap.Error(err))
 			return
 		}
 		err = client.Bot.Client.Disconnect()
 		if err != nil {
-			logger.Warn("failed to disconnect from Twitch IRC", zap.Error(err))
+			client.logger.Warn("failed to disconnect from Twitch IRC", zap.Error(err))
 		}
 		if client.Config.EnableBot {
-			if err := client.startBot(manager); err != nil {
+			if err := client.startBot(); err != nil {
 				if !errors.Is(err, database.ErrEmptyKey) {
-					logger.Error("failed to re-create bot", zap.Error(err))
+					client.logger.Error("failed to re-create bot", zap.Error(err))
 				}
 			}
 		}
 		client.restart <- true
-		logger.Info("reloaded/restarted Twitch bot")
+		client.logger.Info("reloaded/restarted Twitch bot")
 	})
 	if err != nil {
-		client.logger.Error("could not setup twitch bot config reload subscription", zap.Error(err))
+		client.logger.Error("could not setup twitch bot Config reload subscription", zap.Error(err))
 	}
 
 	if config.Enabled {
-		client.API, err = client.getHelixAPI()
+		client.API, err = client.getHelixAPI(config)
 		if err != nil {
 			client.logger.Error("failed to create twitch client", zap.Error(err))
+		} else {
+			server.SetRoute("/twitch/callback", client.AuthorizeCallback)
+
+			go client.runStatusPoll()
+			go client.connectWebsocket()
 		}
 	}
 
 	if client.Config.EnableBot {
-		if err := client.startBot(manager); err != nil {
+		if err := client.startBot(); err != nil {
 			if !errors.Is(err, database.ErrEmptyKey) {
-				return err
+				return nil, err
 			}
 		}
 	}
-
-	go client.runStatusPoll()
-	go client.connectWebsocket()
 
 	go func() {
 		for {
 			if client.Config.EnableBot && client.Bot != nil {
 				err := client.RunBot()
 				if err != nil {
-					logger.Error("failed to connect to Twitch IRC", zap.Error(err))
-					// Wait for config change before retrying
+					client.logger.Error("failed to connect to Twitch IRC", zap.Error(err))
+					// Wait for Config change before retrying
 					<-client.restart
 				}
 			} else {
@@ -143,14 +135,7 @@ func Register(manager *modules.Manager) error {
 		}
 	}()
 
-	manager.Modules[modules.ModuleTwitch] = client
-
-	// If loyalty module is enabled, set-up loyalty commands
-	if loyaltyManager, ok := client.manager.Modules[modules.ModuleLoyalty].(*loyalty.Manager); ok && client.Bot != nil {
-		client.Bot.SetupLoyalty(loyaltyManager)
-	}
-
-	return nil
+	return client, nil
 }
 
 func (c *Client) runStatusPoll() {
@@ -160,14 +145,14 @@ func (c *Client) runStatusPoll() {
 		time.Sleep(60 * time.Second)
 
 		// Make sure we're configured and connected properly first
-		if !c.Config.Enabled || c.Bot == nil || c.Bot.config.Channel == "" {
+		if !c.Config.Enabled || c.Bot == nil || c.Bot.Config.Channel == "" {
 			continue
 		}
 
 		// Check if streamer is online, if possible
 		func() {
 			status, err := c.API.GetStreams(&helix.StreamsParams{
-				UserLogins: []string{c.Bot.config.Channel}, // TODO Replace with something non bot dependant
+				UserLogins: []string{c.Bot.Config.Channel}, // TODO Replace with something non bot dependant
 			})
 			if err != nil {
 				c.logger.Error("Error checking stream status", zap.Error(err))
@@ -183,13 +168,13 @@ func (c *Client) runStatusPoll() {
 	}
 }
 
-func (c *Client) startBot(manager *modules.Manager) error {
-	// Get Twitch bot config
+func (c *Client) startBot() error {
+	// Get Twitch bot Config
 	var twitchBotConfig BotConfig
 	err := c.db.GetJSON(BotConfigKey, &twitchBotConfig)
 	if err != nil {
 		if !errors.Is(err, database.ErrEmptyKey) {
-			return fmt.Errorf("failed to get bot config: %w", err)
+			return fmt.Errorf("failed to get bot Config: %w", err)
 		}
 		c.Config.EnableBot = false
 	}
@@ -197,15 +182,10 @@ func (c *Client) startBot(manager *modules.Manager) error {
 	// Create and run IRC bot
 	c.Bot = NewBot(c, twitchBotConfig)
 
-	// If loyalty module is enabled, set-up loyalty commands
-	if loyaltyManager, ok := manager.Modules[modules.ModuleLoyalty].(*loyalty.Manager); ok && c.Bot != nil {
-		c.Bot.SetupLoyalty(loyaltyManager)
-	}
-
 	return nil
 }
 
-func (c *Client) getHelixAPI() (*helix.Client, error) {
+func (c *Client) getHelixAPI(config Config) (*helix.Client, error) {
 	redirectURI, err := c.getRedirectURI()
 	if err != nil {
 		return nil, err
@@ -213,8 +193,8 @@ func (c *Client) getHelixAPI() (*helix.Client, error) {
 
 	// Create Twitch client
 	api, err := helix.NewClient(&helix.Options{
-		ClientID:     c.Config.APIClientID,
-		ClientSecret: c.Config.APIClientSecret,
+		ClientID:     config.APIClientID,
+		ClientSecret: config.APIClientSecret,
 		RedirectURI:  redirectURI,
 	})
 	if err != nil {
@@ -245,19 +225,8 @@ func (c *Client) RunBot() error {
 	}
 }
 
-func (c *Client) Status() modules.ModuleStatus {
-	if !c.Config.Enabled {
-		return modules.ModuleStatus{
-			Enabled: false,
-		}
-	}
-
-	return modules.ModuleStatus{
-		Enabled:      true,
-		Working:      c.Bot != nil && c.Bot.Client != nil,
-		Data:         struct{}{},
-		StatusString: "",
-	}
+func (c *Client) IsLive() bool {
+	return c.streamOnline.Get()
 }
 
 func (c *Client) Close() error {

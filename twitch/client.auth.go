@@ -71,7 +71,7 @@ func (c *Client) GetLoggedUser() (helix.User, error) {
 	if len(users.Data.Users) < 1 {
 		return helix.User{}, fmt.Errorf("no users found")
 	}
-	
+
 	return users.Data.Users[0], nil
 }
 

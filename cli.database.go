@@ -3,6 +3,8 @@ package main
 import (
 	"os"
 
+	"github.com/strimertul/strimertul/database"
+
 	"github.com/urfave/cli/v2"
 )
 
@@ -23,7 +25,7 @@ func cliImport(ctx *cli.Context) error {
 		return fatalError(err, "could not decode import file")
 	}
 
-	driver, err := getDatabaseDriver(ctx)
+	driver, err := database.GetDatabaseDriver(ctx)
 	if err != nil {
 		return fatalError(err, "could not open database")
 	}
@@ -49,7 +51,7 @@ func cliRestore(ctx *cli.Context) error {
 		inStream = file
 	}
 
-	driver, err := getDatabaseDriver(ctx)
+	driver, err := database.GetDatabaseDriver(ctx)
 	if err != nil {
 		return fatalError(err, "could not open database")
 	}
@@ -75,7 +77,7 @@ func cliExport(ctx *cli.Context) error {
 		outStream = file
 	}
 
-	driver, err := getDatabaseDriver(ctx)
+	driver, err := database.GetDatabaseDriver(ctx)
 	if err != nil {
 		return fatalError(err, "could not open database")
 	}

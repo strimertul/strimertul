@@ -6,7 +6,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/strimertul/strimertul/modules/loyalty"
+	"github.com/strimertul/strimertul/utils"
+
 	"go.uber.org/zap"
 
 	"github.com/Masterminds/sprig/v3"
@@ -15,14 +16,12 @@ import (
 
 type Bot struct {
 	Client *irc.Client
+	Config BotConfig
 
 	api         *Client
 	username    string
-	config      BotConfig
 	logger      *zap.Logger
 	lastMessage time.Time
-	activeUsers map[string]bool
-	banlist     map[string]bool
 	chatHistory []irc.PrivateMessage
 
 	commands        map[string]BotCommand
@@ -30,12 +29,24 @@ type Bot struct {
 	customTemplates map[string]*template.Template
 	customFunctions template.FuncMap
 
+	OnConnect *utils.PubSub[BotConnectHandler]
+	OnMessage *utils.PubSub[BotMessageHandler]
+
 	mu sync.Mutex
 
 	// Module specific vars
-	Loyalty *loyalty.Manager
-	Timers  *BotTimerModule
-	Alerts  *BotAlertsModule
+	Timers *BotTimerModule
+	Alerts *BotAlertsModule
+}
+
+type BotConnectHandler interface {
+	utils.Comparable
+	HandleBotConnect()
+}
+
+type BotMessageHandler interface {
+	utils.Comparable
+	HandleBotMessage(message irc.PrivateMessage)
 }
 
 func NewBot(api *Client, config BotConfig) *Bot {
@@ -43,30 +54,45 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	client := irc.NewClient(config.Username, config.Token)
 
 	bot := &Bot{
-		Client:          client,
+		Client: client,
+		Config: config,
+
 		username:        strings.ToLower(config.Username), // Normalize username
-		config:          config,
 		logger:          api.logger,
 		api:             api,
 		lastMessage:     time.Now(),
-		activeUsers:     make(map[string]bool),
-		banlist:         make(map[string]bool),
 		mu:              sync.Mutex{},
 		commands:        make(map[string]BotCommand),
 		customCommands:  make(map[string]BotCustomCommand),
 		customTemplates: make(map[string]*template.Template),
+
+		OnConnect: utils.NewPubSub[BotConnectHandler](),
+		OnMessage: utils.NewPubSub[BotMessageHandler](),
 	}
 
+	client.OnConnect(func() {
+		for _, handler := range bot.OnConnect.Subscribers() {
+			if handler != nil {
+				handler.HandleBotConnect()
+			}
+		}
+	})
+
 	client.OnPrivateMessage(func(message irc.PrivateMessage) {
+		for _, handler := range bot.OnMessage.Subscribers() {
+			if handler != nil {
+				handler.HandleBotMessage(message)
+			}
+		}
+
 		// Ignore messages for a while or twitch will get mad!
 		if message.Time.Before(bot.lastMessage.Add(time.Second * 2)) {
 			bot.logger.Debug("message received too soon, ignoring")
 			return
 		}
 		bot.mu.Lock()
-		bot.activeUsers[message.User.Name] = true
 
-		lcmessage := strings.ToLower(message.Message)
+		lowercaseMessage := strings.ToLower(message.Message)
 
 		// Check if it's a command
 		if strings.HasPrefix(message.Message, "!") {
@@ -75,10 +101,10 @@ func NewBot(api *Client, config BotConfig) *Bot {
 				if !data.Enabled {
 					continue
 				}
-				if !strings.HasPrefix(lcmessage, cmd) {
+				if !strings.HasPrefix(lowercaseMessage, cmd) {
 					continue
 				}
-				parts := strings.SplitN(lcmessage, " ", 2)
+				parts := strings.SplitN(lowercaseMessage, " ", 2)
 				if parts[0] != cmd {
 					continue
 				}
@@ -93,10 +119,10 @@ func NewBot(api *Client, config BotConfig) *Bot {
 				continue
 			}
 			lc := strings.ToLower(cmd)
-			if !strings.HasPrefix(lcmessage, lc) {
+			if !strings.HasPrefix(lowercaseMessage, lc) {
 				continue
 			}
-			parts := strings.SplitN(lcmessage, " ", 2)
+			parts := strings.SplitN(lowercaseMessage, " ", 2)
 			if parts[0] != lc {
 				continue
 			}
@@ -106,9 +132,9 @@ func NewBot(api *Client, config BotConfig) *Bot {
 		bot.mu.Unlock()
 
 		bot.api.db.PutJSON(ChatEventKey, message)
-		if bot.config.ChatHistory > 0 {
-			if len(bot.chatHistory) >= bot.config.ChatHistory {
-				bot.chatHistory = bot.chatHistory[len(bot.chatHistory)-bot.config.ChatHistory+1:]
+		if bot.Config.ChatHistory > 0 {
+			if len(bot.chatHistory) >= bot.Config.ChatHistory {
+				bot.chatHistory = bot.chatHistory[len(bot.chatHistory)-bot.Config.ChatHistory+1:]
 			}
 			bot.chatHistory = append(bot.chatHistory, message)
 			bot.api.db.PutJSON(ChatHistoryKey, bot.chatHistory)
@@ -184,7 +210,7 @@ func (b *Bot) updateCommands(value string) {
 }
 
 func (b *Bot) handleWriteMessageRPC(value string) {
-	b.Client.Say(b.config.Channel, value)
+	b.Client.Say(b.Config.Channel, value)
 }
 
 func (b *Bot) updateTemplates() error {
@@ -203,7 +229,16 @@ func (b *Bot) Connect() error {
 }
 
 func (b *Bot) WriteMessage(message string) {
-	b.Client.Say(b.config.Channel, message)
+	b.Client.Say(b.Config.Channel, message)
+}
+
+func (b *Bot) RegisterCommand(trigger string, command BotCommand) {
+	// TODO make it goroutine safe?
+	b.commands[trigger] = command
+}
+
+func (b *Bot) RemoveCommand(trigger string) {
+	delete(b.commands, trigger)
 }
 
 func getUserAccessLevel(user irc.User) AccessLevelType {

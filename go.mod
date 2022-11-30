@@ -3,7 +3,7 @@ module github.com/strimertul/strimertul
 go 1.19
 
 require (
-	git.sr.ht/~hamcha/containers v0.0.3
+	git.sr.ht/~hamcha/containers v0.2.0
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
 	github.com/cockroachdb/pebble v0.0.0-20221116223310-87eccabb90a3
@@ -11,7 +11,6 @@ require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/hashicorp/golang-lru v0.5.1
 	github.com/json-iterator/go v1.1.12
-	github.com/labstack/gommon v0.3.1
 	github.com/nicklaw5/helix/v2 v2.11.0
 	github.com/strimertul/kilovolt/v9 v9.0.1
 	github.com/strimertul/kv-pebble v1.2.0
@@ -49,6 +48,7 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/labstack/echo/v4 v4.9.0 // indirect
+	github.com/labstack/gommon v0.3.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect

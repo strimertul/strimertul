@@ -1,14 +1,19 @@
 package loyalty
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
-	"github.com/strimertul/strimertul/modules"
-	"github.com/strimertul/strimertul/modules/database"
+	"github.com/strimertul/strimertul/utils"
+
+	"git.sr.ht/~hamcha/containers"
+
+	"github.com/strimertul/strimertul/twitch"
+
+	"github.com/strimertul/strimertul/database"
 
 	jsoniter "github.com/json-iterator/go"
 	"go.uber.org/zap"
@@ -23,53 +28,74 @@ var (
 )
 
 type Manager struct {
-	points    map[string]PointsEntry
-	config    Config
-	rewards   RewardStorage
-	goals     GoalStorage
-	queue     RedeemQueueStorage
-	mu        sync.Mutex
-	db        *database.DBModule
-	logger    *zap.Logger
-	cooldowns map[string]time.Time
+	points       *containers.SyncMap[string, PointsEntry]
+	Config       *containers.RWSync[Config]
+	Rewards      *containers.Sync[RewardStorage]
+	Goals        *containers.Sync[GoalStorage]
+	Queue        *containers.Sync[RedeemQueueStorage]
+	db           *database.LocalDBClient
+	logger       *zap.Logger
+	cooldowns    map[string]time.Time
+	banlist      map[string]bool
+	activeUsers  *containers.SyncMap[string, bool]
+	twitchClient *twitch.Client
+	ctx          context.Context
+	cancelFn     context.CancelFunc
 }
 
-func Register(manager *modules.Manager) error {
-	db, ok := manager.Modules["db"].(*database.DBModule)
-	if !ok {
-		return errors.New("db module not found")
-	}
-
-	logger := manager.Logger(modules.ModuleLoyalty)
-
+func NewManager(db *database.LocalDBClient, twitchClient *twitch.Client, logger *zap.Logger) (*Manager, error) {
+	ctx, cancelFn := context.WithCancel(context.Background())
 	loyalty := &Manager{
-		logger:    logger,
-		db:        db,
-		mu:        sync.Mutex{},
-		cooldowns: make(map[string]time.Time),
+		Config:  containers.NewRWSync(Config{Enabled: false}),
+		Rewards: containers.NewSync(RewardStorage{}),
+		Goals:   containers.NewSync(GoalStorage{}),
+		Queue:   containers.NewSync(RedeemQueueStorage{}),
+
+		logger:       logger,
+		db:           db,
+		points:       containers.NewSyncMap[string, PointsEntry](),
+		cooldowns:    make(map[string]time.Time),
+		banlist:      make(map[string]bool),
+		activeUsers:  containers.NewSyncMap[string, bool](),
+		twitchClient: twitchClient,
+		ctx:          ctx,
+		cancelFn:     cancelFn,
 	}
 	// Get data from DB
-	if err := db.GetJSON(ConfigKey, &loyalty.config); err != nil {
+	var config Config
+	if err := db.GetJSON(ConfigKey, config); err == nil {
+		loyalty.Config.Set(config)
+	} else {
 		if !errors.Is(err, database.ErrEmptyKey) {
-			return fmt.Errorf("could not retrieve loyalty config: %w", err)
+			return nil, fmt.Errorf("could not retrieve loyalty config: %w", err)
 		}
-		loyalty.config.Enabled = false
 	}
 
 	// Retrieve configs
-	if err := db.GetJSON(RewardsKey, &loyalty.rewards); err != nil {
+	var rewards RewardStorage
+	if err := db.GetJSON(RewardsKey, &rewards); err != nil {
+		loyalty.Rewards.Set(rewards)
+	} else {
 		if !errors.Is(err, database.ErrEmptyKey) {
-			return err
+			return nil, err
 		}
 	}
-	if err := db.GetJSON(GoalsKey, &loyalty.goals); err != nil {
+
+	var goals GoalStorage
+	if err := db.GetJSON(GoalsKey, &goals); err != nil {
+		loyalty.Goals.Set(goals)
+	} else {
 		if !errors.Is(err, database.ErrEmptyKey) {
-			return err
+			return nil, err
 		}
 	}
-	if err := db.GetJSON(QueueKey, &loyalty.queue); err != nil {
+
+	var queue RedeemQueueStorage
+	if err := db.GetJSON(QueueKey, &queue); err != nil {
+		loyalty.Queue.Set(queue)
+	} else {
 		if !errors.Is(err, database.ErrEmptyKey) {
-			return err
+			return nil, err
 		}
 	}
 
@@ -77,18 +103,18 @@ func Register(manager *modules.Manager) error {
 	points, err := db.GetAll(PointsPrefix)
 	if err != nil {
 		if !errors.Is(err, database.ErrEmptyKey) {
-			return err
+			return nil, err
 		}
 		points = make(map[string]string)
 	}
-	loyalty.points = make(map[string]PointsEntry)
+
 	for k, v := range points {
 		var entry PointsEntry
 		err := json.UnmarshalFromString(v, &entry)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		loyalty.points[k] = entry
+		loyalty.points.SetKey(k, entry)
 	}
 
 	// SubscribePrefix for changes
@@ -97,62 +123,39 @@ func Register(manager *modules.Manager) error {
 		logger.Error("could not setup loyalty reload subscription", zap.Error(err))
 	}
 
-	// Register module
-	manager.Modules[modules.ModuleLoyalty] = loyalty
+	loyalty.SetBanList(config.BanList)
 
-	return nil
-}
+	// Setup twitch integration
+	loyalty.SetupTwitch()
 
-func (m *Manager) Status() modules.ModuleStatus {
-	config := m.Config()
-	if !config.Enabled {
-		return modules.ModuleStatus{
-			Enabled: false,
-		}
-	}
-
-	return modules.ModuleStatus{
-		Enabled:      true,
-		Working:      true,
-		Data:         struct{}{},
-		StatusString: "",
-	}
+	return loyalty, nil
 }
 
 func (m *Manager) Close() error {
-	// TODO Stop subscriptions?
+	// Send cancellation
+	m.cancelFn()
+
+	// Teardown twitch integration
+	m.StopTwitch()
+
 	return nil
 }
 
 func (m *Manager) update(key, value string) {
 	var err error
-
 	// Check for config changes/RPC
 	switch key {
 	case ConfigKey:
-		err = func() error {
-			m.mu.Lock()
-			defer m.mu.Unlock()
-			return json.UnmarshalFromString(value, &m.config)
-		}()
+		err = utils.LoadJSONToWrapped[Config](value, m.Config)
+		if err == nil {
+			m.SetBanList(m.Config.Get().BanList)
+		}
 	case GoalsKey:
-		err = func() error {
-			m.mu.Lock()
-			defer m.mu.Unlock()
-			return json.UnmarshalFromString(value, &m.goals)
-		}()
+		err = utils.LoadJSONToWrapped[GoalStorage](value, m.Goals)
 	case RewardsKey:
-		err = func() error {
-			m.mu.Lock()
-			defer m.mu.Unlock()
-			return json.UnmarshalFromString(value, &m.rewards)
-		}()
+		err = utils.LoadJSONToWrapped[RewardStorage](value, m.Rewards)
 	case QueueKey:
-		err = func() error {
-			m.mu.Lock()
-			defer m.mu.Unlock()
-			return json.UnmarshalFromString(value, &m.queue)
-		}()
+		err = utils.LoadJSONToWrapped[RedeemQueueStorage](value, m.Queue)
 	case CreateRedeemRPC:
 		var redeem Redeem
 		err = json.UnmarshalFromString(value, &redeem)
@@ -173,11 +176,7 @@ func (m *Manager) update(key, value string) {
 			var entry PointsEntry
 			err = json.UnmarshalFromString(value, &entry)
 			user := key[len(PointsPrefix):]
-			func() {
-				m.mu.Lock()
-				defer m.mu.Unlock()
-				m.points[user] = entry
-			}()
+			m.points.SetKey(user, entry)
 		}
 	}
 	if err != nil {
@@ -188,9 +187,7 @@ func (m *Manager) update(key, value string) {
 }
 
 func (m *Manager) GetPoints(user string) int64 {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	points, ok := m.points[user]
+	points, ok := m.points.GetKey(user)
 	if ok {
 		return points.Points
 	}
@@ -198,12 +195,11 @@ func (m *Manager) GetPoints(user string) int64 {
 }
 
 func (m *Manager) setPoints(user string, points int64) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	m.points[user] = PointsEntry{
+	entry := PointsEntry{
 		Points: points,
 	}
-	return m.db.PutJSON(PointsPrefix+user, m.points[user])
+	m.points.SetKey(user, entry)
+	return m.db.PutJSON(PointsPrefix+user, entry)
 }
 
 func (m *Manager) GivePoints(pointsToGive map[string]int64) error {
@@ -229,13 +225,10 @@ func (m *Manager) TakePoints(pointsToTake map[string]int64) error {
 }
 
 func (m *Manager) saveQueue() error {
-	return m.db.PutJSON(QueueKey, m.queue)
+	return m.db.PutJSON(QueueKey, m.Queue.Get())
 }
 
 func (m *Manager) GetRewardCooldown(rewardID string) time.Time {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
 	cooldown, ok := m.cooldowns[rewardID]
 	if !ok {
 		// Return zero time for a reward with no cooldown
@@ -246,11 +239,8 @@ func (m *Manager) GetRewardCooldown(rewardID string) time.Time {
 }
 
 func (m *Manager) AddRedeem(redeem Redeem) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
 	// Add to local list
-	m.queue = append(m.queue, redeem)
+	m.Queue.Set(append(m.Queue.Get(), redeem))
 
 	// Send redeem event
 	if err := m.db.PutJSON(RedeemEvent, redeem); err != nil {
@@ -283,13 +273,11 @@ func (m *Manager) PerformRedeem(redeem Redeem) error {
 }
 
 func (m *Manager) RemoveRedeem(redeem Redeem) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	for index, queued := range m.queue {
+	queue := m.Queue.Get()
+	for index, queued := range queue {
 		if queued.When == redeem.When && queued.Username == redeem.Username && queued.Reward.ID == redeem.Reward.ID {
 			// Remove redemption from list
-			m.queue = append(m.queue[:index], m.queue[index+1:]...)
+			m.Queue.Set(append(queue[:index], queue[index+1:]...))
 
 			// Save points
 			return m.saveQueue()
@@ -300,25 +288,18 @@ func (m *Manager) RemoveRedeem(redeem Redeem) error {
 }
 
 func (m *Manager) SaveGoals() error {
-	return m.db.PutJSON(GoalsKey, m.goals)
-}
-
-func (m *Manager) Goals() []Goal {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	return m.goals[:]
+	return m.db.PutJSON(GoalsKey, m.Goals.Get())
 }
 
 func (m *Manager) ContributeGoal(goal Goal, user string, points int64) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	for i, savedGoal := range m.goals {
+	goals := m.Goals.Get()
+	for i, savedGoal := range goals {
 		if savedGoal.ID != goal.ID {
 			continue
 		}
-		m.goals[i].Contributed += points
-		m.goals[i].Contributors[user] += points
+		goals[i].Contributed += points
+		goals[i].Contributors[user] += points
+		m.Goals.Set(goals)
 		return m.SaveGoals()
 	}
 	return ErrGoalNotFound
@@ -353,16 +334,8 @@ func (m *Manager) PerformContribution(goal Goal, user string, points int64) erro
 	return m.ContributeGoal(goal, user, points)
 }
 
-func (m *Manager) Rewards() []Reward {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	return m.rewards[:]
-}
-
 func (m *Manager) GetReward(id string) Reward {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	for _, reward := range m.rewards {
+	for _, reward := range m.Rewards.Get() {
 		if reward.ID == id {
 			return reward
 		}
@@ -371,9 +344,7 @@ func (m *Manager) GetReward(id string) Reward {
 }
 
 func (m *Manager) GetGoal(id string) Goal {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	for _, goal := range m.goals {
+	for _, goal := range m.Goals.Get() {
 		if goal.ID == id {
 			return goal
 		}
@@ -381,8 +352,9 @@ func (m *Manager) GetGoal(id string) Goal {
 	return Goal{}
 }
 
-func (m *Manager) Config() Config {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	return m.config
+func (m *Manager) Equals(c utils.Comparable) bool {
+	if manager, ok := c.(*Manager); ok {
+		return m == manager
+	}
+	return false
 }

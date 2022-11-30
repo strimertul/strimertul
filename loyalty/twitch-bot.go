@@ -1,4 +1,4 @@
-package twitch
+package loyalty
 
 import (
 	"fmt"
@@ -6,139 +6,160 @@ import (
 	"strings"
 	"time"
 
+	"git.sr.ht/~hamcha/containers"
+
+	"github.com/strimertul/strimertul/twitch"
+
 	"go.uber.org/zap"
 
 	irc "github.com/gempir/go-twitch-irc/v3"
-	"github.com/strimertul/strimertul/modules/loyalty"
 )
 
-func (b *Bot) SetupLoyalty(loyalty *loyalty.Manager) {
-	b.Loyalty = loyalty
-	config := loyalty.Config()
-	b.SetBanList(config.BanList)
+func (m *Manager) SetupTwitch() {
+	bot := m.twitchClient.Bot
+	if bot == nil {
+		return
+	}
 
 	// Add loyalty-based commands
-	b.commands["!redeem"] = BotCommand{
+	bot.RegisterCommand("!redeem", twitch.BotCommand{
 		Description: "Redeem a reward with loyalty points",
 		Usage:       "!redeem <reward-id> [request text]",
-		AccessLevel: ALTEveryone,
-		Handler:     cmdRedeemReward,
+		AccessLevel: twitch.ALTEveryone,
+		Handler:     m.cmdRedeemReward,
 		Enabled:     true,
-	}
-	b.commands["!balance"] = BotCommand{
+	})
+	bot.RegisterCommand("!balance", twitch.BotCommand{
 		Description: "See your current point balance",
 		Usage:       "!balance",
-		AccessLevel: ALTEveryone,
-		Handler:     cmdBalance,
+		AccessLevel: twitch.ALTEveryone,
+		Handler:     m.cmdBalance,
 		Enabled:     true,
-	}
-	b.commands["!goals"] = BotCommand{
+	})
+	bot.RegisterCommand("!goals", twitch.BotCommand{
 		Description: "Check currently active community goals",
 		Usage:       "!goals",
-		AccessLevel: ALTEveryone,
-		Handler:     cmdGoalList,
+		AccessLevel: twitch.ALTEveryone,
+		Handler:     m.cmdGoalList,
 		Enabled:     true,
-	}
-	b.commands["!contribute"] = BotCommand{
+	})
+	bot.RegisterCommand("!contribute", twitch.BotCommand{
 		Description: "Contribute points to a community goal",
 		Usage:       "!contribute <points> [<goal-id>]",
-		AccessLevel: ALTEveryone,
-		Handler:     cmdContributeGoal,
+		AccessLevel: twitch.ALTEveryone,
+		Handler:     m.cmdContributeGoal,
 		Enabled:     true,
-	}
+	})
+
+	// Setup message handler for tracking user activity
+	bot.OnMessage.Subscribe(m)
 
 	// Setup handler for adding points over time
-	b.Client.OnConnect(func() {
-		go func() {
+	go func() {
+		config := m.Config.Get()
+		if config.Enabled && bot != nil {
 			for {
-				status := loyalty.Status()
-				if status.Enabled {
-					config := loyalty.Config()
-					if config.Points.Interval > 0 {
-						// Wait for next poll
-						time.Sleep(time.Duration(config.Points.Interval) * time.Second)
+				if config.Points.Interval > 0 {
+					// Wait for next poll
+					select {
+					case <-m.ctx.Done():
+						return
+					case <-time.After(time.Duration(config.Points.Interval) * time.Second):
+					}
 
-						// If stream is confirmed offline, don't give points away!
-						isOnline := b.api.streamOnline.Get()
-						if !isOnline {
+					// If stream is confirmed offline, don't give points away!
+					isOnline := m.twitchClient.IsLive()
+					if !isOnline {
+						continue
+					}
+
+					m.logger.Debug("awarding points")
+
+					// Get user list
+					users, err := bot.Client.Userlist(bot.Config.Channel)
+					if err != nil {
+						m.logger.Error("error listing users", zap.Error(err))
+						continue
+					}
+
+					// Iterate for each user in the list
+					pointsToGive := make(map[string]int64)
+					for _, user := range users {
+						// Check if user is blocked
+						if m.IsBanned(user) {
 							continue
 						}
 
-						b.logger.Debug("awarding points")
+						// Check if user was active (chatting) for the bonus dingus
+						award := config.Points.Amount
+						if m.IsActive(user) {
+							award += config.Points.ActivityBonus
+						}
 
-						// Get user list
-						users, err := b.Client.Userlist(b.config.Channel)
+						// Add to point pool if already on it, otherwise initialize
+						pointsToGive[user] = award
+					}
+
+					m.ResetActivity()
+
+					// If changes were made, save the pool!
+					if len(users) > 0 {
+						err := m.GivePoints(pointsToGive)
 						if err != nil {
-							b.logger.Error("error listing users", zap.Error(err))
-							continue
-						}
-
-						// Iterate for each user in the list
-						pointsToGive := make(map[string]int64)
-						for _, user := range users {
-							// Check if user is blocked
-							if b.IsBanned(user) {
-								continue
-							}
-
-							// Check if user was active (chatting) for the bonus dingus
-							award := config.Points.Amount
-							if b.IsActive(user) {
-								award += config.Points.ActivityBonus
-							}
-
-							// Add to point pool if already on it, otherwise initialize
-							pointsToGive[user] = award
-						}
-
-						b.ResetActivity()
-
-						// If changes were made, save the pool!
-						if len(users) > 0 {
-							err := b.Loyalty.GivePoints(pointsToGive)
-							if err != nil {
-								b.logger.Error("error giving points to user", zap.Error(err))
-							}
+							m.logger.Error("error giving points to user", zap.Error(err))
 						}
 					}
 				}
 			}
-		}()
-	})
+		}
+	}()
 }
 
-func (b *Bot) SetBanList(banned []string) {
-	b.banlist = make(map[string]bool)
-	for _, usr := range banned {
-		b.banlist[usr] = true
+func (m *Manager) StopTwitch() {
+	bot := m.twitchClient.Bot
+	if bot != nil {
+		bot.RemoveCommand("!redeem")
+		bot.RemoveCommand("!balance")
+		bot.RemoveCommand("!goals")
+		bot.RemoveCommand("!contribute")
+
+		// Remove message handler
+		bot.OnMessage.Unsubscribe(m)
 	}
 }
 
-func (b *Bot) IsBanned(user string) bool {
-	banned, ok := b.banlist[user]
+func (m *Manager) HandleBotMessage(message irc.PrivateMessage) {
+	m.activeUsers.SetKey(message.User.Name, true)
+}
+
+func (m *Manager) SetBanList(banned []string) {
+	m.banlist = make(map[string]bool)
+	for _, usr := range banned {
+		m.banlist[usr] = true
+	}
+}
+
+func (m *Manager) IsBanned(user string) bool {
+	banned, ok := m.banlist[user]
 	return ok && banned
 }
 
-func (b *Bot) IsActive(user string) bool {
-	b.mu.Lock()
-	active, ok := b.activeUsers[user]
-	b.mu.Unlock()
+func (m *Manager) IsActive(user string) bool {
+	active, ok := m.activeUsers.GetKey(user)
 	return ok && active
 }
 
-func (b *Bot) ResetActivity() {
-	b.mu.Lock()
-	b.activeUsers = make(map[string]bool)
-	b.mu.Unlock()
+func (m *Manager) ResetActivity() {
+	m.activeUsers = containers.NewSyncMap[string, bool]()
 }
 
-func cmdBalance(bot *Bot, message irc.PrivateMessage) {
+func (m *Manager) cmdBalance(bot *twitch.Bot, message irc.PrivateMessage) {
 	// Get user balance
-	balance := bot.Loyalty.GetPoints(message.User.Name)
-	bot.Client.Say(message.Channel, fmt.Sprintf("%s: You have %d %s!", message.User.DisplayName, balance, bot.Loyalty.Config().Currency))
+	balance := m.GetPoints(message.User.Name)
+	bot.Client.Say(message.Channel, fmt.Sprintf("%s: You have %d %s!", message.User.DisplayName, balance, m.Config.Get().Currency))
 }
 
-func cmdRedeemReward(bot *Bot, message irc.PrivateMessage) {
+func (m *Manager) cmdRedeemReward(bot *twitch.Bot, message irc.PrivateMessage) {
 	parts := strings.Fields(message.Message)
 	if len(parts) < 2 {
 		return
@@ -146,7 +167,7 @@ func cmdRedeemReward(bot *Bot, message irc.PrivateMessage) {
 	redeemID := parts[1]
 
 	// Find reward
-	reward := bot.Loyalty.GetReward(redeemID)
+	reward := m.GetReward(redeemID)
 	if reward.ID == "" {
 		return
 	}
@@ -157,8 +178,8 @@ func cmdRedeemReward(bot *Bot, message irc.PrivateMessage) {
 	}
 
 	// Get user balance
-	balance := bot.Loyalty.GetPoints(message.User.Name)
-	config := bot.Loyalty.Config()
+	balance := m.GetPoints(message.User.Name)
+	config := m.Config.Get()
 
 	// Check if user can afford the reward
 	if balance-reward.Price < 0 {
@@ -172,7 +193,7 @@ func cmdRedeemReward(bot *Bot, message irc.PrivateMessage) {
 	}
 
 	// Perform redeem
-	if err := bot.Loyalty.PerformRedeem(loyalty.Redeem{
+	if err := m.PerformRedeem(Redeem{
 		Username:    message.User.Name,
 		DisplayName: message.User.DisplayName,
 		When:        time.Now(),
@@ -180,21 +201,21 @@ func cmdRedeemReward(bot *Bot, message irc.PrivateMessage) {
 		RequestText: text,
 	}); err != nil {
 		switch err {
-		case loyalty.ErrRedeemInCooldown:
-			nextAvailable := bot.Loyalty.GetRewardCooldown(reward.ID)
+		case ErrRedeemInCooldown:
+			nextAvailable := m.GetRewardCooldown(reward.ID)
 			bot.Client.Say(message.Channel, fmt.Sprintf("%s: That reward is in cooldown (available in %s)", message.User.DisplayName,
 				time.Until(nextAvailable).Truncate(time.Second)))
 		default:
-			bot.logger.Error("error while performing redeem", zap.Error(err))
+			m.logger.Error("error while performing redeem", zap.Error(err))
 		}
 		return
 	}
 
-	bot.Client.Say(message.Channel, fmt.Sprintf("HolidayPresent %s has redeemed %s! (new balance: %d %s)", message.User.DisplayName, reward.Name, bot.Loyalty.GetPoints(message.User.Name), config.Currency))
+	bot.Client.Say(message.Channel, fmt.Sprintf("HolidayPresent %s has redeemed %s! (new balance: %d %s)", message.User.DisplayName, reward.Name, m.GetPoints(message.User.Name), config.Currency))
 }
 
-func cmdGoalList(bot *Bot, message irc.PrivateMessage) {
-	goals := bot.Loyalty.Goals()
+func (m *Manager) cmdGoalList(bot *twitch.Bot, message irc.PrivateMessage) {
+	goals := m.Goals.Get()
 	if len(goals) < 1 {
 		bot.Client.Say(message.Channel, fmt.Sprintf("%s: There are no active community goals right now :(!", message.User.DisplayName))
 		return
@@ -204,14 +225,14 @@ func cmdGoalList(bot *Bot, message irc.PrivateMessage) {
 		if !goal.Enabled {
 			continue
 		}
-		msg += fmt.Sprintf("%s (%d/%d %s) [id: %s] | ", goal.Name, goal.Contributed, goal.TotalGoal, bot.Loyalty.Config().Currency, goal.ID)
+		msg += fmt.Sprintf("%s (%d/%d %s) [id: %s] | ", goal.Name, goal.Contributed, goal.TotalGoal, m.Config.Get().Currency, goal.ID)
 	}
 	msg += " Contribute with <!contribute POINTS GOALID>"
 	bot.Client.Say(message.Channel, msg)
 }
 
-func cmdContributeGoal(bot *Bot, message irc.PrivateMessage) {
-	goals := bot.Loyalty.Goals()
+func (m *Manager) cmdContributeGoal(bot *twitch.Bot, message irc.PrivateMessage) {
+	goals := m.Goals.Get()
 
 	// Set defaults if user doesn't provide them
 	points := int64(100)
@@ -283,12 +304,12 @@ func cmdContributeGoal(bot *Bot, message irc.PrivateMessage) {
 	}
 
 	// Add points to goal
-	if err := bot.Loyalty.PerformContribution(selectedGoal, message.User.Name, points); err != nil {
-		bot.logger.Error("error while contributing to goal", zap.Error(err))
+	if err := m.PerformContribution(selectedGoal, message.User.Name, points); err != nil {
+		m.logger.Error("error while contributing to goal", zap.Error(err))
 		return
 	}
 
-	config := bot.Loyalty.Config()
+	config := m.Config.Get()
 	newRemaining := selectedGoal.TotalGoal - selectedGoal.Contributed
 	bot.Client.Say(message.Channel, fmt.Sprintf("ShowOfHands %s contributed %d %s to \"%s\"!! Only %d %s left!", message.User.DisplayName, points, config.Currency, selectedGoal.Name, newRemaining, config.Currency))
 

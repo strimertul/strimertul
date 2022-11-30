@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"log"
@@ -11,10 +12,6 @@ import (
 	"github.com/apenwarr/fixconsole"
 
 	"go.uber.org/zap/zapcore"
-
-	"github.com/strimertul/strimertul/modules"
-	"github.com/strimertul/strimertul/modules/loyalty"
-	"github.com/strimertul/strimertul/modules/twitch"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/urfave/cli/v2"
@@ -27,19 +24,10 @@ import (
 
 var json = jsoniter.ConfigFastest
 
-const databaseDefaultDriver = "pebble"
-
 var appVersion = "v0.0.0-UNKNOWN"
 
 //go:embed frontend/dist
 var frontend embed.FS
-
-type ModuleConstructor = func(manager *modules.Manager) error
-
-var moduleList = map[modules.ModuleID]ModuleConstructor{
-	modules.ModuleLoyalty: loyalty.Register,
-	modules.ModuleTwitch:  twitch.Register,
-}
 
 func main() {
 	err := fixconsole.FixConsoleIfNeeded()
@@ -99,6 +87,7 @@ func main() {
 				level = zapcore.InfoLevel
 			}
 			initLogger(level)
+			ctx.Context = context.WithValue(ctx.Context, "logger", logger)
 			return nil
 		},
 		After: func(ctx *cli.Context) error {

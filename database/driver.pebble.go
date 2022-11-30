@@ -1,24 +1,25 @@
-package main
+package database
 
 import (
 	"fmt"
+	"go.uber.org/zap"
 	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/cockroachdb/pebble"
-	"github.com/labstack/gommon/log"
 	kv "github.com/strimertul/kilovolt/v9"
 	pebble_driver "github.com/strimertul/kv-pebble"
 )
 
 type PebbleDatabase struct {
-	db  *pebble.DB
-	hub *kv.Hub
+	db     *pebble.DB
+	hub    *kv.Hub
+	logger *zap.Logger
 }
 
 // NewPebble creates a new database driver instance with an underlying Pebble database
-func NewPebble(directory string) (*PebbleDatabase, error) {
+func NewPebble(directory string, logger *zap.Logger) (*PebbleDatabase, error) {
 	db, err := pebble.Open(directory, &pebble.Options{})
 	if err != nil {
 		return nil, fmt.Errorf("could not open DB: %w", err)
@@ -31,8 +32,9 @@ func NewPebble(directory string) (*PebbleDatabase, error) {
 	}
 
 	p := &PebbleDatabase{
-		db:  db,
-		hub: nil,
+		db:     db,
+		hub:    nil,
+		logger: logger,
 	}
 
 	return p, nil
@@ -40,14 +42,13 @@ func NewPebble(directory string) (*PebbleDatabase, error) {
 
 func (p *PebbleDatabase) Hub() *kv.Hub {
 	if p.hub == nil {
-		p.hub, _ = kv.NewHub(pebble_driver.NewPebbleBackend(p.db, true), kv.HubOptions{}, logger)
+		p.hub, _ = kv.NewHub(pebble_driver.NewPebbleBackend(p.db, true), kv.HubOptions{}, p.logger)
 	}
 	return p.hub
 }
 
 func (p *PebbleDatabase) Close() error {
 	err := p.db.Close()
-	log.Info("database was closed")
 	if err != nil {
 		return fmt.Errorf("Could not close database: %w", err)
 	}

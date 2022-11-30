@@ -2,29 +2,16 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"os"
-	"path/filepath"
 	"sort"
 	"time"
 
-	kv "github.com/strimertul/kilovolt/v9"
+	"github.com/strimertul/strimertul/database"
 	"github.com/strimertul/strimertul/utils"
-	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
 )
 
-// DatabaseDriver is a driver wrapping a supported database
-type DatabaseDriver interface {
-	Hub() *kv.Hub
-	Close() error
-	Import(map[string]string) error
-	Export(io.Writer) error
-	Restore(io.Reader) error
-	Backup(io.Writer) error
-}
-
-func BackupTask(driver DatabaseDriver, options BackupOptions) {
+func BackupTask(driver database.DatabaseDriver, options database.BackupOptions) {
 	if options.BackupDir == "" {
 		logger.Warn("backup directory not set, database backups are disabled")
 		return
@@ -72,40 +59,5 @@ func BackupTask(driver DatabaseDriver, options BackupOptions) {
 				}
 			}
 		}
-	}
-}
-
-type BackupOptions struct {
-	BackupDir      string
-	BackupInterval int
-	MaxBackups     int
-}
-
-func getDatabaseDriverName(ctx *cli.Context) string {
-	driver := ctx.String("driver")
-	if driver != "auto" {
-		return driver
-	}
-
-	dbdir := ctx.String("database-dir")
-	file, err := os.ReadFile(filepath.Join(dbdir, "stul-driver"))
-	if err != nil {
-		// No driver file found (or file corrupted), use default driver
-		return databaseDefaultDriver
-	}
-	return string(file)
-}
-
-func getDatabaseDriver(ctx *cli.Context) (DatabaseDriver, error) {
-	name := getDatabaseDriverName(ctx)
-	dbdir := ctx.String("database-dir")
-
-	switch name {
-	case "badger":
-		return nil, cli.Exit("Badger is not supported anymore as a database driver", 64)
-	case "pebble":
-		return NewPebble(dbdir)
-	default:
-		return nil, cli.Exit(fmt.Sprintf("Unknown database driver: %s", name), 64)
 	}
 }
