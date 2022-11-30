@@ -24,8 +24,9 @@ type Client struct {
 	logger     *zap.Logger
 	eventCache *lru.Cache
 
-	restart      chan bool
-	streamOnline *containers.RWSync[bool]
+	restart            chan bool
+	streamOnline       *containers.RWSync[bool]
+	savedSubscriptions map[string]bool
 }
 
 func NewClient(db *database.LocalDBClient, server *http.Server, logger *zap.Logger) (*Client, error) {
@@ -46,12 +47,13 @@ func NewClient(db *database.LocalDBClient, server *http.Server, logger *zap.Logg
 
 	// Create Twitch client
 	client := &Client{
-		Config:       config,
-		db:           db,
-		logger:       logger.With(zap.String("service", "twitch")),
-		restart:      make(chan bool, 128),
-		streamOnline: containers.NewRWSync(false),
-		eventCache:   eventCache,
+		Config:             config,
+		db:                 db,
+		logger:             logger.With(zap.String("service", "twitch")),
+		restart:            make(chan bool, 128),
+		streamOnline:       containers.NewRWSync(false),
+		eventCache:         eventCache,
+		savedSubscriptions: make(map[string]bool),
 	}
 
 	// Listen for Config changes

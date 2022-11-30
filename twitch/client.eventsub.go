@@ -118,6 +118,11 @@ func (c *Client) processEvent(message EventSubWebsocketMessage) {
 }
 
 func (c *Client) addSubscriptionsForSession(session string) error {
+	if c.savedSubscriptions[session] {
+		// Already subscribed
+		return nil
+	}
+
 	client, err := c.GetUserClient()
 	if err != nil {
 		return fmt.Errorf("failed getting API client for user: %w", err)
@@ -131,7 +136,7 @@ func (c *Client) addSubscriptionsForSession(session string) error {
 		return fmt.Errorf("no users found")
 	}
 	user := users.Data.Users[0]
-	
+
 	transport := helix.EventSubTransport{
 		Method:    "websocket",
 		SessionID: session,
@@ -152,6 +157,7 @@ func (c *Client) addSubscriptionsForSession(session string) error {
 			return fmt.Errorf("error subscribing to %s: %w", topic, err)
 		}
 	}
+	c.savedSubscriptions[session] = true
 	return nil
 }
 
