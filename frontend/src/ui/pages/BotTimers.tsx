@@ -200,6 +200,7 @@ function TimerDialog({
   item?: TwitchBotTimer;
   onSubmit?: (name: string, item: TwitchBotTimer) => void;
 }) {
+  const [timerConfig] = useModule(modules.twitchBotTimers);
   const [timerName, setName] = useState(name ?? '');
   const [messages, setMessages] = useState(item?.messages ?? ['']);
   const [minDelay, setMinDelay] = useState(item?.minimum_delay ?? 300);
@@ -234,7 +235,20 @@ function TimerDialog({
           <InputBox
             id="timer-name"
             value={timerName}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              // If timer name is different but matches another defined timer, set as invalid
+              if (
+                e.target.value !== name &&
+                e.target.value in timerConfig.timers
+              ) {
+                (e.target as HTMLInputElement).setCustomValidity(
+                  t('pages.bottimers.name-already-in-use'),
+                );
+              } else {
+                (e.target as HTMLInputElement).setCustomValidity('');
+              }
+            }}
             placeholder={t('pages.bottimers.timer-name-placeholder')}
             required={true}
           />

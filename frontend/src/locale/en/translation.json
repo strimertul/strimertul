@@ -109,7 +109,8 @@
         "streamer": "Streamer only"
       },
       "remove-command-title": "Remove command {{name}}?",
-      "no-commands": "Chatbot has no commands configured"
+      "no-commands": "Chatbot has no commands configured",
+      "command-already-in-use": "Command name already in use"
     },
     "bottimers": {
       "title": "Bot timers",
@@ -126,7 +127,8 @@
       "timer-activity": "Minimul chat activity (0 to disable)",
       "timer-activity-desc": "messages in the last 5 minutes",
       "timer-messages": "Messages",
-      "no-timers": "There are no timers configured"
+      "no-timers": "There are no timers configured",
+      "name-already-in-use": "Timer name already in use"
     },
     "auth": {
       "title": "Authentication required",

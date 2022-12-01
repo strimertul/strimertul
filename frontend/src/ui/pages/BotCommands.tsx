@@ -189,6 +189,7 @@ function CommandDialog({
   item?: TwitchBotCustomCommand;
   onSubmit?: (name: string, item: TwitchBotCustomCommand) => void;
 }) {
+  const [commands] = useModule(modules.twitchBotCommands);
   const [commandName, setCommandName] = useState(name ?? '');
   const [description, setDescription] = useState(item?.description ?? '');
   const [response, setResponse] = useState(item?.response ?? '');
@@ -226,7 +227,17 @@ function CommandDialog({
             id="command-name"
             value={commandName}
             required={true}
-            onChange={(e) => setCommandName(e.target.value)}
+            onChange={(e) => {
+              setCommandName(e.target.value);
+              // If command name is different but matches another defined command, set as invalid
+              if (e.target.value !== name && e.target.value in commands) {
+                (e.target as HTMLInputElement).setCustomValidity(
+                  t('pages.botcommands.command-already-in-use'),
+                );
+              } else {
+                (e.target as HTMLInputElement).setCustomValidity('');
+              }
+            }}
             placeholder={t('pages.botcommands.command-name-placeholder')}
           />
         </Field>
