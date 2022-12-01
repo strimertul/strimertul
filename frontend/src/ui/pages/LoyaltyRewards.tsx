@@ -12,6 +12,7 @@ import {
   Button,
   Checkbox,
   CheckboxIndicator,
+  ControlledInputBox,
   Dialog,
   DialogActions,
   Field,
@@ -268,6 +269,7 @@ function GoalItem({
 function RewardsPage() {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const [cursorPosition, setCursorPosition] = useState(0);
   const [config] = useModule(modules.loyaltyConfig);
   const [rewards, setRewards] = useModule(modules.loyaltyRewards);
   const [filter, setFilter] = useState('');
@@ -343,13 +345,17 @@ function RewardsPage() {
               <Label htmlFor="reward-id">
                 {t('pages.loyalty-rewards.reward-id')}
               </Label>
-              <InputBox
+              <ControlledInputBox
                 id="reward-id"
                 type="text"
                 required
                 disabled={!dialogReward.new}
                 value={dialogReward?.reward?.id}
+                onFocus={(e) => {
+                  e.target.selectionStart = cursorPosition;
+                }}
                 onChange={(e) => {
+                  setCursorPosition(e.target.selectionStart);
                   setDialogReward({
                     ...dialogReward,
                     reward: {
@@ -671,7 +677,7 @@ function GoalsPage() {
               <Label htmlFor="goal-id">
                 {t('pages.loyalty-rewards.goal-id')}
               </Label>
-              <InputBox
+              <ControlledInputBox
                 id="goal-id"
                 type="text"
                 required
