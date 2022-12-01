@@ -158,8 +158,8 @@ const LogMessage = styled('div', {
 const LogActions = styled('div', {
   gridColumn: '3',
   display: 'flex',
-  gap: '0.5rem',
-  padding: '0.4rem 0.5rem 0',
+  gap: '10px',
+  padding: '0.4rem 12px 0',
   '& a': {
     color: '$gray10',
     '&:hover': {
