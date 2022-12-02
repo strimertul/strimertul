@@ -52,7 +52,10 @@ func SetupTimers(bot *Bot) *BotTimerModule {
 			Timers: make(map[string]BotTimer),
 		}
 		// Save empty config
-		bot.api.db.PutJSON(BotTimersKey, mod.Config)
+		err = bot.api.db.PutJSON(BotTimersKey, mod.Config)
+		if err != nil {
+			bot.logger.Warn("could not save default config for bot timers", zap.Error(err))
+		}
 	}
 
 	err = bot.api.db.SubscribeKey(BotTimersKey, func(value string) {

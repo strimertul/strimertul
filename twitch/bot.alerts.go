@@ -106,7 +106,10 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 		bot.logger.Debug("config load error", zap.Error(err))
 		mod.Config = BotAlertsConfig{}
 		// Save empty config
-		bot.api.db.PutJSON(BotAlertsKey, mod.Config)
+		err = bot.api.db.PutJSON(BotAlertsKey, mod.Config)
+		if err != nil {
+			bot.logger.Warn("could not save default config for bot alerts", zap.Error(err))
+		}
 	}
 
 	mod.compileTemplates()

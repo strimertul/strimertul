@@ -131,13 +131,19 @@ func NewBot(api *Client, config BotConfig) *Bot {
 		}
 		bot.mu.Unlock()
 
-		bot.api.db.PutJSON(ChatEventKey, message)
+		err := bot.api.db.PutJSON(ChatEventKey, message)
+		if err != nil {
+			bot.logger.Warn("could not save chat message to key", zap.String("key", ChatEventKey), zap.Error(err))
+		}
 		if bot.Config.ChatHistory > 0 {
 			if len(bot.chatHistory) >= bot.Config.ChatHistory {
 				bot.chatHistory = bot.chatHistory[len(bot.chatHistory)-bot.Config.ChatHistory+1:]
 			}
 			bot.chatHistory = append(bot.chatHistory, message)
-			bot.api.db.PutJSON(ChatHistoryKey, bot.chatHistory)
+			err = bot.api.db.PutJSON(ChatHistoryKey, bot.chatHistory)
+			if err != nil {
+				bot.logger.Warn("could not save message to chat history", zap.Error(err))
+			}
 		}
 
 		if bot.Timers != nil {
@@ -165,13 +171,11 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	bot.setupFunctions()
 
 	// Load modules
-	err := bot.LoadModules()
-	if err != nil {
-		bot.logger.Error("failed to load modules", zap.Error(err))
-	}
+	bot.Timers = SetupTimers(bot)
+	bot.Alerts = SetupAlerts(bot)
 
 	// Load custom commands
-	err = api.db.GetJSON(CustomCommandsKey, &bot.customCommands)
+	err := api.db.GetJSON(CustomCommandsKey, &bot.customCommands)
 	if err != nil {
 		bot.logger.Error("failed to load custom commands", zap.Error(err))
 	}

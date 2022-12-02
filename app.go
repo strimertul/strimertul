@@ -4,6 +4,8 @@ import (
 	"context"
 	"strconv"
 
+	"go.uber.org/zap"
+
 	"github.com/strimertul/strimertul/twitch"
 
 	"github.com/strimertul/strimertul/loyalty"
@@ -75,6 +77,7 @@ func (a *App) startup(ctx context.Context) {
 
 	// Initialize loyalty system
 	a.loyaltyManager, err = loyalty.NewManager(a.db, a.twitchClient, logger)
+	failOnError(err, "could not initialize loyalty manager")
 
 	a.ready.Set(true)
 	runtime.EventsEmit(ctx, "ready", true)
@@ -93,17 +96,17 @@ func (a *App) startup(ctx context.Context) {
 
 func (a *App) stop(context.Context) {
 	if a.loyaltyManager != nil {
-		a.loyaltyManager.Close()
+		warnOnError(a.loyaltyManager.Close(), "could not cleanly close loyalty manager")
 	}
 	if a.twitchClient != nil {
-		a.twitchClient.Close()
+		warnOnError(a.twitchClient.Close(), "could not cleanly close twitch client")
 	}
 	if a.httpServer != nil {
-		a.httpServer.Close()
+		warnOnError(a.httpServer.Close(), "could not cleanly close HTTP server")
 	}
-	a.db.Close()
+	warnOnError(a.db.Close(), "could not cleanly close database")
 
-	failOnError(a.driver.Close(), "could not close driver")
+	warnOnError(a.driver.Close(), "could not close driver")
 }
 
 func (a *App) AuthenticateKVClient(id string) {
@@ -111,7 +114,7 @@ func (a *App) AuthenticateKVClient(id string) {
 	if err != nil {
 		return
 	}
-	a.driver.Hub().SetAuthenticated(idInt, true)
+	warnOnError(a.driver.Hub().SetAuthenticated(idInt, true), "could not mark session as authenticated", zap.String("session-id", id))
 }
 
 func (a *App) IsServerReady() bool {

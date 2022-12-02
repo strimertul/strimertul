@@ -2,10 +2,11 @@ package database
 
 import (
 	"fmt"
-	"go.uber.org/zap"
 	"io"
 	"os"
 	"path/filepath"
+
+	"go.uber.org/zap"
 
 	"github.com/cockroachdb/pebble"
 	kv "github.com/strimertul/kilovolt/v9"
@@ -58,7 +59,10 @@ func (p *PebbleDatabase) Close() error {
 func (p *PebbleDatabase) Import(entries map[string]string) error {
 	batch := p.db.NewBatch()
 	for key, value := range entries {
-		batch.Set([]byte(key), []byte(value), &pebble.WriteOptions{})
+		err := batch.Set([]byte(key), []byte(value), &pebble.WriteOptions{})
+		if err != nil {
+			return err
+		}
 	}
 	return batch.Commit(&pebble.WriteOptions{})
 }

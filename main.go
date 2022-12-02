@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"embed"
 	"fmt"
 	"log"
@@ -87,7 +86,6 @@ func main() {
 				level = zapcore.InfoLevel
 			}
 			initLogger(level)
-			ctx.Context = context.WithValue(ctx.Context, "logger", logger)
 			return nil
 		},
 		After: func(ctx *cli.Context) error {
@@ -127,9 +125,17 @@ func cliMain(ctx *cli.Context) error {
 	return nil
 }
 
-func failOnError(err error, text string) {
+func warnOnError(err error, text string, fields ...zap.Field) {
 	if err != nil {
-		logger.Fatal(text, zap.Error(err))
+		fields = append(fields, zap.Error(err))
+		logger.Warn(text, fields...)
+	}
+}
+
+func failOnError(err error, text string, fields ...zap.Field) {
+	if err != nil {
+		fields = append(fields, zap.Error(err))
+		logger.Fatal(text, fields...)
 	}
 }
 
