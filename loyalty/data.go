@@ -17,11 +17,7 @@ type Config struct {
 
 const RewardsKey = "loyalty/rewards"
 
-type RewardStorage []Reward
-
 const GoalsKey = "loyalty/goals"
-
-type GoalStorage []Goal
 
 type Reward struct {
 	Enabled       bool   `json:"enabled"`
@@ -52,8 +48,6 @@ type PointsEntry struct {
 }
 
 const QueueKey = "loyalty/redeem-queue"
-
-type RedeemQueueStorage []Redeem
 
 type Redeem struct {
 	Username    string    `json:"username"`

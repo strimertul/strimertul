@@ -30,9 +30,9 @@ var (
 type Manager struct {
 	points        *containers.SyncMap[string, PointsEntry]
 	Config        *containers.RWSync[Config]
-	Rewards       *containers.Sync[RewardStorage]
-	Goals         *containers.Sync[GoalStorage]
-	Queue         *containers.Sync[RedeemQueueStorage]
+	Rewards       *containers.SyncSlice[Reward]
+	Goals         *containers.SyncSlice[Goal]
+	Queue         *containers.SyncSlice[Redeem]
 	db            *database.LocalDBClient
 	logger        *zap.Logger
 	cooldowns     map[string]time.Time
@@ -48,9 +48,9 @@ func NewManager(db *database.LocalDBClient, twitchManager *twitch.Manager, logge
 	ctx, cancelFn := context.WithCancel(context.Background())
 	loyalty := &Manager{
 		Config:  containers.NewRWSync(Config{Enabled: false}),
-		Rewards: containers.NewSync(RewardStorage{}),
-		Goals:   containers.NewSync(GoalStorage{}),
-		Queue:   containers.NewSync(RedeemQueueStorage{}),
+		Rewards: containers.NewSyncSlice[Reward](),
+		Goals:   containers.NewSyncSlice[Goal](),
+		Queue:   containers.NewSyncSlice[Redeem](),
 
 		logger:        logger,
 		db:            db,
@@ -73,7 +73,7 @@ func NewManager(db *database.LocalDBClient, twitchManager *twitch.Manager, logge
 	}
 
 	// Retrieve configs
-	var rewards RewardStorage
+	var rewards []Reward
 	if err := db.GetJSON(RewardsKey, &rewards); err != nil {
 		loyalty.Rewards.Set(rewards)
 	} else {
@@ -82,7 +82,7 @@ func NewManager(db *database.LocalDBClient, twitchManager *twitch.Manager, logge
 		}
 	}
 
-	var goals GoalStorage
+	var goals []Goal
 	if err := db.GetJSON(GoalsKey, &goals); err != nil {
 		loyalty.Goals.Set(goals)
 	} else {
@@ -91,7 +91,7 @@ func NewManager(db *database.LocalDBClient, twitchManager *twitch.Manager, logge
 		}
 	}
 
-	var queue RedeemQueueStorage
+	var queue []Redeem
 	if err := db.GetJSON(QueueKey, &queue); err != nil {
 		loyalty.Queue.Set(queue)
 	} else {
@@ -157,11 +157,11 @@ func (m *Manager) update(key, value string) {
 			m.SetBanList(m.Config.Get().BanList)
 		}
 	case GoalsKey:
-		err = utils.LoadJSONToWrapped[GoalStorage](value, m.Goals)
+		err = utils.LoadJSONToWrapped[[]Goal](value, m.Goals)
 	case RewardsKey:
-		err = utils.LoadJSONToWrapped[RewardStorage](value, m.Rewards)
+		err = utils.LoadJSONToWrapped[[]Reward](value, m.Rewards)
 	case QueueKey:
-		err = utils.LoadJSONToWrapped[RedeemQueueStorage](value, m.Queue)
+		err = utils.LoadJSONToWrapped[[]Redeem](value, m.Queue)
 	case CreateRedeemRPC:
 		var redeem Redeem
 		err = json.UnmarshalFromString(value, &redeem)

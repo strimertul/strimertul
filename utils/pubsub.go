@@ -3,21 +3,21 @@ package utils
 import "git.sr.ht/~hamcha/containers"
 
 type PubSub[T Comparable] struct {
-	subscribers *containers.RWSync[[]T]
+	subscribers *containers.SyncSlice[T]
 }
 
 func NewPubSub[T Comparable]() *PubSub[T] {
 	return &PubSub[T]{
-		subscribers: containers.NewRWSync([]T{}),
+		subscribers: containers.NewSyncSlice[T](),
 	}
 }
 
 func (p *PubSub[T]) Subscribe(handler T) {
-	p.subscribers.Set(append(p.subscribers.Get(), handler))
+	p.subscribers.Push(handler)
 }
 
 func (p *PubSub[T]) Unsubscribe(handler T) {
-	arr := p.subscribers.Get()
+	arr := p.subscribers.Copy()
 	// Use slice trick to in-place remove entry if found
 	for index := range arr {
 		if arr[index].Equals(handler) {
@@ -29,7 +29,7 @@ func (p *PubSub[T]) Unsubscribe(handler T) {
 }
 
 func (p *PubSub[T]) Subscribers() []T {
-	return p.subscribers.Get()
+	return p.subscribers.Copy()
 }
 
 func (p *PubSub[T]) Copy(other *PubSub[T]) {

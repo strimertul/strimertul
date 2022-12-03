@@ -3,7 +3,7 @@ module github.com/strimertul/strimertul
 go 1.19
 
 require (
-	git.sr.ht/~hamcha/containers v0.2.1
+	git.sr.ht/~hamcha/containers v0.2.3
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
 	github.com/cockroachdb/pebble v0.0.0-20221116223310-87eccabb90a3

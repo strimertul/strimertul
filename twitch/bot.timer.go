@@ -34,7 +34,7 @@ type BotTimerModule struct {
 
 	bot         *Bot
 	lastTrigger *containers.SyncMap[string, time.Time]
-	messages    *containers.RWSync[[AverageMessageWindow]int]
+	messages    *containers.SyncSlice[int]
 
 	cancelTimerSub database.CancelFunc
 }
@@ -43,7 +43,13 @@ func SetupTimers(bot *Bot) *BotTimerModule {
 	mod := &BotTimerModule{
 		bot:         bot,
 		lastTrigger: containers.NewSyncMap[string, time.Time](),
-		messages:    containers.NewRWSync([AverageMessageWindow]int{}),
+		messages:    containers.NewSyncSlice[int](),
+	}
+
+	// Fill messages with zero values
+	// (This can probably be done faster)
+	for i := 0; i < AverageMessageWindow; i += 1 {
+		mod.messages.Push(0)
 	}
 
 	// Load config from database
@@ -160,7 +166,5 @@ func (m *BotTimerModule) currentChatActivity() int {
 
 func (m *BotTimerModule) OnMessage(message irc.PrivateMessage) {
 	index := message.Time.Minute() % AverageMessageWindow
-	messages := m.messages.Get()
-	messages[index] += 1
-	m.messages.Set(messages)
+	m.messages.SetIndex(index, 1)
 }

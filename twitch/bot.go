@@ -24,7 +24,7 @@ type Bot struct {
 	username    string
 	logger      *zap.Logger
 	lastMessage *containers.RWSync[time.Time]
-	chatHistory *containers.Sync[[]irc.PrivateMessage]
+	chatHistory *containers.SyncSlice[irc.PrivateMessage]
 
 	commands        *containers.SyncMap[string, BotCommand]
 	customCommands  *containers.SyncMap[string, BotCustomCommand]
@@ -74,6 +74,7 @@ func newBot(api *Client, config BotConfig) *Bot {
 		commands:        containers.NewSyncMap[string, BotCommand](),
 		customCommands:  containers.NewSyncMap[string, BotCustomCommand](),
 		customTemplates: containers.NewSyncMap[string, *template.Template](),
+		chatHistory:     containers.NewSyncSlice[irc.PrivateMessage](),
 
 		OnConnect: utils.NewPubSub[BotConnectHandler](),
 		OnMessage: utils.NewPubSub[BotMessageHandler](),
