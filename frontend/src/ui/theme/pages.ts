@@ -7,9 +7,7 @@ export const PageContainer = styled('div', {
   margin: '0 auto',
 });
 
-export const PageHeader = styled('header', {
-  marginBottom: '3rem',
-});
+export const PageHeader = styled('header', {});
 
 export const PageTitle = styled('h1', {
   fontSize: '25pt',

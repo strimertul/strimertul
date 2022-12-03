@@ -25,7 +25,7 @@ Strimertül is a single executable app that provides the following:
 - Twitch bot for handling chat messages and providing custom commands
 - Polling-based loyalty system for rewards and community goals
 
-At strimertul's core is [Kilovolt](https://github.com/strimertul/kilovolt), a pub/sub key-value store accessible via websocket. You can access every functionality of strimertul through the Kilovolt API. Check [this repository](https://github.com/strimertul/kilovolt-clients) for a list of officially supported kilovolt clients (or submit your own). You should be able to easily build a client yourself by just creating a websocket connection and using the [Kilovolt protocol](https://github.com/strimertul/kilovolt/blob/main/PROTOCOL.md).
+At strimertül's core is [Kilovolt](https://github.com/strimertul/kilovolt), a pub/sub key-value store accessible via websocket. You can access every functionality of strimertul through the Kilovolt API. Check [this repository](https://github.com/strimertul/kilovolt-clients) for a list of officially supported kilovolt clients (or submit your own). You should be able to easily build a client yourself by just creating a websocket connection and using the [Kilovolt protocol](https://github.com/strimertul/kilovolt/blob/main/PROTOCOL.md).
 
 Check out the [project's wiki](https://github.com/strimertul/strimertul/wiki) for more information on how to use the API to interact with strimertul, or the `docs` folder for more technical informations.
 
@@ -38,6 +38,12 @@ To run in live development mode, run `wails dev` in the project directory. This 
 ## Building
 
 To build a redistributable, production mode package, use `wails build`.
+
+## Credits
+
+- Renko, strimertül's mascot and app icon, was drawn by [Sonic_Chan]
+
+[Sonic_Chan]: https://twitter.com/Sonic__Chan
 
 ## License
 

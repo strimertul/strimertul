@@ -236,7 +236,9 @@
       "need-help": "Need help?",
       "need-help-p1": "If you need help, want to report a bug or have suggestions on how to make {{APPNAME}} better, please reach out via any of the following channels:",
       "license-header": "License",
-      "license-notice-strimertul": "{{APPNAME}} is licensed under <license>GNU Affero General Public License v3.0</license>"
+      "license-notice-strimertul": "{{APPNAME}} is licensed under <license>GNU Affero General Public License v3.0</license>",
+      "credits-header": "Credits",
+      "credits-renko": "Renko, {{APPNAME}}'s mascot and app icon, was drawn by <artist>Sonic_Chan</artist>"
     },
     "dashboard": {
       "twitch-status": "Twitch stream status",

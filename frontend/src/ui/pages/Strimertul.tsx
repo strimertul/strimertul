@@ -50,7 +50,7 @@ const LogoName = styled('h1', {
   fontWeight: 200,
   textAlign: 'left',
   '@medium': {
-    fontSize: '80pt',
+    fontSize: '60pt',
   },
   paddingBottom: '0.5rem',
 });
@@ -64,7 +64,7 @@ const SectionParagraph = styled('p', {
 const ChannelList = styled('ul', { listStyle: 'none', padding: 0, margin: 0 });
 const Channel = styled('li', {
   marginBottom: '1rem',
-  fontSize: '1.5rem',
+  fontSize: '1rem',
 });
 const ChannelLink = styled(BrowserLink, {
   textDecoration: 'none',
@@ -114,23 +114,40 @@ export default function StrimertulPage(): React.ReactElement {
       </PageHeader>
       <Section>
         <SectionHeader>{t('pages.strimertul.need-help')}</SectionHeader>
-        <SectionParagraph>
+        <SectionParagraph css={{ paddingBottom: 0 }}>
           {t('pages.strimertul.need-help-p1', { APPNAME })}
         </SectionParagraph>
         <ChannelList>
           <Channel>
             <ChannelLink href="https://github.com/strimertul/strimertul/issues">
-              <GitHubLogoIcon width={32} height={32} />
+              <GitHubLogoIcon width={24} height={24} />
               github.com/strimertul/strimertul/issues
             </ChannelLink>
           </Channel>
           <Channel>
             <ChannelLink href="https://twitter.com/ashkeelvt">
-              <TwitterLogoIcon width={32} height={32} />
+              <TwitterLogoIcon width={24} height={24} />
               twitter.com/AshKeelVT
             </ChannelLink>
           </Channel>
         </ChannelList>
+      </Section>
+      <Section>
+        <SectionHeader>{t('pages.strimertul.credits-header')}</SectionHeader>
+        <SectionParagraph>
+          <Trans
+            t={t}
+            i18nKey="pages.strimertul.credits-renko"
+            values={{ APPNAME }}
+            components={{
+              artist: (
+                <BrowserLink href="https://twitter.com/Sonic__Chan">
+                  Sonic_Chan
+                </BrowserLink>
+              ),
+            }}
+          />
+        </SectionParagraph>
       </Section>
       <Section>
         <SectionHeader>{t('pages.strimertul.license-header')}</SectionHeader>

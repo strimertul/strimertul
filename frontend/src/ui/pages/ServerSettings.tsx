@@ -27,7 +27,7 @@ export default function ServerSettingsPage(): React.ReactElement {
 
   return (
     <PageContainer>
-      <PageHeader>
+      <PageHeader css={{ paddingBottom: '1rem' }}>
         <PageTitle>{t('pages.http.title')}</PageTitle>
       </PageHeader>
       <form
