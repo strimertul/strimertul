@@ -76,7 +76,7 @@ func (mod *LocalDBClient) PutKey(key string, data string) error {
 	return err
 }
 
-func (mod *LocalDBClient) SubscribePrefix(fn kv.SubscriptionCallback, prefixes ...string) (err error, cancelFn func()) {
+func (mod *LocalDBClient) SubscribePrefix(fn kv.SubscriptionCallback, prefixes ...string) (err error, cancelFn CancelFunc) {
 	var ids []int64
 	for _, prefix := range prefixes {
 		_, err = mod.makeRequest(kv.CmdSubscribePrefix, map[string]interface{}{"prefix": prefix})
