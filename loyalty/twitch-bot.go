@@ -57,65 +57,65 @@ func (m *Manager) SetupTwitch() {
 	// Setup handler for adding points over time
 	go func() {
 		config := m.Config.Get()
-		if config.Enabled {
-			for {
-				if config.Points.Interval > 0 {
-					// Wait for next poll
-					select {
-					case <-m.ctx.Done():
-						return
-					case <-time.After(time.Duration(config.Points.Interval) * time.Second):
-					}
+		// Stop handler if loyalty system is disabled or there is no valid point interval
+		if !config.Enabled || config.Points.Interval <= 0 {
+			return
+		}
+		for {
+			// Wait for next poll
+			select {
+			case <-m.ctx.Done():
+				return
+			case <-time.After(time.Duration(config.Points.Interval) * time.Second):
+			}
 
-					// If stream is confirmed offline, don't give points away!
-					isOnline := m.twitchManager.Client().IsLive()
-					if !isOnline {
-						continue
-					}
+			// If stream is confirmed offline, don't give points away!
+			isOnline := m.twitchManager.Client().IsLive()
+			if !isOnline {
+				continue
+			}
 
-					// Check that bot is online and working
-					bot := m.twitchManager.Client().Bot
-					if bot == nil {
-						m.logger.Warn("bot is offline or not configured, could not assign points")
-						continue
-					}
+			// Check that bot is online and working
+			bot := m.twitchManager.Client().Bot
+			if bot == nil {
+				m.logger.Warn("bot is offline or not configured, could not assign points")
+				continue
+			}
 
-					m.logger.Debug("awarding points")
+			m.logger.Debug("awarding points")
 
-					// Get user list
-					users, err := bot.Client.Userlist(bot.Config.Channel)
-					if err != nil {
-						m.logger.Error("error listing users", zap.Error(err))
-						continue
-					}
+			// Get user list
+			users, err := bot.Client.Userlist(bot.Config.Channel)
+			if err != nil {
+				m.logger.Error("error listing users", zap.Error(err))
+				continue
+			}
 
-					// Iterate for each user in the list
-					pointsToGive := make(map[string]int64)
-					for _, user := range users {
-						// Check if user is blocked
-						if m.IsBanned(user) {
-							continue
-						}
+			// Iterate for each user in the list
+			pointsToGive := make(map[string]int64)
+			for _, user := range users {
+				// Check if user is blocked
+				if m.IsBanned(user) {
+					continue
+				}
 
-						// Check if user was active (chatting) for the bonus dingus
-						award := config.Points.Amount
-						if m.IsActive(user) {
-							award += config.Points.ActivityBonus
-						}
+				// Check if user was active (chatting) for the bonus dingus
+				award := config.Points.Amount
+				if m.IsActive(user) {
+					award += config.Points.ActivityBonus
+				}
 
-						// Add to point pool if already on it, otherwise initialize
-						pointsToGive[user] = award
-					}
+				// Add to point pool if already on it, otherwise initialize
+				pointsToGive[user] = award
+			}
 
-					m.ResetActivity()
+			m.ResetActivity()
 
-					// If changes were made, save the pool!
-					if len(users) > 0 {
-						err := m.GivePoints(pointsToGive)
-						if err != nil {
-							m.logger.Error("error giving points to user", zap.Error(err))
-						}
-					}
+			// If changes were made, save the pool!
+			if len(users) > 0 {
+				err := m.GivePoints(pointsToGive)
+				if err != nil {
+					m.logger.Error("error giving points to user", zap.Error(err))
 				}
 			}
 		}
