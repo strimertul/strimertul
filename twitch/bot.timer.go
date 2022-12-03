@@ -5,6 +5,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/strimertul/strimertul/database"
+
 	"go.uber.org/zap"
 
 	irc "github.com/gempir/go-twitch-irc/v3"
@@ -34,6 +36,8 @@ type BotTimerModule struct {
 	messages    [AverageMessageWindow]int
 	mu          sync.Mutex
 	startTime   time.Time
+
+	cancelTimerSub database.CancelFunc
 }
 
 func SetupTimers(bot *Bot) *BotTimerModule {
@@ -58,7 +62,7 @@ func SetupTimers(bot *Bot) *BotTimerModule {
 		}
 	}
 
-	err = bot.api.db.SubscribeKey(BotTimersKey, func(value string) {
+	err, mod.cancelTimerSub = bot.api.db.SubscribeKey(BotTimersKey, func(value string) {
 		err := json.UnmarshalFromString(value, &mod.Config)
 		if err != nil {
 			bot.logger.Debug("error reloading timer config", zap.Error(err))
@@ -141,6 +145,12 @@ func (m *BotTimerModule) runTimers() {
 				m.lastTrigger[name] = now
 			}
 		}()
+	}
+}
+
+func (m *BotTimerModule) Close() {
+	if m.cancelTimerSub != nil {
+		m.cancelTimerSub()
 	}
 }
 

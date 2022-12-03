@@ -2,9 +2,11 @@ package twitch
 
 import (
 	"strings"
-	"sync"
 	"text/template"
 	"time"
+
+	"git.sr.ht/~hamcha/containers"
+	"github.com/strimertul/strimertul/database"
 
 	"github.com/strimertul/strimertul/utils"
 
@@ -21,18 +23,19 @@ type Bot struct {
 	api         *Client
 	username    string
 	logger      *zap.Logger
-	lastMessage time.Time
-	chatHistory []irc.PrivateMessage
+	lastMessage *containers.RWSync[time.Time]
+	chatHistory *containers.Sync[[]irc.PrivateMessage]
 
-	commands        map[string]BotCommand
-	customCommands  map[string]BotCustomCommand
-	customTemplates map[string]*template.Template
+	commands        *containers.SyncMap[string, BotCommand]
+	customCommands  *containers.SyncMap[string, BotCustomCommand]
+	customTemplates *containers.SyncMap[string, *template.Template]
 	customFunctions template.FuncMap
 
 	OnConnect *utils.PubSub[BotConnectHandler]
 	OnMessage *utils.PubSub[BotMessageHandler]
 
-	mu sync.Mutex
+	cancelUpdateSub   database.CancelFunc
+	cancelWriteRPCSub database.CancelFunc
 
 	// Module specific vars
 	Timers *BotTimerModule
@@ -49,7 +52,14 @@ type BotMessageHandler interface {
 	HandleBotMessage(message irc.PrivateMessage)
 }
 
-func NewBot(api *Client, config BotConfig) *Bot {
+func (b *Bot) Migrate(old *Bot) {
+	utils.MergeSyncMap(b.commands, old.commands)
+	// Get registered commands and handlers from old bot
+	b.OnConnect.Copy(old.OnConnect)
+	b.OnMessage.Copy(old.OnMessage)
+}
+
+func newBot(api *Client, config BotConfig) *Bot {
 	// Create client
 	client := irc.NewClient(config.Username, config.Token)
 
@@ -60,11 +70,10 @@ func NewBot(api *Client, config BotConfig) *Bot {
 		username:        strings.ToLower(config.Username), // Normalize username
 		logger:          api.logger,
 		api:             api,
-		lastMessage:     time.Now(),
-		mu:              sync.Mutex{},
-		commands:        make(map[string]BotCommand),
-		customCommands:  make(map[string]BotCustomCommand),
-		customTemplates: make(map[string]*template.Template),
+		lastMessage:     containers.NewRWSync(time.Now()),
+		commands:        containers.NewSyncMap[string, BotCommand](),
+		customCommands:  containers.NewSyncMap[string, BotCustomCommand](),
+		customTemplates: containers.NewSyncMap[string, *template.Template](),
 
 		OnConnect: utils.NewPubSub[BotConnectHandler](),
 		OnMessage: utils.NewPubSub[BotMessageHandler](),
@@ -86,18 +95,17 @@ func NewBot(api *Client, config BotConfig) *Bot {
 		}
 
 		// Ignore messages for a while or twitch will get mad!
-		if message.Time.Before(bot.lastMessage.Add(time.Second * 2)) {
+		if message.Time.Before(bot.lastMessage.Get().Add(time.Second * 2)) {
 			bot.logger.Debug("message received too soon, ignoring")
 			return
 		}
-		bot.mu.Lock()
 
 		lowercaseMessage := strings.ToLower(message.Message)
 
 		// Check if it's a command
 		if strings.HasPrefix(message.Message, "!") {
 			// Run through supported commands
-			for cmd, data := range bot.commands {
+			for cmd, data := range bot.commands.Copy() {
 				if !data.Enabled {
 					continue
 				}
@@ -109,12 +117,12 @@ func NewBot(api *Client, config BotConfig) *Bot {
 					continue
 				}
 				go data.Handler(bot, message)
-				bot.lastMessage = time.Now()
+				bot.lastMessage.Set(time.Now())
 			}
 		}
 
 		// Run through custom commands
-		for cmd, data := range bot.customCommands {
+		for cmd, data := range bot.customCommands.Get() {
 			if !data.Enabled {
 				continue
 			}
@@ -127,19 +135,19 @@ func NewBot(api *Client, config BotConfig) *Bot {
 				continue
 			}
 			go cmdCustom(bot, cmd, data, message)
-			bot.lastMessage = time.Now()
+			bot.lastMessage.Set(time.Now())
 		}
-		bot.mu.Unlock()
 
 		err := bot.api.db.PutJSON(ChatEventKey, message)
 		if err != nil {
 			bot.logger.Warn("could not save chat message to key", zap.String("key", ChatEventKey), zap.Error(err))
 		}
 		if bot.Config.ChatHistory > 0 {
-			if len(bot.chatHistory) >= bot.Config.ChatHistory {
-				bot.chatHistory = bot.chatHistory[len(bot.chatHistory)-bot.Config.ChatHistory+1:]
+			history := bot.chatHistory.Get()
+			if len(history) >= bot.Config.ChatHistory {
+				history = history[len(history)-bot.Config.ChatHistory+1:]
 			}
-			bot.chatHistory = append(bot.chatHistory, message)
+			bot.chatHistory.Set(append(history, message))
 			err = bot.api.db.PutJSON(ChatHistoryKey, bot.chatHistory)
 			if err != nil {
 				bot.logger.Warn("could not save message to chat history", zap.Error(err))
@@ -175,20 +183,22 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	bot.Alerts = SetupAlerts(bot)
 
 	// Load custom commands
-	err := api.db.GetJSON(CustomCommandsKey, &bot.customCommands)
+	var customCommands map[string]BotCustomCommand
+	err := api.db.GetJSON(CustomCommandsKey, &customCommands)
 	if err != nil {
 		bot.logger.Error("failed to load custom commands", zap.Error(err))
 	}
+	bot.customCommands.Set(customCommands)
 
 	err = bot.updateTemplates()
 	if err != nil {
 		bot.logger.Error("failed to parse custom commands", zap.Error(err))
 	}
-	err = api.db.SubscribeKey(CustomCommandsKey, bot.updateCommands)
+	err, bot.cancelUpdateSub = api.db.SubscribeKey(CustomCommandsKey, bot.updateCommands)
 	if err != nil {
 		bot.logger.Error("could not set-up bot command reload subscription", zap.Error(err))
 	}
-	err = api.db.SubscribeKey(WriteMessageRPC, bot.handleWriteMessageRPC)
+	err, bot.cancelWriteRPCSub = api.db.SubscribeKey(WriteMessageRPC, bot.handleWriteMessageRPC)
 	if err != nil {
 		bot.logger.Error("could not set-up bot command reload subscription", zap.Error(err))
 	}
@@ -196,12 +206,24 @@ func NewBot(api *Client, config BotConfig) *Bot {
 	return bot
 }
 
+func (b *Bot) Close() error {
+	if b.cancelUpdateSub != nil {
+		b.cancelUpdateSub()
+	}
+	if b.cancelWriteRPCSub != nil {
+		b.cancelWriteRPCSub()
+	}
+	if b.Timers != nil {
+		b.Timers.Close()
+	}
+	if b.Alerts != nil {
+		b.Alerts.Close()
+	}
+	return b.Client.Disconnect()
+}
+
 func (b *Bot) updateCommands(value string) {
-	err := func() error {
-		b.mu.Lock()
-		defer b.mu.Unlock()
-		return json.UnmarshalFromString(value, &b.customCommands)
-	}()
+	err := utils.LoadJSONToWrapped[map[string]BotCustomCommand](value, b.customCommands)
 	if err != nil {
 		b.logger.Error("failed to decode new custom commands", zap.Error(err))
 		return
@@ -218,18 +240,21 @@ func (b *Bot) handleWriteMessageRPC(value string) {
 }
 
 func (b *Bot) updateTemplates() error {
-	for cmd, tmpl := range b.customCommands {
-		var err error
-		b.customTemplates[cmd], err = template.New("").Funcs(sprig.TxtFuncMap()).Funcs(b.customFunctions).Parse(tmpl.Response)
+	for cmd, tmpl := range b.customCommands.Copy() {
+		tpl, err := template.New("").Funcs(sprig.TxtFuncMap()).Funcs(b.customFunctions).Parse(tmpl.Response)
 		if err != nil {
 			return err
 		}
+		b.customTemplates.SetKey(cmd, tpl)
 	}
 	return nil
 }
 
-func (b *Bot) Connect() error {
-	return b.Client.Connect()
+func (b *Bot) Connect() {
+	err := b.Client.Connect()
+	if err != nil {
+		b.logger.Error("bot connection ended", zap.Error(err))
+	}
 }
 
 func (b *Bot) WriteMessage(message string) {
@@ -237,12 +262,11 @@ func (b *Bot) WriteMessage(message string) {
 }
 
 func (b *Bot) RegisterCommand(trigger string, command BotCommand) {
-	// TODO make it goroutine safe?
-	b.commands[trigger] = command
+	b.commands.SetKey(trigger, command)
 }
 
 func (b *Bot) RemoveCommand(trigger string) {
-	delete(b.commands, trigger)
+	b.commands.DeleteKey(trigger)
 }
 
 func getUserAccessLevel(user irc.User) AccessLevelType {

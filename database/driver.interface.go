@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/strimertul/strimertul/utils"
+
 	"go.uber.org/zap"
 
 	kv "github.com/strimertul/kilovolt/v9"
@@ -48,7 +50,7 @@ func getDatabaseDriverName(ctx *cli.Context) string {
 func GetDatabaseDriver(ctx *cli.Context) (DatabaseDriver, error) {
 	name := getDatabaseDriverName(ctx)
 	dbDirectory := ctx.String("database-dir")
-	logger := ctx.Context.Value("logger").(*zap.Logger)
+	logger := ctx.Context.Value(utils.ContextLogger).(*zap.Logger)
 
 	switch name {
 	case "badger":

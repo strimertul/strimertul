@@ -16,7 +16,7 @@ import (
 )
 
 func (m *Manager) SetupTwitch() {
-	bot := m.twitchClient.Bot
+	bot := m.twitchManager.Client().Bot
 	if bot == nil {
 		return
 	}
@@ -57,7 +57,7 @@ func (m *Manager) SetupTwitch() {
 	// Setup handler for adding points over time
 	go func() {
 		config := m.Config.Get()
-		if config.Enabled && bot != nil {
+		if config.Enabled {
 			for {
 				if config.Points.Interval > 0 {
 					// Wait for next poll
@@ -68,8 +68,15 @@ func (m *Manager) SetupTwitch() {
 					}
 
 					// If stream is confirmed offline, don't give points away!
-					isOnline := m.twitchClient.IsLive()
+					isOnline := m.twitchManager.Client().IsLive()
 					if !isOnline {
+						continue
+					}
+
+					// Check that bot is online and working
+					bot := m.twitchManager.Client().Bot
+					if bot == nil {
+						m.logger.Warn("bot is offline or not configured, could not assign points")
 						continue
 					}
 
@@ -116,7 +123,7 @@ func (m *Manager) SetupTwitch() {
 }
 
 func (m *Manager) StopTwitch() {
-	bot := m.twitchClient.Bot
+	bot := m.twitchManager.Client().Bot
 	if bot != nil {
 		bot.RemoveCommand("!redeem")
 		bot.RemoveCommand("!balance")

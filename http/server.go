@@ -27,7 +27,8 @@ type Server struct {
 	frontend        fs.FS
 	hub             *kv.Hub
 	mux             *http.ServeMux
-	requestedRoutes map[string]http.HandlerFunc
+	requestedRoutes map[string]http.Handler
+	cancelConfigSub database.CancelFunc
 }
 
 func NewServer(db *database.LocalDBClient, logger *zap.Logger) (*Server, error) {
@@ -35,7 +36,7 @@ func NewServer(db *database.LocalDBClient, logger *zap.Logger) (*Server, error) 
 		logger:          logger,
 		db:              db,
 		server:          &http.Server{},
-		requestedRoutes: make(map[string]http.HandlerFunc),
+		requestedRoutes: make(map[string]http.Handler),
 	}
 
 	err := db.GetJSON(ServerConfigKey, &server.Config)
@@ -70,6 +71,10 @@ type StatusData struct {
 }
 
 func (s *Server) Close() error {
+	if s.cancelConfigSub != nil {
+		s.cancelConfigSub()
+	}
+
 	return s.server.Close()
 }
 
@@ -99,53 +104,55 @@ func (s *Server) makeMux() *http.ServeMux {
 		mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.Config.Path))))
 	}
 	for route, handler := range s.requestedRoutes {
-		mux.HandleFunc(route, handler)
+		mux.Handle(route, handler)
 	}
 
 	return mux
 }
 
-func (s *Server) SetRoute(route string, handler http.HandlerFunc) {
+func (s *Server) RegisterRoute(route string, handler http.Handler) {
 	s.requestedRoutes[route] = handler
-	if s.mux != nil {
-		s.mux.HandleFunc(route, handler)
-	}
+	s.mux = s.makeMux()
+}
+
+func (s *Server) UnregisterRoute(route string) {
+	delete(s.requestedRoutes, route)
+	s.mux = s.makeMux()
 }
 
 func (s *Server) Listen() error {
 	// Start HTTP server
 	restart := containers.NewRWSync(false)
 	exit := make(chan error)
-	go func() {
-		err := s.db.SubscribeKey(ServerConfigKey, func(value string) {
-			oldBind := s.Config.Bind
-			oldPassword := s.Config.KVPassword
-			err := json.Unmarshal([]byte(value), &s.Config)
+	var err error
+	err, s.cancelConfigSub = s.db.SubscribeKey(ServerConfigKey, func(value string) {
+		oldBind := s.Config.Bind
+		oldPassword := s.Config.KVPassword
+		err := json.Unmarshal([]byte(value), &s.Config)
+		if err != nil {
+			s.logger.Error("Failed to unmarshal config", zap.Error(err))
+			return
+		}
+		s.mux = s.makeMux()
+		// Restart hub if password changed
+		if oldPassword != s.Config.KVPassword {
+			s.hub.SetOptions(kv.HubOptions{
+				Password: s.Config.KVPassword,
+			})
+		}
+		// Restart server if bind changed
+		if oldBind != s.Config.Bind {
+			restart.Set(true)
+			err = s.server.Shutdown(context.Background())
 			if err != nil {
-				s.logger.Error("Failed to unmarshal config", zap.Error(err))
+				s.logger.Error("Failed to shutdown server", zap.Error(err))
 				return
 			}
-			s.mux = s.makeMux()
-			// Restart hub if password changed
-			if oldPassword != s.Config.KVPassword {
-				s.hub.SetOptions(kv.HubOptions{
-					Password: s.Config.KVPassword,
-				})
-			}
-			// Restart server if bind changed
-			if oldBind != s.Config.Bind {
-				restart.Set(true)
-				err = s.server.Shutdown(context.Background())
-				if err != nil {
-					s.logger.Error("Failed to shutdown server", zap.Error(err))
-					return
-				}
-			}
-		})
-		if err != nil {
-			exit <- fmt.Errorf("error while handling subscription to HTTP config changes: %w", err)
 		}
-	}()
+	})
+	if err != nil {
+		exit <- fmt.Errorf("error while handling subscription to HTTP config changes: %w", err)
+	}
 	go func() {
 		for {
 			s.logger.Info("Starting HTTP server", zap.String("bind", s.Config.Bind))

@@ -15,21 +15,41 @@ import (
 
 const websocketEndpoint = "wss://eventsub-beta.wss.twitch.tv/ws"
 
-func (c *Client) connectWebsocket() error {
+func (c *Client) connectWebsocket() {
 	connection, _, err := websocket.DefaultDialer.Dial(websocketEndpoint, nil)
 	if err != nil {
 		c.logger.Error("could not connect to eventsub ws", zap.Error(err))
-		return fmt.Errorf("error connecting to websocket server: %w", err)
+		return
 	}
+	defer connection.Close()
+
+	received := make(chan []byte)
+	wsErr := make(chan error)
+	go func(recv chan<- []byte) {
+		for {
+			messageType, messageData, err := connection.ReadMessage()
+			if err != nil {
+				c.logger.Warn("eventsub ws read error", zap.Error(err))
+				wsErr <- err
+				return
+			}
+			if messageType != websocket.TextMessage {
+				continue
+			}
+
+			recv <- messageData
+		}
+	}(received)
 
 	for {
-		messageType, messageData, err := connection.ReadMessage()
-		if err != nil {
-			c.logger.Warn("eventsub ws read error", zap.Error(err))
-			break
-		}
-		if messageType != websocket.TextMessage {
-			continue
+		// Wait for next message or closing/error
+		var messageData []byte
+		select {
+		case <-c.ctx.Done():
+			return
+		case <-wsErr:
+			return
+		case messageData = <-received:
 		}
 
 		var wsMessage EventSubWebsocketMessage
@@ -76,8 +96,6 @@ func (c *Client) connectWebsocket() error {
 			// TODO idk what to do here
 		}
 	}
-
-	return connection.Close()
 }
 
 func (c *Client) processEvent(message EventSubWebsocketMessage) {

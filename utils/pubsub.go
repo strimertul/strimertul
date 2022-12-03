@@ -31,3 +31,9 @@ func (p *PubSub[T]) Unsubscribe(handler T) {
 func (p *PubSub[T]) Subscribers() []T {
 	return p.subscribers.Get()
 }
+
+func (p *PubSub[T]) Copy(other *PubSub[T]) {
+	for _, subscriber := range other.Subscribers() {
+		p.Subscribe(subscriber)
+	}
+}

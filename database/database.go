@@ -9,6 +9,8 @@ import (
 	"go.uber.org/zap"
 )
 
+type CancelFunc func()
+
 var json = jsoniter.ConfigFastest
 
 var (
@@ -74,29 +76,36 @@ func (mod *LocalDBClient) PutKey(key string, data string) error {
 	return err
 }
 
-func (mod *LocalDBClient) SubscribePrefix(fn kv.SubscriptionCallback, prefixes ...string) error {
+func (mod *LocalDBClient) SubscribePrefix(fn kv.SubscriptionCallback, prefixes ...string) (err error, cancelFn func()) {
+	var ids []int64
 	for _, prefix := range prefixes {
-		_, err := mod.makeRequest(kv.CmdSubscribePrefix, map[string]interface{}{"prefix": prefix})
+		_, err = mod.makeRequest(kv.CmdSubscribePrefix, map[string]interface{}{"prefix": prefix})
 		if err != nil {
-			return err
+			return err, nil
 		}
-		go mod.client.SetPrefixSubCallback(prefix, fn)
+		ids = append(ids, mod.client.SetPrefixSubCallback(prefix, fn))
 	}
-	return nil
+	return nil, func() {
+		for _, id := range ids {
+			mod.client.UnsetCallback(id)
+		}
+	}
 }
 
-func (mod *LocalDBClient) SubscribeKey(key string, fn func(string)) error {
-	_, err := mod.makeRequest(kv.CmdSubscribePrefix, map[string]interface{}{"prefix": key})
+func (mod *LocalDBClient) SubscribeKey(key string, fn func(string)) (err error, cancelFn CancelFunc) {
+	_, err = mod.makeRequest(kv.CmdSubscribePrefix, map[string]interface{}{"prefix": key})
 	if err != nil {
-		return err
+		return err, nil
 	}
-	go mod.client.SetPrefixSubCallback(key, func(changedKey string, value string) {
+	id := mod.client.SetPrefixSubCallback(key, func(changedKey string, value string) {
 		if key != changedKey {
 			return
 		}
 		fn(value)
 	})
-	return nil
+	return nil, func() {
+		mod.client.UnsetCallback(id)
+	}
 }
 
 func (mod *LocalDBClient) GetJSON(key string, dst interface{}) error {

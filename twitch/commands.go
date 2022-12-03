@@ -52,8 +52,11 @@ func cmdCustom(bot *Bot, cmd string, data BotCustomCommand, message irc.PrivateM
 
 	// Add future logic (like counters etc.) here, for now it's just fixed messages
 	var buf bytes.Buffer
-	err := bot.customTemplates[cmd].Execute(&buf, message)
-	if err != nil {
+	tpl, ok := bot.customTemplates.GetKey(cmd)
+	if !ok {
+		return
+	}
+	if err := tpl.Execute(&buf, message); err != nil {
 		bot.logger.Error("Failed to execute custom command template", zap.Error(err))
 		return
 	}
@@ -87,7 +90,7 @@ func (b *Bot) setupFunctions() {
 			counterKey := BotCounterPrefix + name
 			counter := 0
 			if byt, err := b.api.db.GetKey(counterKey); err == nil {
-				counter, _ = strconv.Atoi(string(byt))
+				counter, _ = strconv.Atoi(byt)
 			}
 			counter += 1
 			err := b.api.db.PutKey(counterKey, strconv.Itoa(counter))

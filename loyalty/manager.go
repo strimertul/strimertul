@@ -28,22 +28,23 @@ var (
 )
 
 type Manager struct {
-	points       *containers.SyncMap[string, PointsEntry]
-	Config       *containers.RWSync[Config]
-	Rewards      *containers.Sync[RewardStorage]
-	Goals        *containers.Sync[GoalStorage]
-	Queue        *containers.Sync[RedeemQueueStorage]
-	db           *database.LocalDBClient
-	logger       *zap.Logger
-	cooldowns    map[string]time.Time
-	banlist      map[string]bool
-	activeUsers  *containers.SyncMap[string, bool]
-	twitchClient *twitch.Client
-	ctx          context.Context
-	cancelFn     context.CancelFunc
+	points        *containers.SyncMap[string, PointsEntry]
+	Config        *containers.RWSync[Config]
+	Rewards       *containers.Sync[RewardStorage]
+	Goals         *containers.Sync[GoalStorage]
+	Queue         *containers.Sync[RedeemQueueStorage]
+	db            *database.LocalDBClient
+	logger        *zap.Logger
+	cooldowns     map[string]time.Time
+	banlist       map[string]bool
+	activeUsers   *containers.SyncMap[string, bool]
+	twitchManager *twitch.Manager
+	ctx           context.Context
+	cancelFn      context.CancelFunc
+	cancelSub     database.CancelFunc
 }
 
-func NewManager(db *database.LocalDBClient, twitchClient *twitch.Client, logger *zap.Logger) (*Manager, error) {
+func NewManager(db *database.LocalDBClient, twitchManager *twitch.Manager, logger *zap.Logger) (*Manager, error) {
 	ctx, cancelFn := context.WithCancel(context.Background())
 	loyalty := &Manager{
 		Config:  containers.NewRWSync(Config{Enabled: false}),
@@ -51,19 +52,19 @@ func NewManager(db *database.LocalDBClient, twitchClient *twitch.Client, logger 
 		Goals:   containers.NewSync(GoalStorage{}),
 		Queue:   containers.NewSync(RedeemQueueStorage{}),
 
-		logger:       logger,
-		db:           db,
-		points:       containers.NewSyncMap[string, PointsEntry](),
-		cooldowns:    make(map[string]time.Time),
-		banlist:      make(map[string]bool),
-		activeUsers:  containers.NewSyncMap[string, bool](),
-		twitchClient: twitchClient,
-		ctx:          ctx,
-		cancelFn:     cancelFn,
+		logger:        logger,
+		db:            db,
+		points:        containers.NewSyncMap[string, PointsEntry](),
+		cooldowns:     make(map[string]time.Time),
+		banlist:       make(map[string]bool),
+		activeUsers:   containers.NewSyncMap[string, bool](),
+		twitchManager: twitchManager,
+		ctx:           ctx,
+		cancelFn:      cancelFn,
 	}
 	// Get data from DB
 	var config Config
-	if err := db.GetJSON(ConfigKey, config); err == nil {
+	if err := db.GetJSON(ConfigKey, &config); err == nil {
 		loyalty.Config.Set(config)
 	} else {
 		if !errors.Is(err, database.ErrEmptyKey) {
@@ -118,7 +119,7 @@ func NewManager(db *database.LocalDBClient, twitchClient *twitch.Client, logger 
 	}
 
 	// SubscribePrefix for changes
-	err = db.SubscribePrefix(loyalty.update, "loyalty/")
+	err, loyalty.cancelSub = db.SubscribePrefix(loyalty.update, "loyalty/")
 	if err != nil {
 		logger.Error("could not setup loyalty reload subscription", zap.Error(err))
 	}
@@ -132,6 +133,11 @@ func NewManager(db *database.LocalDBClient, twitchClient *twitch.Client, logger 
 }
 
 func (m *Manager) Close() error {
+	// Stop subscription
+	if m.cancelSub != nil {
+		m.cancelSub()
+	}
+
 	// Send cancellation
 	m.cancelFn()
 

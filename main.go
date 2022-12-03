@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"log"
 	"math/rand"
 	"os"
 	"time"
+
+	"github.com/strimertul/strimertul/utils"
 
 	"github.com/apenwarr/fixconsole"
 
@@ -86,6 +89,7 @@ func main() {
 				level = zapcore.InfoLevel
 			}
 			initLogger(level)
+			ctx.Context = context.WithValue(ctx.Context, utils.ContextLogger, logger)
 			return nil
 		},
 		After: func(ctx *cli.Context) error {

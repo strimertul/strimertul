@@ -72,7 +72,7 @@ func (c *Client) GetLoggedUser() (helix.User, error) {
 	return users.Data.Users[0], nil
 }
 
-func (c *Client) AuthorizeCallback(w http.ResponseWriter, req *http.Request) {
+func (c *Client) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// Get code from params
 	code := req.URL.Query().Get("code")
 	if code == "" {
@@ -110,32 +110,6 @@ type RefreshResponse struct {
 	Scope        []string `json:"scope"`
 }
 
-func (c *Client) refreshAccessToken(refreshToken string) (r RefreshResponse, err error) {
-	// Exchange code for access/refresh tokens
-	query := url.Values{
-		"client_id":     {c.Config.APIClientID},
-		"client_secret": {c.Config.APIClientSecret},
-		"grant_type":    {"refresh_token"},
-		"refresh_token": {refreshToken},
-	}
-	authRequest, err := http.NewRequest("POST", "https://id.twitch.tv/oauth2/token?"+query.Encode(), nil)
-	if err != nil {
-		return RefreshResponse{}, err
-	}
-	resp, err := http.DefaultClient.Do(authRequest)
-	if err != nil {
-		return RefreshResponse{}, err
-	}
-	defer resp.Body.Close()
-	var refreshResp RefreshResponse
-	err = jsoniter.ConfigFastest.NewDecoder(resp.Body).Decode(&refreshResp)
-	return refreshResp, err
-}
-
-func (c *Client) getRedirectURI() (string, error) {
-	var severConfig struct {
-		Bind string `json:"bind"`
-	}
-	err := c.db.GetJSON("http/config", &severConfig)
-	return fmt.Sprintf("http://%s/twitch/callback", severConfig.Bind), err
+func getRedirectURI(baseurl string) string {
+	return fmt.Sprintf("http://%s/twitch/callback", baseurl)
 }

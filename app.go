@@ -26,7 +26,7 @@ type App struct {
 	ready     *containers.RWSync[bool]
 
 	db             *database.LocalDBClient
-	twitchClient   *twitch.Client
+	twitchManager  *twitch.Manager
 	httpServer     *http.Server
 	loyaltyManager *loyalty.Manager
 }
@@ -72,11 +72,11 @@ func (a *App) startup(ctx context.Context) {
 	failOnError(err, "could not initialize http server")
 
 	// Create twitch client
-	a.twitchClient, err = twitch.NewClient(a.db, a.httpServer, logger)
+	a.twitchManager, err = twitch.NewManager(a.db, a.httpServer, logger)
 	failOnError(err, "could not initialize twitch client")
 
 	// Initialize loyalty system
-	a.loyaltyManager, err = loyalty.NewManager(a.db, a.twitchClient, logger)
+	a.loyaltyManager, err = loyalty.NewManager(a.db, a.twitchManager, logger)
 	failOnError(err, "could not initialize loyalty manager")
 
 	a.ready.Set(true)
@@ -98,8 +98,8 @@ func (a *App) stop(context.Context) {
 	if a.loyaltyManager != nil {
 		warnOnError(a.loyaltyManager.Close(), "could not cleanly close loyalty manager")
 	}
-	if a.twitchClient != nil {
-		warnOnError(a.twitchClient.Close(), "could not cleanly close twitch client")
+	if a.twitchManager != nil {
+		warnOnError(a.twitchManager.Close(), "could not cleanly close twitch client")
 	}
 	if a.httpServer != nil {
 		warnOnError(a.httpServer.Close(), "could not cleanly close HTTP server")
@@ -129,11 +129,11 @@ func (a *App) GetKilovoltBind() string {
 }
 
 func (a *App) GetTwitchAuthURL() string {
-	return a.twitchClient.GetAuthorizationURL()
+	return a.twitchManager.Client().GetAuthorizationURL()
 }
 
 func (a *App) GetTwitchLoggedUser() (helix.User, error) {
-	return a.twitchClient.GetLoggedUser()
+	return a.twitchManager.Client().GetLoggedUser()
 }
 
 func (a *App) GetLastLogs() []LogEntry {

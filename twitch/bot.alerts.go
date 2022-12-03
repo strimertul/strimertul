@@ -7,6 +7,8 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/strimertul/strimertul/database"
+
 	"go.uber.org/zap"
 
 	"github.com/Masterminds/sprig/v3"
@@ -91,6 +93,9 @@ type BotAlertsModule struct {
 	bot       *Bot
 	mu        sync.Mutex
 	templates templateCache
+
+	cancelAlertSub       database.CancelFunc
+	cancelTwitchEventSub database.CancelFunc
 }
 
 func SetupAlerts(bot *Bot) *BotAlertsModule {
@@ -114,7 +119,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 
 	mod.compileTemplates()
 
-	err = bot.api.db.SubscribeKey(BotAlertsKey, func(value string) {
+	err, mod.cancelAlertSub = bot.api.db.SubscribeKey(BotAlertsKey, func(value string) {
 		err := json.UnmarshalFromString(value, &mod.Config)
 		if err != nil {
 			bot.logger.Debug("error reloading timer config", zap.Error(err))
@@ -238,7 +243,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 		}
 	}
 
-	err = bot.api.db.SubscribeKey(EventSubEventKey, func(value string) {
+	err, mod.cancelTwitchEventSub = bot.api.db.SubscribeKey(EventSubEventKey, func(value string) {
 		var ev eventSubNotification
 		err := json.UnmarshalFromString(value, &ev)
 		if err != nil {
@@ -487,6 +492,15 @@ func (m *BotAlertsModule) addTemplate(templateList map[int]*template.Template, i
 		return
 	}
 	templateList[id] = tpl
+}
+
+func (m *BotAlertsModule) Close() {
+	if m.cancelAlertSub != nil {
+		m.cancelAlertSub()
+	}
+	if m.cancelTwitchEventSub != nil {
+		m.cancelTwitchEventSub()
+	}
 }
 
 // writeTemplate renders the template and sends the message to the channel

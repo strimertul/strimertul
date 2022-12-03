@@ -1,5 +1,7 @@
 package twitch
 
+const CallbackRoute = "/twitch/callback"
+
 const ConfigKey = "twitch/config"
 
 type Config struct {
