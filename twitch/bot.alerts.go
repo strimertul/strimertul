@@ -91,7 +91,6 @@ type BotAlertsModule struct {
 	Config BotAlertsConfig
 
 	bot       *Bot
-	mu        sync.Mutex
 	templates templateCache
 
 	cancelAlertSub       database.CancelFunc
@@ -101,7 +100,6 @@ type BotAlertsModule struct {
 func SetupAlerts(bot *Bot) *BotAlertsModule {
 	mod := &BotAlertsModule{
 		bot:       bot,
-		mu:        sync.Mutex{},
 		templates: templateCache{},
 	}
 

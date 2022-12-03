@@ -2,8 +2,9 @@ package twitch
 
 import (
 	"math/rand"
-	"sync"
 	"time"
+
+	"git.sr.ht/~hamcha/containers"
 
 	"github.com/strimertul/strimertul/database"
 
@@ -31,11 +32,9 @@ const AverageMessageWindow = 5
 type BotTimerModule struct {
 	Config BotTimersConfig
 
-	lastTrigger map[string]time.Time
 	bot         *Bot
-	messages    [AverageMessageWindow]int
-	mu          sync.Mutex
-	startTime   time.Time
+	lastTrigger *containers.SyncMap[string, time.Time]
+	messages    *containers.RWSync[[AverageMessageWindow]int]
 
 	cancelTimerSub database.CancelFunc
 }
@@ -43,9 +42,8 @@ type BotTimerModule struct {
 func SetupTimers(bot *Bot) *BotTimerModule {
 	mod := &BotTimerModule{
 		bot:         bot,
-		startTime:   time.Now().Round(time.Minute),
-		lastTrigger: make(map[string]time.Time),
-		mu:          sync.Mutex{},
+		lastTrigger: containers.NewSyncMap[string, time.Time](),
+		messages:    containers.NewRWSync([AverageMessageWindow]int{}),
 	}
 
 	// Load config from database
@@ -101,27 +99,25 @@ func (m *BotTimerModule) runTimers() {
 		// Reset timer
 		func() {
 			index := time.Now().Minute() % AverageMessageWindow
-			m.mu.Lock()
-			defer m.mu.Unlock()
-			m.messages[index] = 0
+			messages := m.messages.Get()
+			messages[index] = 0
+			m.messages.Set(messages)
 		}()
 
 		// Run timers
 		func() {
 			now := time.Now()
-			m.mu.Lock()
-			defer m.mu.Unlock()
 			for name, timer := range m.Config.Timers {
 				// Must be enabled
 				if !timer.Enabled {
 					continue
 				}
 				// Check if enough time has passed
-				lastTriggeredTime, ok := m.lastTrigger[name]
+				lastTriggeredTime, ok := m.lastTrigger.GetKey(name)
 				if !ok {
 					// If it's the first time we're checking it, start the cooldown
 					lastTriggeredTime = time.Now()
-					m.lastTrigger[name] = lastTriggeredTime
+					m.lastTrigger.SetKey(name, lastTriggeredTime)
 				}
 				minDelay := timer.MinimumDelay
 				if minDelay < 60 {
@@ -142,7 +138,7 @@ func (m *BotTimerModule) runTimers() {
 				m.bot.WriteMessage(message)
 
 				// Update last trigger
-				m.lastTrigger[name] = now
+				m.lastTrigger.SetKey(name, now)
 			}
 		}()
 	}
@@ -156,7 +152,7 @@ func (m *BotTimerModule) Close() {
 
 func (m *BotTimerModule) currentChatActivity() int {
 	total := 0
-	for _, v := range m.messages {
+	for _, v := range m.messages.Get() {
 		total += v
 	}
 	return total
@@ -164,7 +160,7 @@ func (m *BotTimerModule) currentChatActivity() int {
 
 func (m *BotTimerModule) OnMessage(message irc.PrivateMessage) {
 	index := message.Time.Minute() % AverageMessageWindow
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	m.messages[index] += 1
+	messages := m.messages.Get()
+	messages[index] += 1
+	m.messages.Set(messages)
 }
