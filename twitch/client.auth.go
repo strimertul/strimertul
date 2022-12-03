@@ -2,12 +2,8 @@ package twitch
 
 import (
 	"fmt"
-	"io"
 	"net/http"
-	"net/url"
 	"time"
-
-	jsoniter "github.com/json-iterator/go"
 
 	"github.com/nicklaw5/helix/v2"
 )
@@ -15,7 +11,6 @@ import (
 type AuthResponse struct {
 	AccessToken  string   `json:"access_token"`
 	RefreshToken string   `json:"refresh_token"`
-	TokenType    string   `json:"token_type"`
 	ExpiresIn    int      `json:"expires_in"`
 	Scope        []string `json:"scope"`
 	Time         time.Time
@@ -37,12 +32,13 @@ func (c *Client) GetUserClient() (*helix.Client, error) {
 	// Handle token expiration
 	if time.Now().After(authResp.Time.Add(time.Duration(authResp.ExpiresIn) * time.Second)) {
 		// Refresh tokens
-		refreshed, err := c.refreshAccessToken(authResp.RefreshToken)
+		refreshed, err := c.API.RefreshUserAccessToken(authResp.RefreshToken)
 		if err != nil {
 			return nil, err
 		}
-		authResp.AccessToken = refreshed.AccessToken
-		authResp.RefreshToken = refreshed.RefreshToken
+		authResp.AccessToken = refreshed.Data.AccessToken
+		authResp.RefreshToken = refreshed.Data.RefreshToken
+		authResp.Time = time.Now().Add(time.Duration(refreshed.Data.ExpiresIn) * time.Second)
 
 		// Save new token pair
 		err = c.db.PutJSON(AuthKey, authResp)
@@ -51,9 +47,10 @@ func (c *Client) GetUserClient() (*helix.Client, error) {
 		}
 	}
 
+	config := c.Config.Get()
 	return helix.NewClient(&helix.Options{
-		ClientID:        c.Config.APIClientID,
-		ClientSecret:    c.Config.APIClientSecret,
+		ClientID:        config.APIClientID,
+		ClientSecret:    config.APIClientSecret,
 		UserAccessToken: authResp.AccessToken,
 	})
 }
@@ -83,38 +80,21 @@ func (c *Client) AuthorizeCallback(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "missing code", http.StatusBadRequest)
 		return
 	}
-	redirectURI, err := c.getRedirectURI()
-	if err != nil {
-		http.Error(w, "failed getting redirect uri", http.StatusInternalServerError)
-		return
-	}
+
 	// Exchange code for access/refresh tokens
-	query := url.Values{
-		"client_id":     {c.Config.APIClientID},
-		"client_secret": {c.Config.APIClientSecret},
-		"grant_type":    {"authorization_code"},
-		"code":          {code},
-		"redirect_uri":  {redirectURI},
-	}
-	authRequest, err := http.NewRequest("POST", "https://id.twitch.tv/oauth2/token?"+query.Encode(), nil)
+	userTokenResponse, err := c.API.RequestUserAccessToken(code)
 	if err != nil {
-		http.Error(w, "failed creating auth request: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "failed auth token request: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	resp, err := http.DefaultClient.Do(authRequest)
-	if err != nil {
-		http.Error(w, "failed sending auth request: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
-	var authResp AuthResponse
-	err = json.NewDecoder(resp.Body).Decode(&authResp)
-	if err != nil && err != io.EOF {
-		http.Error(w, "failed reading auth response: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	authResp.Time = time.Now()
-	err = c.db.PutJSON(AuthKey, authResp)
+
+	err = c.db.PutJSON(AuthKey, AuthResponse{
+		AccessToken:  userTokenResponse.Data.AccessToken,
+		RefreshToken: userTokenResponse.Data.RefreshToken,
+		ExpiresIn:    userTokenResponse.Data.ExpiresIn,
+		Scope:        userTokenResponse.Data.Scopes,
+		Time:         time.Now(),
+	})
 	if err != nil {
 		http.Error(w, "error saving auth data for user: "+err.Error(), http.StatusInternalServerError)
 		return
