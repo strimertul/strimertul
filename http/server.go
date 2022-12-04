@@ -14,7 +14,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/strimertul/strimertul/database"
-	"github.com/strimertul/strimertul/utils"
 )
 
 var json = jsoniter.ConfigFastest
@@ -40,8 +39,12 @@ func NewServer(db *database.LocalDBClient, logger *zap.Logger) (*Server, error) 
 		Config:          sync.NewRWSync(ServerConfig{}),
 	}
 
-	err := utils.LoadJSONToWrapped[ServerConfig](ServerConfigKey, server.Config)
+	var config ServerConfig
+	err := db.GetJSON(ServerConfigKey, &config)
 	if err != nil {
+		if err != database.ErrEmptyKey {
+			logger.Warn("HTTP config is corrupted or could not be read", zap.Error(err))
+		}
 		// Initialize with default config
 		server.Config.Set(ServerConfig{
 			Bind:               "localhost:4337",
@@ -49,10 +52,12 @@ func NewServer(db *database.LocalDBClient, logger *zap.Logger) (*Server, error) 
 			KVPassword:         "",
 		})
 		// Save
-		err = db.PutJSON(ServerConfigKey, server.Config)
+		err = db.PutJSON(ServerConfigKey, server.Config.Get())
 		if err != nil {
 			return nil, err
 		}
+	} else {
+		server.Config.Set(config)
 	}
 
 	// Set hub

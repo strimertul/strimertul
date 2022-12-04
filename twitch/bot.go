@@ -147,7 +147,7 @@ func newBot(api *Client, config BotConfig) *Bot {
 				history = history[len(history)-bot.Config.ChatHistory+1:]
 			}
 			bot.chatHistory.Set(append(history, message))
-			err = bot.api.db.PutJSON(ChatHistoryKey, bot.chatHistory)
+			err = bot.api.db.PutJSON(ChatHistoryKey, bot.chatHistory.Get())
 			if err != nil {
 				bot.logger.Warn("could not save message to chat history", zap.Error(err))
 			}

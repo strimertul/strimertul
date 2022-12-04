@@ -92,7 +92,7 @@ func (m *BotTimerModule) runTimers() {
 		timeUntilNextTick := nextTick.Sub(currentTime)
 		time.Sleep(timeUntilNextTick)
 
-		err := m.bot.api.db.PutJSON(ChatActivityKey, m.messages)
+		err := m.bot.api.db.PutJSON(ChatActivityKey, m.messages.Get())
 		if err != nil {
 			m.bot.logger.Warn("error saving chat activity", zap.Error(err))
 		}
