@@ -3,7 +3,7 @@
     "target": "esnext",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "jsx": "react",
+    "jsx": "react-jsx",
     "lib": ["es2019", "dom"],
     "resolveJsonModule": true,
     "baseUrl": ".",

@@ -1,7 +1,7 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { HashRouter } from 'react-router-dom';
+import { StrictMode } from 'react';
 
 import 'inter-ui/inter.css';
 import '@fontsource/space-mono/index.css';
@@ -15,11 +15,14 @@ import { globalStyles } from './ui/theme';
 
 globalStyles();
 
-ReactDOM.render(
+const main = document.getElementById('main');
+const root = createRoot(main);
+root.render(
   <Provider store={store}>
     <HashRouter>
-      <App />
+      <StrictMode>
+        <App />
+      </StrictMode>
     </HashRouter>
   </Provider>,
-  document.getElementById('main'),
 );
