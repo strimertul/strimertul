@@ -25,20 +25,21 @@ var (
 )
 
 type Manager struct {
-	points        *sync.Map[string, PointsEntry]
-	Config        *sync.RWSync[Config]
-	Rewards       *sync.Slice[Reward]
-	Goals         *sync.Slice[Goal]
-	Queue         *sync.Slice[Redeem]
-	db            *database.LocalDBClient
-	logger        *zap.Logger
-	cooldowns     map[string]time.Time
-	banlist       map[string]bool
-	activeUsers   *sync.Map[string, bool]
-	twitchManager *twitch.Manager
-	ctx           context.Context
-	cancelFn      context.CancelFunc
-	cancelSub     database.CancelFunc
+	points               *sync.Map[string, PointsEntry]
+	Config               *sync.RWSync[Config]
+	Rewards              *sync.Slice[Reward]
+	Goals                *sync.Slice[Goal]
+	Queue                *sync.Slice[Redeem]
+	db                   *database.LocalDBClient
+	logger               *zap.Logger
+	cooldowns            map[string]time.Time
+	banlist              map[string]bool
+	activeUsers          *sync.Map[string, bool]
+	twitchManager        *twitch.Manager
+	ctx                  context.Context
+	cancelFn             context.CancelFunc
+	cancelSub            database.CancelFunc
+	restartTwitchHandler chan struct{}
 }
 
 func NewManager(db *database.LocalDBClient, twitchManager *twitch.Manager, logger *zap.Logger) (*Manager, error) {
@@ -49,15 +50,16 @@ func NewManager(db *database.LocalDBClient, twitchManager *twitch.Manager, logge
 		Goals:   sync.NewSlice[Goal](),
 		Queue:   sync.NewSlice[Redeem](),
 
-		logger:        logger,
-		db:            db,
-		points:        sync.NewMap[string, PointsEntry](),
-		cooldowns:     make(map[string]time.Time),
-		banlist:       make(map[string]bool),
-		activeUsers:   sync.NewMap[string, bool](),
-		twitchManager: twitchManager,
-		ctx:           ctx,
-		cancelFn:      cancelFn,
+		logger:               logger,
+		db:                   db,
+		points:               sync.NewMap[string, PointsEntry](),
+		cooldowns:            make(map[string]time.Time),
+		banlist:              make(map[string]bool),
+		activeUsers:          sync.NewMap[string, bool](),
+		twitchManager:        twitchManager,
+		ctx:                  ctx,
+		cancelFn:             cancelFn,
+		restartTwitchHandler: make(chan struct{}),
 	}
 	// Get data from DB
 	var config Config
@@ -152,6 +154,9 @@ func (m *Manager) update(key, value string) {
 		err = utils.LoadJSONToWrapped[Config](value, m.Config)
 		if err == nil {
 			m.SetBanList(m.Config.Get().BanList)
+			m.restartTwitchHandler <- struct{}{}
+			m.StopTwitch()
+			m.SetupTwitch()
 		}
 	case GoalsKey:
 		err = utils.LoadJSONToWrapped[[]Goal](value, m.Goals)

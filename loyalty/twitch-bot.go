@@ -64,6 +64,8 @@ func (m *Manager) SetupTwitch() {
 			select {
 			case <-m.ctx.Done():
 				return
+			case <-m.restartTwitchHandler:
+				return
 			case <-time.After(time.Duration(config.Points.Interval) * time.Second):
 			}
 
