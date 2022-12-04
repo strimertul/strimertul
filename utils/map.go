@@ -1,6 +1,6 @@
 package utils
 
-import "git.sr.ht/~hamcha/containers"
+import "git.sr.ht/~hamcha/containers/sync"
 
 func MergeMap[T comparable, V any](a, b map[T]V) {
 	for key, value := range b {
@@ -8,6 +8,6 @@ func MergeMap[T comparable, V any](a, b map[T]V) {
 	}
 }
 
-func MergeSyncMap[T comparable, V any](a, b *containers.SyncMap[T, V]) {
+func MergeSyncMap[T comparable, V any](a, b *sync.Map[T, V]) {
 	b.Set(a.Copy())
 }

@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"time"
 
-	"git.sr.ht/~hamcha/containers"
+	"git.sr.ht/~hamcha/containers/sync"
 	lru "github.com/hashicorp/golang-lru"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix/v2"
+	"go.uber.org/zap"
+
 	"github.com/strimertul/strimertul/database"
 	"github.com/strimertul/strimertul/http"
-	"go.uber.org/zap"
 )
 
 var json = jsoniter.ConfigFastest
@@ -139,7 +140,7 @@ func (m *Manager) Close() error {
 }
 
 type Client struct {
-	Config     *containers.RWSync[Config]
+	Config     *sync.RWSync[Config]
 	Bot        *Bot
 	db         *database.LocalDBClient
 	API        *helix.Client
@@ -150,7 +151,7 @@ type Client struct {
 	cancel     context.CancelFunc
 
 	restart            chan bool
-	streamOnline       *containers.RWSync[bool]
+	streamOnline       *sync.RWSync[bool]
 	savedSubscriptions map[string]bool
 }
 
@@ -169,11 +170,11 @@ func newClient(config Config, db *database.LocalDBClient, server *http.Server, l
 	// Create Twitch client
 	ctx, cancel := context.WithCancel(context.Background())
 	client := &Client{
-		Config:             containers.NewRWSync(config),
+		Config:             sync.NewRWSync(config),
 		db:                 db,
 		logger:             logger.With(zap.String("service", "twitch")),
 		restart:            make(chan bool, 128),
-		streamOnline:       containers.NewRWSync(false),
+		streamOnline:       sync.NewRWSync(false),
 		eventCache:         eventCache,
 		savedSubscriptions: make(map[string]bool),
 		ctx:                ctx,

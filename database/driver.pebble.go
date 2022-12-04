@@ -6,11 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"go.uber.org/zap"
-
 	"github.com/cockroachdb/pebble"
 	kv "github.com/strimertul/kilovolt/v9"
 	pebble_driver "github.com/strimertul/kv-pebble"
+	"go.uber.org/zap"
 )
 
 type PebbleDatabase struct {

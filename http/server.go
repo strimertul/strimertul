@@ -8,28 +8,26 @@ import (
 	"net/http"
 	"net/http/pprof"
 
-	"github.com/strimertul/strimertul/utils"
-
-	"git.sr.ht/~hamcha/containers"
+	"git.sr.ht/~hamcha/containers/sync"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/strimertul/strimertul/database"
-
+	kv "github.com/strimertul/kilovolt/v9"
 	"go.uber.org/zap"
 
-	kv "github.com/strimertul/kilovolt/v9"
+	"github.com/strimertul/strimertul/database"
+	"github.com/strimertul/strimertul/utils"
 )
 
 var json = jsoniter.ConfigFastest
 
 type Server struct {
-	Config          *containers.RWSync[ServerConfig]
+	Config          *sync.RWSync[ServerConfig]
 	db              *database.LocalDBClient
 	logger          *zap.Logger
 	server          *http.Server
 	frontend        fs.FS
 	hub             *kv.Hub
 	mux             *http.ServeMux
-	requestedRoutes *containers.SyncMap[string, http.Handler]
+	requestedRoutes *sync.Map[string, http.Handler]
 	cancelConfigSub database.CancelFunc
 }
 
@@ -38,8 +36,8 @@ func NewServer(db *database.LocalDBClient, logger *zap.Logger) (*Server, error) 
 		logger:          logger,
 		db:              db,
 		server:          &http.Server{},
-		requestedRoutes: containers.NewSyncMap[string, http.Handler](),
-		Config:          containers.NewRWSync(ServerConfig{}),
+		requestedRoutes: sync.NewMap[string, http.Handler](),
+		Config:          sync.NewRWSync(ServerConfig{}),
 	}
 
 	err := utils.LoadJSONToWrapped[ServerConfig](ServerConfigKey, server.Config)
@@ -126,7 +124,7 @@ func (s *Server) UnregisterRoute(route string) {
 
 func (s *Server) Listen() error {
 	// Start HTTP server
-	restart := containers.NewRWSync(false)
+	restart := sync.NewRWSync(false)
 	exit := make(chan error)
 	var err error
 	err, s.cancelConfigSub = s.db.SubscribeKey(ServerConfigKey, func(value string) {

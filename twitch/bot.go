@@ -5,15 +5,13 @@ import (
 	"text/template"
 	"time"
 
-	"git.sr.ht/~hamcha/containers"
-	"github.com/strimertul/strimertul/database"
-
-	"github.com/strimertul/strimertul/utils"
-
-	"go.uber.org/zap"
-
+	"git.sr.ht/~hamcha/containers/sync"
 	"github.com/Masterminds/sprig/v3"
 	irc "github.com/gempir/go-twitch-irc/v3"
+	"go.uber.org/zap"
+
+	"github.com/strimertul/strimertul/database"
+	"github.com/strimertul/strimertul/utils"
 )
 
 type Bot struct {
@@ -23,12 +21,12 @@ type Bot struct {
 	api         *Client
 	username    string
 	logger      *zap.Logger
-	lastMessage *containers.RWSync[time.Time]
-	chatHistory *containers.SyncSlice[irc.PrivateMessage]
+	lastMessage *sync.RWSync[time.Time]
+	chatHistory *sync.Slice[irc.PrivateMessage]
 
-	commands        *containers.SyncMap[string, BotCommand]
-	customCommands  *containers.SyncMap[string, BotCustomCommand]
-	customTemplates *containers.SyncMap[string, *template.Template]
+	commands        *sync.Map[string, BotCommand]
+	customCommands  *sync.Map[string, BotCustomCommand]
+	customTemplates *sync.Map[string, *template.Template]
 	customFunctions template.FuncMap
 
 	OnConnect *utils.PubSub[BotConnectHandler]
@@ -70,11 +68,11 @@ func newBot(api *Client, config BotConfig) *Bot {
 		username:        strings.ToLower(config.Username), // Normalize username
 		logger:          api.logger,
 		api:             api,
-		lastMessage:     containers.NewRWSync(time.Now()),
-		commands:        containers.NewSyncMap[string, BotCommand](),
-		customCommands:  containers.NewSyncMap[string, BotCustomCommand](),
-		customTemplates: containers.NewSyncMap[string, *template.Template](),
-		chatHistory:     containers.NewSyncSlice[irc.PrivateMessage](),
+		lastMessage:     sync.NewRWSync(time.Now()),
+		commands:        sync.NewMap[string, BotCommand](),
+		customCommands:  sync.NewMap[string, BotCustomCommand](),
+		customTemplates: sync.NewMap[string, *template.Template](),
+		chatHistory:     sync.NewSlice[irc.PrivateMessage](),
 
 		OnConnect: utils.NewPubSub[BotConnectHandler](),
 		OnMessage: utils.NewPubSub[BotMessageHandler](),

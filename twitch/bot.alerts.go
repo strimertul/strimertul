@@ -7,13 +7,12 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/strimertul/strimertul/database"
-
-	"go.uber.org/zap"
-
 	"github.com/Masterminds/sprig/v3"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix/v2"
+	"go.uber.org/zap"
+
+	"github.com/strimertul/strimertul/database"
 )
 
 const BotAlertsKey = "twitch/bot-modules/alerts/config"

@@ -6,13 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"git.sr.ht/~hamcha/containers"
-
 	"github.com/strimertul/strimertul/twitch"
 
-	"go.uber.org/zap"
-
+	"git.sr.ht/~hamcha/containers/sync"
 	irc "github.com/gempir/go-twitch-irc/v3"
+	"go.uber.org/zap"
 )
 
 func (m *Manager) SetupTwitch() {
@@ -157,7 +155,7 @@ func (m *Manager) IsActive(user string) bool {
 }
 
 func (m *Manager) ResetActivity() {
-	m.activeUsers = containers.NewSyncMap[string, bool]()
+	m.activeUsers = sync.NewMap[string, bool]()
 }
 
 func (m *Manager) cmdBalance(bot *twitch.Bot, message irc.PrivateMessage) {

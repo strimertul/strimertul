@@ -9,19 +9,17 @@ import (
 	"os"
 	"time"
 
-	"github.com/strimertul/strimertul/utils"
-
 	"github.com/apenwarr/fixconsole"
-
-	"go.uber.org/zap/zapcore"
-
 	jsoniter "github.com/json-iterator/go"
 	"github.com/urfave/cli/v2"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	_ "net/http/pprof"
+
+	"github.com/strimertul/strimertul/utils"
 )
 
 var json = jsoniter.ConfigFastest

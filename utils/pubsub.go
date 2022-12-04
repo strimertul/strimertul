@@ -1,14 +1,16 @@
 package utils
 
-import "git.sr.ht/~hamcha/containers"
+import (
+	"git.sr.ht/~hamcha/containers/sync"
+)
 
 type PubSub[T Comparable] struct {
-	subscribers *containers.SyncSlice[T]
+	subscribers *sync.Slice[T]
 }
 
 func NewPubSub[T Comparable]() *PubSub[T] {
 	return &PubSub[T]{
-		subscribers: containers.NewSyncSlice[T](),
+		subscribers: sync.NewSlice[T](),
 	}
 }
 

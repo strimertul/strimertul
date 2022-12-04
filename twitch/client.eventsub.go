@@ -4,13 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
-
 	"github.com/gorilla/websocket"
-
-	"go.uber.org/zap"
-
+	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix/v2"
+	"go.uber.org/zap"
 )
 
 const websocketEndpoint = "wss://eventsub-beta.wss.twitch.tv/ws"

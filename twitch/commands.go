@@ -7,10 +7,9 @@ import (
 	"strings"
 	"text/template"
 
-	"go.uber.org/zap"
-
 	irc "github.com/gempir/go-twitch-irc/v3"
 	"github.com/nicklaw5/helix/v2"
+	"go.uber.org/zap"
 )
 
 type AccessLevelType string

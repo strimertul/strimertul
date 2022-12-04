@@ -4,18 +4,16 @@ import (
 	"context"
 	"strconv"
 
-	"go.uber.org/zap"
-
-	"github.com/strimertul/strimertul/twitch"
-
-	"github.com/strimertul/strimertul/loyalty"
-
-	"git.sr.ht/~hamcha/containers"
+	"git.sr.ht/~hamcha/containers/sync"
 	"github.com/nicklaw5/helix/v2"
-	"github.com/strimertul/strimertul/database"
-	"github.com/strimertul/strimertul/http"
 	"github.com/urfave/cli/v2"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"go.uber.org/zap"
+
+	"github.com/strimertul/strimertul/database"
+	"github.com/strimertul/strimertul/http"
+	"github.com/strimertul/strimertul/loyalty"
+	"github.com/strimertul/strimertul/twitch"
 )
 
 // App struct
@@ -23,7 +21,7 @@ type App struct {
 	ctx       context.Context
 	cliParams *cli.Context
 	driver    database.DatabaseDriver
-	ready     *containers.RWSync[bool]
+	ready     *sync.RWSync[bool]
 
 	db             *database.LocalDBClient
 	twitchManager  *twitch.Manager
@@ -35,7 +33,7 @@ type App struct {
 func NewApp(cliParams *cli.Context) *App {
 	return &App{
 		cliParams: cliParams,
-		ready:     containers.NewRWSync(false),
+		ready:     sync.NewRWSync(false),
 	}
 }
 
@@ -125,7 +123,7 @@ func (a *App) GetKilovoltBind() string {
 	if a.httpServer == nil {
 		return ""
 	}
-	return a.httpServer.Config.Bind
+	return a.httpServer.Config.Get().Bind
 }
 
 func (a *App) GetTwitchAuthURL() string {

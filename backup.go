@@ -6,9 +6,10 @@ import (
 	"sort"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/strimertul/strimertul/database"
 	"github.com/strimertul/strimertul/utils"
-	"go.uber.org/zap"
 )
 
 func BackupTask(driver database.DatabaseDriver, options database.BackupOptions) {

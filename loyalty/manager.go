@@ -7,14 +7,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/strimertul/strimertul/database"
+	"github.com/strimertul/strimertul/twitch"
 	"github.com/strimertul/strimertul/utils"
 
-	"git.sr.ht/~hamcha/containers"
-
-	"github.com/strimertul/strimertul/twitch"
-
-	"github.com/strimertul/strimertul/database"
-
+	"git.sr.ht/~hamcha/containers/sync"
 	jsoniter "github.com/json-iterator/go"
 	"go.uber.org/zap"
 )
@@ -28,16 +25,16 @@ var (
 )
 
 type Manager struct {
-	points        *containers.SyncMap[string, PointsEntry]
-	Config        *containers.RWSync[Config]
-	Rewards       *containers.SyncSlice[Reward]
-	Goals         *containers.SyncSlice[Goal]
-	Queue         *containers.SyncSlice[Redeem]
+	points        *sync.Map[string, PointsEntry]
+	Config        *sync.RWSync[Config]
+	Rewards       *sync.Slice[Reward]
+	Goals         *sync.Slice[Goal]
+	Queue         *sync.Slice[Redeem]
 	db            *database.LocalDBClient
 	logger        *zap.Logger
 	cooldowns     map[string]time.Time
 	banlist       map[string]bool
-	activeUsers   *containers.SyncMap[string, bool]
+	activeUsers   *sync.Map[string, bool]
 	twitchManager *twitch.Manager
 	ctx           context.Context
 	cancelFn      context.CancelFunc
@@ -47,17 +44,17 @@ type Manager struct {
 func NewManager(db *database.LocalDBClient, twitchManager *twitch.Manager, logger *zap.Logger) (*Manager, error) {
 	ctx, cancelFn := context.WithCancel(context.Background())
 	loyalty := &Manager{
-		Config:  containers.NewRWSync(Config{Enabled: false}),
-		Rewards: containers.NewSyncSlice[Reward](),
-		Goals:   containers.NewSyncSlice[Goal](),
-		Queue:   containers.NewSyncSlice[Redeem](),
+		Config:  sync.NewRWSync(Config{Enabled: false}),
+		Rewards: sync.NewSlice[Reward](),
+		Goals:   sync.NewSlice[Goal](),
+		Queue:   sync.NewSlice[Redeem](),
 
 		logger:        logger,
 		db:            db,
-		points:        containers.NewSyncMap[string, PointsEntry](),
+		points:        sync.NewMap[string, PointsEntry](),
 		cooldowns:     make(map[string]time.Time),
 		banlist:       make(map[string]bool),
-		activeUsers:   containers.NewSyncMap[string, bool](),
+		activeUsers:   sync.NewMap[string, bool](),
 		twitchManager: twitchManager,
 		ctx:           ctx,
 		cancelFn:      cancelFn,

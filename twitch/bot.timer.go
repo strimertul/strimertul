@@ -4,13 +4,11 @@ import (
 	"math/rand"
 	"time"
 
-	"git.sr.ht/~hamcha/containers"
-
-	"github.com/strimertul/strimertul/database"
-
+	"git.sr.ht/~hamcha/containers/sync"
+	irc "github.com/gempir/go-twitch-irc/v3"
 	"go.uber.org/zap"
 
-	irc "github.com/gempir/go-twitch-irc/v3"
+	"github.com/strimertul/strimertul/database"
 )
 
 const BotTimersKey = "twitch/bot-modules/timers/config"
@@ -33,8 +31,8 @@ type BotTimerModule struct {
 	Config BotTimersConfig
 
 	bot         *Bot
-	lastTrigger *containers.SyncMap[string, time.Time]
-	messages    *containers.SyncSlice[int]
+	lastTrigger *sync.Map[string, time.Time]
+	messages    *sync.Slice[int]
 
 	cancelTimerSub database.CancelFunc
 }
@@ -42,8 +40,8 @@ type BotTimerModule struct {
 func SetupTimers(bot *Bot) *BotTimerModule {
 	mod := &BotTimerModule{
 		bot:         bot,
-		lastTrigger: containers.NewSyncMap[string, time.Time](),
-		messages:    containers.NewSyncSlice[int](),
+		lastTrigger: sync.NewMap[string, time.Time](),
+		messages:    sync.NewSlice[int](),
 	}
 
 	// Fill messages with zero values

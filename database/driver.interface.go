@@ -6,12 +6,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/strimertul/strimertul/utils"
-
-	"go.uber.org/zap"
-
 	kv "github.com/strimertul/kilovolt/v9"
 	"github.com/urfave/cli/v2"
+	"go.uber.org/zap"
+
+	"github.com/strimertul/strimertul/utils"
 )
 
 // DatabaseDriver is a driver wrapping a supported database
