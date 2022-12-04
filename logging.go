@@ -4,6 +4,8 @@ import (
 	"os"
 	"time"
 
+	"git.sr.ht/~hamcha/containers/sync"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -13,12 +15,12 @@ const LogHistory = 50
 
 var (
 	logger       *zap.Logger
-	lastLogs     []LogEntry
+	lastLogs     *sync.Slice[LogEntry]
 	incomingLogs chan LogEntry
 )
 
 func initLogger(level zapcore.Level) {
-	lastLogs = make([]LogEntry, 0)
+	lastLogs = sync.NewSlice[LogEntry]()
 	incomingLogs = make(chan LogEntry, 100)
 	logStorage := NewLogStorage(level)
 	consoleLogger := zapcore.NewCore(
@@ -90,9 +92,9 @@ func (core *LogStorage) Write(entry zapcore.Entry, fields []zapcore.Field) error
 		Message: entry.Message,
 		Data:    buf.String(),
 	}
-	lastLogs = append(lastLogs, logEntry)
-	if len(lastLogs) > LogHistory {
-		lastLogs = lastLogs[1:]
+	lastLogs.Push(logEntry)
+	if lastLogs.Size() > LogHistory {
+		lastLogs.Splice(0, 1)
 	}
 	incomingLogs <- logEntry
 	return nil

@@ -135,5 +135,5 @@ func (a *App) GetTwitchLoggedUser() (helix.User, error) {
 }
 
 func (a *App) GetLastLogs() []LogEntry {
-	return lastLogs
+	return lastLogs.Get()
 }
