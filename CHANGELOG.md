@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added support for EventSub Websocket subscriptions on Twitch, making Twitch integration fully in-app without having to rely on third party servers. Check the "Events" tab in Twitch configuration for setting it up. The new keys for redeems are `twitch/ev/eventsub-event` and `twitch/eventsub-history`. History has been reduced to 50 to alleviate memory concerns.
 - Application logs are now visible from the UI, check the little floating boxes in the top right!
+- A new app icon drawn by [Sonic_chan](https://twitter.com/Sonic__Chan), say hello to Renko, strimertul's mascot!
 
 ### Changed
 
@@ -23,9 +24,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The UI has been more tightly integrated with the underlying service meaning the kilovolt password will never be asked again
 - Database operations (import/export/restore) are now done through a much nicer CLI interface rather than random flags, check `strimertul --help` for more info on usage.
 - Changed behavior of database submodule to always return an empty key instead of NotExist errors.
+- Many UI dialogs are now positioned near the top rather than vertically centered to prevent elements from moving too much as the dialog size changes
 
 ### Fixed
 
+- Many parts of the app should now react to configuration changes without requiring a full application restart.
+- The cursor in redeem/goal ID fields will now keep its position when sanitizing names (e.g. turning a whitespace to a dash) instead of jumping to the end
+- The scrollbar does not overlap the copy button in the log window
 - Fixed `game` command not working when the specified channel contained the @ symbol at the beginning.
 - Fixed strimertul crashing at start if the database folder didn't exist and a database driver was not manually specified
 - Fixed strimertul crashing after a minute of being open if Twitch was not configured.
