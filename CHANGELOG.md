@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database operations (import/export/restore) are now done through a much nicer CLI interface rather than random flags, check `strimertul --help` for more info on usage.
 - Changed behavior of database submodule to always return an empty key instead of NotExist errors.
 - Many UI dialogs are now positioned near the top rather than vertically centered to prevent elements from moving too much as the dialog size changes
+- The UI will now prevent users from overwriting existing bot commands/timers
 
 ### Fixed
 
