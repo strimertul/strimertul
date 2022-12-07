@@ -11,6 +11,7 @@ import { RootState, useAppDispatch } from '../../store';
 import apiReducer, { modules } from '../../store/api/reducer';
 import BrowserLink from '../components/BrowserLink';
 import DefinitionTable from '../components/DefinitionTable';
+import RevealLink from '../components/utils/RevealLink';
 import SaveButton from '../components/utils/SaveButton';
 import {
   APPNAME,
@@ -26,6 +27,7 @@ import {
   PageContainer,
   PageHeader,
   PageTitle,
+  PasswordInputBox,
   SectionHeader,
   styled,
   TabButton,
@@ -59,6 +61,7 @@ function TwitchBotSettings() {
   const status = useStatus(loadStatus.save);
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
+  const [revealBotToken, setRevealBotToken] = useState(false);
   const active = twitchConfig?.enable_bot ?? false;
 
   return (
@@ -138,9 +141,10 @@ function TwitchBotSettings() {
       <Field size="fullWidth">
         <Label htmlFor="bot-oauth">
           {t('pages.twitch-settings.bot-oauth')}
+          <RevealLink value={revealBotToken} setter={setRevealBotToken} />
         </Label>
-        <InputBox
-          type="password"
+        <PasswordInputBox
+          reveal={revealBotToken}
           id="bot-oauth"
           required={active}
           disabled={!active || status?.type === 'pending'}
@@ -199,6 +203,7 @@ function TwitchAPISettings() {
   );
   const status = useStatus(loadStatus.save);
   const dispatch = useAppDispatch();
+  const [revealClientSecret, setRevealClientSecret] = useState(false);
 
   return (
     <form
@@ -265,9 +270,13 @@ function TwitchAPISettings() {
       <Field size="fullWidth">
         <Label htmlFor="clientsecret">
           {t('pages.twitch-settings.app-client-secret')}
+          <RevealLink
+            value={revealClientSecret}
+            setter={setRevealClientSecret}
+          />
         </Label>
-        <InputBox
-          type="password"
+        <PasswordInputBox
+          reveal={revealClientSecret}
           id="clientsecret"
           placeholder={t('pages.twitch-settings.app-client-secret')}
           required={true}

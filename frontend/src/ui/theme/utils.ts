@@ -1,7 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
-import { theme } from '.';
-import { styled } from './theme';
+import { styled, theme } from './theme';
 
 export const FlexRow = styled('div', {
   display: 'flex',

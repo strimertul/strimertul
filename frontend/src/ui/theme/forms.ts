@@ -2,9 +2,9 @@ import * as UnstyledLabel from '@radix-ui/react-label';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
 import { CSS } from '@stitches/react';
-import { styled } from './theme';
-import { theme } from '.';
+import { styled, theme } from './theme';
 import ControlledInput from '../components/utils/ControlledInput';
+import PasswordField from '../components/utils/PasswordField';
 
 export const Field = styled('fieldset', {
   all: 'unset',
@@ -80,6 +80,7 @@ const inputStyles: CSS = {
 
 export const InputBox = styled('input', inputStyles);
 export const ControlledInputBox = styled(ControlledInput, inputStyles);
+export const PasswordInputBox = styled(PasswordField, inputStyles);
 
 export const Textarea = styled('textarea', {
   all: 'unset',
@@ -177,6 +178,11 @@ const button = {
       small: {
         padding: '0.3rem 0.5rem',
         fontSize: '0.9rem',
+      },
+      smaller: {
+        padding: '5px',
+        paddingBottom: '3px',
+        fontSize: '0.8rem',
       },
     },
     variation: {

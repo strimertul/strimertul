@@ -261,7 +261,9 @@
     "add": "Add",
     "warning-delete": "This cannot be undone",
     "create": "Create",
-    "submit": "Submit"
+    "submit": "Submit",
+    "password-reveal": "Reveal",
+    "password-hide": "Hide"
   },
   "debug": {
     "dev-build": "Development build"
