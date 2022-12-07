@@ -115,7 +115,7 @@ export default function StrimertulPage(): React.ReactElement {
       <Section>
         <SectionHeader>{t('pages.strimertul.need-help')}</SectionHeader>
         <SectionParagraph css={{ paddingBottom: 0 }}>
-          {t('pages.strimertul.need-help-p1', { APPNAME })}
+          {t('pages.strimertul.need-help-p1')}
         </SectionParagraph>
         <ChannelList>
           <Channel>
@@ -138,7 +138,6 @@ export default function StrimertulPage(): React.ReactElement {
           <Trans
             t={t}
             i18nKey="pages.strimertul.credits-renko"
-            values={{ APPNAME }}
             components={{
               artist: (
                 <BrowserLink href="https://twitter.com/Sonic__Chan">
@@ -155,7 +154,6 @@ export default function StrimertulPage(): React.ReactElement {
           <Trans
             t={t}
             i18nKey="pages.strimertul.license-notice-strimertul"
-            values={{ APPNAME }}
             components={{
               license: (
                 <BrowserLink href="https://github.com/strimertul/strimertul/blob/master/LICENSE">

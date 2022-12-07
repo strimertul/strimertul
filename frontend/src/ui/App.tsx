@@ -38,7 +38,7 @@ import LoyaltyRewardsPage from './pages/LoyaltyRewards';
 import ServerSettingsPage from './pages/ServerSettings';
 import StrimertulPage from './pages/Strimertul';
 import TwitchSettingsPage from './pages/TwitchSettings';
-import { APPNAME, styled } from './theme';
+import { styled } from './theme';
 
 // @ts-expect-error Asset import
 import spinner from '../assets/icon-loading.svg';
@@ -210,7 +210,7 @@ export default function App(): JSX.Element {
   }, [ready, connected]);
 
   if (connected === ConnectionStatus.NotConnected) {
-    return <Loading message={t('special.loading', { APPNAME })} />;
+    return <Loading message={t('special.loading')} />;
   }
 
   if (connected === ConnectionStatus.AuthenticationNeeded) {

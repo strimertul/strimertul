@@ -1,7 +1,7 @@
 import { styled } from '@stitches/react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { APPNAME, Button, InputBox, TextBlock } from '../theme';
+import { Button, InputBox, TextBlock } from '../theme';
 
 const AuthWrapper = styled('div', {
   alignItems: 'center',
@@ -59,9 +59,7 @@ export default function AuthDialog(): React.ReactElement {
       >
         <AuthTitle>{t('pages.auth.title')}</AuthTitle>
         <Content>
-          <TextBlock spacing="none">
-            {t('pages.auth.desc', { APPNAME })}
-          </TextBlock>
+          <TextBlock spacing="none">{t('pages.auth.desc')}</TextBlock>
           <TextBlock spacing="none">{t('pages.auth.no-pwd-note')}</TextBlock>
         </Content>
         <Actions>

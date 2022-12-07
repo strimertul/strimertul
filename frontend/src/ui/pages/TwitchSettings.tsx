@@ -14,7 +14,6 @@ import DefinitionTable from '../components/DefinitionTable';
 import RevealLink from '../components/utils/RevealLink';
 import SaveButton from '../components/utils/SaveButton';
 import {
-  APPNAME,
   Button,
   ButtonGroup,
   Checkbox,
@@ -372,7 +371,7 @@ function TwitchEventSubSettings() {
   }
   return (
     <>
-      <p>{t('pages.twitch-settings.events.auth-message', { APPNAME })}</p>
+      <p>{t('pages.twitch-settings.events.auth-message')}</p>
       <Button
         variation="primary"
         onClick={() => {
