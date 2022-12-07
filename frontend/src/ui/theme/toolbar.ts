@@ -24,7 +24,7 @@ const itemStyles = {
   alignItems: 'center',
   justifyContent: 'center',
   userSelect: 'none',
-};
+} as const;
 
 export const ToolbarButton = styled(ToolbarPrimitive.Button, {
   ...itemStyles,

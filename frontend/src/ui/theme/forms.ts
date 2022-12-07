@@ -1,7 +1,6 @@
 import * as UnstyledLabel from '@radix-ui/react-label';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
-import { CSS } from '@stitches/react';
 import { styled, theme } from './theme';
 import ControlledInput from '../components/utils/ControlledInput';
 import PasswordField from '../components/utils/PasswordField';
@@ -47,7 +46,7 @@ export const Label = styled(UnstyledLabel.Root, {
   fontWeight: 'bold',
 });
 
-const inputStyles: CSS = {
+const inputStyles = {
   all: 'unset',
   fontWeight: '300',
   border: '1px solid $gray6',
@@ -76,7 +75,7 @@ const inputStyles: CSS = {
       },
     },
   },
-};
+} as const;
 
 export const InputBox = styled('input', inputStyles);
 export const ControlledInputBox = styled(ControlledInput, inputStyles);
@@ -232,7 +231,7 @@ const button = {
       },
     },
   },
-};
+} as const;
 
 export const MultiToggle = styled(ToggleGroup.Root, {
   display: 'inline-flex',
