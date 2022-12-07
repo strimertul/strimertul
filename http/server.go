@@ -2,9 +2,12 @@ package http
 
 import (
 	"context"
+	crand "crypto/rand"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io/fs"
+	mrand "math/rand"
 	"net/http"
 	"net/http/pprof"
 
@@ -49,7 +52,7 @@ func NewServer(db *database.LocalDBClient, logger *zap.Logger) (*Server, error) 
 		server.Config.Set(ServerConfig{
 			Bind:               "localhost:4337",
 			EnableStaticServer: false,
-			KVPassword:         "",
+			KVPassword:         generatePassword(),
 		})
 		// Save
 		err = db.PutJSON(ServerConfigKey, server.Config.Get())
@@ -201,4 +204,14 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.mux.ServeHTTP(w, r)
+}
+
+func generatePassword() string {
+	b := make([]byte, 21) // To prevent padding characters, keep it a multiple of 3
+	_, err := crand.Read(b)
+	if err != nil {
+		// fallback to bad rand, but this will never fail
+		mrand.Read(b)
+	}
+	return base64.URLEncoding.EncodeToString(b)
 }
