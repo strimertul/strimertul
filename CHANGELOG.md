@@ -7,11 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [current]
 
-### Removed
-
-- Stulbe support has been nuked across the board, see on Added for more notes
-- Badger has been removed as a possible database, see v3 release notes on migration procedures.
-
 ### Added
 
 - Added support for EventSub Websocket subscriptions on Twitch, making Twitch integration fully in-app without having to rely on third party servers. Check the "Events" tab in Twitch configuration for setting it up. The new keys for redeems are `twitch/ev/eventsub-event` and `twitch/eventsub-history`. History has been reduced to 50 to alleviate memory concerns.
@@ -38,6 +33,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `game` command not working when the specified channel contained the @ symbol at the beginning.
 - Fixed strimertul crashing at start if the database folder didn't exist and a database driver was not manually specified
 - Fixed strimertul crashing after a minute of being open if Twitch was not configured.
+
+### Removed
+
+- Stulbe support has been removed across the board, see on Added for more notes
+- Badger has been removed as a possible database, see v3 release notes on migration procedures.
 
 ## [2.1.1] - 2022-03-24
 
