@@ -63,6 +63,7 @@ function TwitchBotSettings() {
   const { t } = useTranslation();
   const [revealBotToken, setRevealBotToken] = useState(false);
   const active = twitchConfig?.enable_bot ?? false;
+  const disabled = !active || status?.type === 'pending';
 
   return (
     <form
@@ -103,7 +104,7 @@ function TwitchBotSettings() {
           type="text"
           id="bot-channel"
           required={active}
-          disabled={!active || status?.type === 'pending'}
+          disabled={disabled}
           value={botConfig?.channel ?? ''}
           onChange={(ev) =>
             dispatch(
@@ -126,7 +127,7 @@ function TwitchBotSettings() {
           type="text"
           id="bot-username"
           required={active}
-          disabled={!active || status?.type === 'pending'}
+          disabled={disabled}
           value={botConfig?.username ?? ''}
           onChange={(ev) =>
             dispatch(
@@ -147,7 +148,7 @@ function TwitchBotSettings() {
           reveal={revealBotToken}
           id="bot-oauth"
           required={active}
-          disabled={!active || status?.type === 'pending'}
+          disabled={disabled}
           value={botConfig?.oauth ?? ''}
           onChange={(ev) =>
             dispatch(
@@ -178,7 +179,7 @@ function TwitchBotSettings() {
           type="number"
           id="bot-chat-history"
           required={active}
-          disabled={!active || status?.type === 'pending'}
+          disabled={disabled}
           value={botConfig?.chat_history ?? ''}
           onChange={(ev) =>
             dispatch(
