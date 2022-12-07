@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed behavior of database submodule to always return an empty key instead of NotExist errors.
 - Many UI dialogs are now positioned near the top rather than vertically centered to prevent elements from moving too much as the dialog size changes
 - The UI will now prevent users from overwriting existing bot commands/timers
+- A password for the kilovolt server will be auto-generated when starting strimertul for the first time
+- A big scary dialog will appear when changing the server config to have an empty kilovolt password
 
 ### Fixed
 
