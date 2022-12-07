@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useModule, useStatus } from '../../lib/react-utils';
 import { useAppDispatch } from '../../store';
 import apiReducer, { modules } from '../../store/api/reducer';
+import AlertContent from '../components/AlertContent';
 import RevealLink from '../components/utils/RevealLink';
 import SaveButton from '../components/utils/SaveButton';
 import {
-  APPNAME,
   Field,
   FieldNote,
   InputBox,
@@ -16,6 +16,7 @@ import {
   PageTitle,
   PasswordInputBox,
 } from '../theme';
+import { Alert } from '../theme/alert';
 
 export default function ServerSettingsPage(): React.ReactElement {
   const [serverConfig, setServerConfig, loadStatus] = useModule(
@@ -27,6 +28,9 @@ export default function ServerSettingsPage(): React.ReactElement {
   const busy =
     loadStatus.load?.type !== 'success' || loadStatus.save?.type === 'pending';
   const [revealKVPassword, setRevealKVPassword] = useState(false);
+  const [showKilovoltWarning, setShowKilovoltWarning] = useState(false);
+
+  const insecureKilovolt = (serverConfig?.kv_password ?? '').length < 1;
 
   return (
     <PageContainer>
@@ -35,8 +39,12 @@ export default function ServerSettingsPage(): React.ReactElement {
       </PageHeader>
       <form
         onSubmit={(ev) => {
-          void dispatch(setServerConfig(serverConfig));
           ev.preventDefault();
+          if (insecureKilovolt) {
+            setShowKilovoltWarning(true);
+            return;
+          }
+          void dispatch(setServerConfig(serverConfig));
         }}
       >
         <Field size="fullWidth">
@@ -57,7 +65,7 @@ export default function ServerSettingsPage(): React.ReactElement {
               )
             }
           />
-          <FieldNote>{t('pages.http.bind-help', { APPNAME })}</FieldNote>
+          <FieldNote>{t('pages.http.bind-help')}</FieldNote>
         </Field>
         <Field size="fullWidth">
           <Label htmlFor="kvpassword">
@@ -108,6 +116,24 @@ export default function ServerSettingsPage(): React.ReactElement {
           </FieldNote>
         </Field>
         <SaveButton type="submit" status={status} />
+        <Alert
+          defaultOpen={false}
+          open={showKilovoltWarning}
+          onOpenChange={setShowKilovoltWarning}
+        >
+          <AlertContent
+            variation="danger"
+            title={t('pages.http.kv-auth-warning.header')}
+            description={t('pages.http.kv-auth-warning.message')}
+            actionText={t('pages.http.kv-auth-warning.i-understand')}
+            actionButtonProps={{ variation: 'danger' }}
+            cancelText={t('pages.http.kv-auth-warning.go-back')}
+            showCancel={true}
+            onAction={() => {
+              void dispatch(setServerConfig(serverConfig));
+            }}
+          />
+        </Alert>
       </form>
     </PageContainer>
   );

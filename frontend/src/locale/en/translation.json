@@ -35,12 +35,18 @@
       "bind-placeholder": "address:port",
       "bind": "Webserver Bind",
       "kilovolt-password": "Kilovolt password",
-      "kilovolt-placeholder": "Leave empty to disable authentication",
+      "kilovolt-placeholder": "Leave empty to disable authentication (not recommended)",
       "bind-help": "Every application that uses {{APPNAME}} will need to be updated!",
       "static-path": "Static assets (leave empty to disable)",
       "static-placeholder": "Absolute path to static assets",
       "static-help": "Will be served at the following URL: {{url}}",
-      "saving": "Saving webserver settings..."
+      "saving": "Saving webserver settings...",
+      "kv-auth-warning": {
+        "header": "Are you sure about this?",
+        "message": "You have left the Kilovolt password field empty! This will leave {{APPNAME}} accessible without authentication from any application, including any website you visit!",
+        "i-understand": "I understand the risk",
+        "go-back": "Go back"
+      }
     },
     "twitch-settings": {
       "title": "Twitch configuration",
