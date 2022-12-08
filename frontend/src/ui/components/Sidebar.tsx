@@ -4,13 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Link, useMatch, useResolvedPath } from 'react-router-dom';
 
-import { RootState } from '../../store';
+// @ts-expect-error Asset import
+import logo from '~/assets/icon-logo.svg';
+
+import { RootState } from '~/store';
 import { APPNAME, APPREPO } from '../theme';
 import BrowserLink from './BrowserLink';
 import Scrollbar from './utils/Scrollbar';
-
-// @ts-expect-error Asset import
-import logo from '../../assets/icon-logo.svg';
 
 export interface RouteSection {
   title: string;

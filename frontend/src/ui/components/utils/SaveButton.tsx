@@ -1,7 +1,7 @@
 import { CheckIcon } from '@radix-ui/react-icons';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { RequestStatus } from '../../../store/api/types';
+import { RequestStatus } from '~/store/api/types';
 import { Button } from '../../theme';
 
 interface SaveButtonProps {

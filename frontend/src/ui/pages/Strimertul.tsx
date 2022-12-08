@@ -3,11 +3,12 @@ import { keyframes } from '@stitches/react';
 import { Trans, useTranslation } from 'react-i18next';
 import { GitHubLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
 import { useNavigate } from 'react-router-dom';
-import { APPNAME, PageContainer, PageHeader, styled } from '../theme';
-import BrowserLink from '../components/BrowserLink';
 
 // @ts-expect-error Asset import
-import logo from '../../assets/icon-logo.svg';
+import logo from '~/assets/icon-logo.svg';
+
+import { APPNAME, PageContainer, PageHeader, styled } from '../theme';
+import BrowserLink from '../components/BrowserLink';
 
 const gradientAnimation = keyframes({
   '0%': {

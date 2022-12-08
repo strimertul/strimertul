@@ -1,14 +1,14 @@
 import { PlusIcon } from '@radix-ui/react-icons';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useModule } from '../../lib/react-utils';
-import { useAppDispatch } from '../../store';
-import { modules } from '../../store/api/reducer';
+import { useModule } from '~/lib/react-utils';
+import { useAppDispatch } from '~/store';
+import { modules } from '~/store/api/reducer';
 import {
   accessLevels,
   AccessLevelType,
   TwitchBotCustomCommand,
-} from '../../store/api/types';
+} from '~/store/api/types';
 import AlertContent from '../components/AlertContent';
 import DialogContent from '../components/DialogContent';
 import {

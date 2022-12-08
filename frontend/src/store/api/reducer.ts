@@ -12,7 +12,7 @@ import {
 import KilovoltWS from '@strimertul/kilovolt-client';
 import type { kvError } from '@strimertul/kilovolt-client/types/messages';
 import { AuthenticateKVClient, IsServerReady } from '@wailsapp/go/main/App';
-import { delay } from '../../lib/time-utils';
+import { delay } from '~/lib/time-utils';
 import {
   APIState,
   ConnectionStatus,

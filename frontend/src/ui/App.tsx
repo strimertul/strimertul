@@ -21,10 +21,13 @@ import {
 } from '@wailsapp/go/main/App';
 import { main } from '@wailsapp/go/models';
 
-import { RootState, useAppDispatch } from '../store';
-import { createWSClient, useAuthBypass } from '../store/api/reducer';
-import { ConnectionStatus } from '../store/api/types';
-import loggingReducer from '../store/logging/reducer';
+import { RootState, useAppDispatch } from '~/store';
+import { createWSClient, useAuthBypass } from '~/store/api/reducer';
+import { ConnectionStatus } from '~/store/api/types';
+import loggingReducer from '~/store/logging/reducer';
+// @ts-expect-error Asset import
+import spinner from '~/assets/icon-loading.svg';
+
 import Sidebar, { RouteSection } from './components/Sidebar';
 import AuthDialog from './pages/AuthDialog';
 import TwitchBotCommandsPage from './pages/BotCommands';

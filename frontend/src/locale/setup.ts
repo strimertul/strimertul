@@ -1,6 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { APPNAME } from '../ui/theme';
+import { APPNAME } from '~/ui/theme';
 
 import en from './en/translation.json';
 import it from './it/translation.json';

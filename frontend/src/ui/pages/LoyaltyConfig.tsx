@@ -1,8 +1,9 @@
 import React from 'react';
 import { CheckIcon } from '@radix-ui/react-icons';
 import { useTranslation } from 'react-i18next';
-import { useModule, useStatus } from '../../lib/react-utils';
-import apiReducer, { modules } from '../../store/api/reducer';
+import { useModule, useStatus } from '~/lib/react-utils';
+import apiReducer, { modules } from '~/store/api/reducer';
+import { useAppDispatch } from '~/store';
 import {
   PageContainer,
   PageHeader,
@@ -18,7 +19,6 @@ import {
 } from '../theme';
 import SaveButton from '../components/utils/SaveButton';
 import Interval from '../components/Interval';
-import { useAppDispatch } from '../../store';
 
 export default function LoyaltySettingsPage(): React.ReactElement {
   const { t } = useTranslation();

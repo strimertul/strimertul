@@ -9,14 +9,14 @@ import {
   KilovoltMessage,
   SubscriptionHandler,
 } from '@strimertul/kilovolt-client';
-import { RootState, useAppDispatch } from '../store';
-import apiReducer, { getUserPoints } from '../store/api/reducer';
+import { RootState, useAppDispatch } from '~/store';
+import apiReducer, { getUserPoints } from '~/store/api/reducer';
 import {
   APIState,
   LoyaltyPointsEntry,
   LoyaltyStorage,
   RequestStatus,
-} from '../store/api/types';
+} from '~/store/api/types';
 
 interface LoadStatus {
   load: RequestStatus;

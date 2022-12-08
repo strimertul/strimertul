@@ -1,10 +1,10 @@
 import { CheckIcon, PlusIcon } from '@radix-ui/react-icons';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useModule } from '../../lib/react-utils';
-import { useAppDispatch } from '../../store';
-import { modules } from '../../store/api/reducer';
-import { LoyaltyGoal, LoyaltyReward } from '../../store/api/types';
+import { useModule } from '~/lib/react-utils';
+import { useAppDispatch } from '~/store';
+import { modules } from '~/store/api/reducer';
+import { LoyaltyGoal, LoyaltyReward } from '~/store/api/types';
 import AlertContent from '../components/AlertContent';
 import DialogContent from '../components/DialogContent';
 import Interval from '../components/Interval';

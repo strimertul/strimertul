@@ -1,6 +1,6 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import React, { useState } from 'react';
-import { SortFunction } from '../../lib/type-utils';
+import { SortFunction } from '~/lib/type-utils';
 import { styled } from '../theme';
 import { Table, TableHeader } from '../theme/table';
 import PageList from './PageList';

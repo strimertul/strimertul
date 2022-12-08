@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { RootState } from 'src/store';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { delay } from '~/lib/time-utils';
+import { ProcessedLogEntry } from '~/store/logging/reducer';
 import {
   Dialog,
   DialogContainer,
@@ -15,9 +17,7 @@ import {
   styled,
   theme,
 } from '../theme';
-import { ProcessedLogEntry } from '../../store/logging/reducer';
 import Scrollbar from './utils/Scrollbar';
-import { delay } from '../../lib/time-utils';
 
 const Floating = styled('div', {
   position: 'fixed',
