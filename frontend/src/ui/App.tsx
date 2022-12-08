@@ -12,7 +12,7 @@ import { EventsOff, EventsOn } from '@wailsapp/runtime/runtime';
 import { t } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 import {
   GetKilovoltBind,
@@ -42,11 +42,9 @@ import ServerSettingsPage from './pages/ServerSettings';
 import StrimertulPage from './pages/Strimertul';
 import TwitchSettingsPage from './pages/TwitchSettings';
 import { styled } from './theme';
-
-// @ts-expect-error Asset import
-import spinner from '../assets/icon-loading.svg';
 import Scrollbar from './components/utils/Scrollbar';
 import LogViewer from './components/LogViewer';
+import OnboardingPage from './pages/Onboarding';
 
 const LoadingDiv = styled('div', {
   display: 'flex',
@@ -167,6 +165,8 @@ export default function App(): JSX.Element {
     (state: RootState) => state.api.connectionStatus,
   );
   const dispatch = useAppDispatch();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const connectToKV = async () => {
     const address = await GetKilovoltBind();
@@ -212,6 +212,11 @@ export default function App(): JSX.Element {
     }
   }, [ready, connected]);
 
+  // TODO: Only do this when
+  useEffect(() => {
+    navigate('/setup');
+  }, []);
+
   if (connected === ConnectionStatus.NotConnected) {
     return <Loading message={t('special.loading')} />;
   }
@@ -220,10 +225,12 @@ export default function App(): JSX.Element {
     return <AuthDialog />;
   }
 
+  const showSidebar = location.pathname !== '/setup';
+
   return (
     <Container>
       <LogViewer />
-      <Sidebar sections={sections} />
+      {showSidebar ? <Sidebar sections={sections} /> : null}
       <Scrollbar
         vertical={true}
         root={{ flex: 1 }}
@@ -233,6 +240,7 @@ export default function App(): JSX.Element {
           <PageWrapper role="main">
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/setup" element={<OnboardingPage />} />
               <Route path="/about" element={<StrimertulPage />} />
               <Route path="/debug" element={<DebugPage />} />
               <Route path="/http" element={<ServerSettingsPage />} />

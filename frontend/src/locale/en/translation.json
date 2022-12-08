@@ -251,6 +251,9 @@
       "live": "Live!",
       "x-viewers": "{{count}} viewers",
       "not-live": "Offline / Not streaming"
+    },
+    "onboarding": {
+      "welcome-header": "Welcome to {{APPNAME}}"
     }
   },
   "form-actions": {
