@@ -230,12 +230,12 @@ function TwitchAPISettings() {
 
           <DefinitionTable
             entries={{
-              'OAuth Redirect URLs': `http://${
+              [t('pages.twitch-settings.app-oauth-redirect-url')]: `http://${
                 httpConfig?.bind.indexOf(':') > 0
                   ? httpConfig.bind
                   : `localhost${httpConfig?.bind ?? ':4337'}`
               }/twitch/callback`,
-              Category: 'Broadcasting Suite',
+              [t('pages.twitch-settings.app-category')]: 'Broadcasting Suite',
             }}
           />
         </Step>

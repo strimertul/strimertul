@@ -10,7 +10,7 @@ import {
   TimerIcon,
 } from '@radix-ui/react-icons';
 import { EventsOff, EventsOn } from '@wailsapp/runtime/runtime';
-import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
@@ -172,6 +172,7 @@ export default function App(): JSX.Element {
   const dispatch = useAppDispatch();
   const location = useLocation();
   const navigate = useNavigate();
+  const [t, i18n] = useTranslation();
 
   const connectToKV = async () => {
     const address = await GetKilovoltBind();
@@ -217,12 +218,15 @@ export default function App(): JSX.Element {
     }
   }, [ready, connected]);
 
-  const onboardingDone = uiConfig?.onboardingDone;
+  // Sync UI changes on key change
   useEffect(() => {
-    if (!onboardingDone) {
+    if (uiConfig?.language) {
+      void i18n.changeLanguage(uiConfig?.language ?? 'en');
+    }
+    if (!uiConfig?.onboardingDone) {
       navigate('/setup');
     }
-  }, [ready, onboardingDone]);
+  }, [ready, uiConfig]);
 
   if (connected === ConnectionStatus.NotConnected) {
     return <Loading message={t('special.loading')} />;

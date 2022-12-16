@@ -25,6 +25,9 @@ export const globalStyles = globalCss({
       color: '$teal11',
     },
   },
+  p: {
+    lineHeight: 1.5,
+  },
 });
 
 export const { styled, theme } = createStitches({
