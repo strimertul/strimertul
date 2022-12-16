@@ -264,7 +264,9 @@
     },
     "uiconfig": {
       "title": "User interface settings",
-      "language": "Language"
+      "language": "Language",
+      "repeat-onboarding": "Repeat onboarding",
+      "partial-translation": "Partial translation"
     }
   },
   "form-actions": {
