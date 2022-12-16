@@ -16,7 +16,9 @@
     "create": "Crea",
     "enable": "Abilita",
     "disable": "Disabilita",
-    "submit": "Invia"
+    "submit": "Invia",
+    "password-hide": "Nascondi",
+    "password-reveal": "Mostra"
   },
   "special": {
     "wip": {
@@ -34,7 +36,8 @@
       "error": "Errore",
       "info": "Info",
       "warn": "Avvertimento"
-    }
+    },
+    "toggle-details": "Mostra dettagli"
   },
   "pagination": {
     "title": "paginazione",
@@ -56,14 +59,15 @@
     "pages": {
       "loyalty": {
         "configuration": "Configurazione",
-        "points": "Punti e riscatti",
-        "rewards": "Premi e obiettivi"
+        "points": "Punti e ricompense",
+        "rewards": "Ricompense e obiettivi"
       },
       "monitor": {
         "dashboard": "Vista generale"
       },
       "strimertul": {
-        "settings": "Impostazioni server"
+        "settings": "Impostazioni server",
+        "ui-config": "Opzioni interfaccia"
       },
       "twitch": {
         "bot-alerts": "Avvisi in chat",
@@ -110,7 +114,8 @@
         "streamer": "Solo streamer",
         "subscribers": "Abbonati",
         "vip": "VIP"
-      }
+      },
+      "command-already-in-use": "Nome comando già in uso"
     },
     "bottimers": {
       "add-button": "Nuovo timer",
@@ -127,7 +132,8 @@
       "timer-name": "Nome timer",
       "timer-name-placeholder": "mio-timer",
       "timer-parameters": "ogni {{time}}, ≥ {{messages}} messaggi negli ultimi {{interval}}",
-      "title": "Timer del bot"
+      "title": "Timer del bot",
+      "name-already-in-use": "Nome timer già in uso"
     },
     "dashboard": {
       "live": "In onda!",
@@ -146,6 +152,172 @@
       "read-key": "Leggi chiave DB",
       "title": "Operazioni di debug",
       "write-key": "Scrivi chiave DB"
+    },
+    "alerts": {
+      "cheer-enable": "Abilita messaggio per bit",
+      "desc": "Invia messaggi in chat quando i tuoi spettatori seguono, si abbonano o altri eventi",
+      "follow-enable": "Abilita messaggio per nuovo follower",
+      "gift_sub-enable": "Abilita messaggio per regalo abbonamento",
+      "messages": "Messaggi",
+      "msg-info": "Se sono presenti più messaggi, ne verrà scelto uno a caso",
+      "raid-enable": "Abilita messaggio per raid",
+      "subscription-enable": "Abilita messaggio per abbonamenti",
+      "title": "Avvisi in chat",
+      "events": {
+        "cheer": "Bit",
+        "follow": "Nuovo follower",
+        "gift-sub": "Regalo abbonamento",
+        "raid": "Raid",
+        "subscription": "Abbonamento"
+      }
+    },
+    "http": {
+      "bind": "Indirizzo/porta server",
+      "bind-help": "Ogni applicazione che utilizza {{APPNAME}} dovrà essere aggiornata!",
+      "bind-placeholder": "indirizzo:porta",
+      "kilovolt-password": "Password kilovolt",
+      "kilovolt-placeholder": "Lascia vuoto per disabilitare l'autenticazione (non consigliato)",
+      "saving": "Salvataggio delle impostazioni del server...",
+      "static-help": "Sarà disponibile al seguente URL: {{url}}",
+      "static-path": "Risorse statiche (lasciare vuoto per disabilitare)",
+      "static-placeholder": "Percorso completo alle risorse statiche",
+      "title": "Impostazioni del server",
+      "kv-auth-warning": {
+        "go-back": "Torna indietro",
+        "header": "Sei sicuro di quello che stai facendo?",
+        "i-understand": "Accetto il rischio",
+        "message": "Hai lasciato vuoto il campo della password Kilovolt! \nQuesto lascerà {{APPNAME}} accessibile senza autenticazione da qualsiasi applicazione, incluso qualsiasi sito web che visiti!"
+      }
+    },
+    "loyalty-queue": {
+      "accept": "Accetta",
+      "date": "Data",
+      "give-points-dialog": "Dai punti",
+      "hardcoded": "Testo a caso qui",
+      "modify-balance-dialog": "Modifica bilancio",
+      "no-redeems": "Nessun riscatto in sospeso",
+      "no-users": "Nessun spettatore trovato",
+      "points": "Punti",
+      "queue-tab": "Coda riscatti",
+      "refund": "Rimborsa",
+      "request": "Richiesta",
+      "reward": "Ricompensa",
+      "title": "Punti e ricompense",
+      "subtitle": "Classifica punti e ricompense in attesa",
+      "username": "Spettatore",
+      "username-filter": "Cerca per nome utente",
+      "users-tab": "Gestisci punti"
+    },
+    "loyalty-rewards": {
+      "create-goal": "Crea obiettivo",
+      "create-reward": "Crea ricompensa",
+      "edit-goal": "Modifica obiettivo",
+      "edit-reward": "Modifica ricompensa",
+      "goal-cost": "Punti totali richiesti",
+      "goal-desc": "Descrizione",
+      "goal-filter": "Cerca per nome obiettivo",
+      "goal-icon": "Icona obiettivo (URL)",
+      "goal-id": "ID obiettivo",
+      "goal-id-hint": "Questo è ciò che gli spettatori dovranno scrivere per contribuire, ad es. \n\"!contribuisci id-obiettivo-qui\".",
+      "goal-name": "Nome",
+      "goal-name-hint": "Questo è ciò che gli spettatori vedranno quando contribuiranno, ad es. \n\"SPETTATORE ha contribuito a NOMEOBIETTIVO\"",
+      "goals-tab": "Obiettivi",
+      "id-already-in-use": "ID già in uso",
+      "no-goals": "Non ci sono obiettivi configurati",
+      "no-rewards": "Non ci sono ricompense, perché non iniziare con un \"Bevi\" o \"Fai stretching\"?",
+      "remove-reward-title": "Rimuovere ricompensa \"{{name}}\"?",
+      "reward-cooldown": "Tempo di ricarica",
+      "reward-cost": "Prezzo",
+      "reward-desc": "Descrizione",
+      "reward-details": "Richiedi dettagli",
+      "reward-details-placeholder": "Quali dettagli extra chiedere allo spettatore",
+      "reward-filter": "Cerca per nome ricompensa",
+      "reward-icon": "Icona (URL)",
+      "reward-id": "ID ricompensa",
+      "reward-id-hint": "Questo è ciò che gli spettatori dovranno scrivere per riscattare, ad es. \n\"!redeem id-premio-qui\".",
+      "reward-name": "Nome",
+      "reward-name-hint": "Questo è ciò che gli spettatori vedranno quando riscatteranno, ad es. \n\"SPETTATORE ha riscattato NOMERICOMPENSA\"",
+      "rewards-tab": "Ricompense",
+      "subtitle": "Imposta ricompense ed obiettivi della community con cui i tuoi spettatori possono interagire",
+      "title": "Ricompense e obiettivi"
+    },
+    "loyalty-settings": {
+      "bonus-points": "Punti bonus per i spettatori attivi",
+      "bonus-points-hint": "Quantità extra di punti assegnati alle persone che hanno chattato nell'ultimo intervallo impostato",
+      "currency-name": "Nome dei punti",
+      "currency-name-hint": "Questo verrà usato in questo modo: \"persona ha X nomequi\" quindi scegli un nome plurale minuscolo (es. punti)",
+      "currency-placeholder": "punti",
+      "enable": "Abilita punti fedeltà",
+      "every": "ogni",
+      "note": "Nota: a differenza di come funziona nelle piattaforme (ad es. Punti canale Twitch), questo si basa sull'attività in chat piuttosto che sullo stato effettivo di visualizzazione.",
+      "reward": "Quanto spesso dare {{currency}}",
+      "subtitle": "Punti fedeltà che consentono agli spettatori di accumulare punti e spenderli in ricompense e obiettivi",
+      "title": "Configurazione punti fedeltà"
+    },
+    "onboarding": {
+      "skip-button": "Salta procedura guidata",
+      "welcome-continue-button": "Cominciamo",
+      "welcome-header": "Benvenuto su {{APPNAME}}",
+      "welcome-p1": "Sembra che questa sia la prima volta che avvii {{APPNAME}}. \nPuoi fare clic sul pulsante \"Cominciamo\" in basso per impostare tutto con una procedura guidata oppure semplicemente saltare tutto e configurare le cose manualmente in un secondo momento."
+    },
+    "strimertul": {
+      "credits-header": "Ringraziamenti",
+      "credits-renko": "Renko, mascotte e icona di {{APPNAME}}, è stata disegnata da <artist>Sonic_Chan</artist>",
+      "license-header": "Licenza",
+      "license-notice-strimertul": "{{APPNAME}} è concesso sotto licenza <license>GNU Affero General Public License v3.0</license>",
+      "need-help": "Hai bisogno di aiuto?",
+      "need-help-p1": "Se hai bisogno di aiuto, vuoi segnalare un bug o hai suggerimenti su come migliorare {{APPNAME}}, contattaci tramite uno dei seguenti canali:"
+    },
+    "twitch-settings": {
+      "api-configuration": "Accesso API",
+      "api-subheader": "Info applicazione",
+      "apiguide-1": "Dovrai creare un'applicazione, ecco come:",
+      "apiguide-2": "Vai su <1>https://dev.twitch.tv/console/apps/create</1>",
+      "apiguide-3": "Utilizza i seguenti dati per i campi obbligatori:",
+      "apiguide-4": "Una volta creato, crea un <1>Nuovo segreto</1>, quindi copia entrambi i campi qui sotto e salva!",
+      "app-client-id": "ID client",
+      "app-category": "Categoria",
+      "app-client-secret": "Segreto client",
+      "app-oauth-redirect-url": "Reindirizzamento URL OAuth",
+      "bot-channel": "Canale Twitch",
+      "bot-chat-header": "Storico chat",
+      "bot-chat-history": "Quanti messaggi tenere nello storico (0 per disabilitare)",
+      "bot-info-header": "Informazioni account del bot",
+      "bot-oauth": "Token di autorizzazione",
+      "bot-oauth-note": "Puoi ottenerlo accedendo con l'account del bot e andando qui: <1>https://twitchapps.com/tmi/</1>",
+      "bot-settings": "Impostazioni bot",
+      "bot-settings-copy": "Un bot può interagire con i messaggi in chat e scriverci per avvertimenti ed altre funzionalità ma richiede l'accesso ad un account Twitch. \nPuoi usare il tuo account o crearne uno apposta (se abilitato sul tuo account principale, puoi riutilizzare la stessa email per un secondo account!)",
+      "bot-username": "Nome utente dell'account Twitch",
+      "enable": "Abilita integrazione Twitch",
+      "enable-bot": "Abilita bot per Twitch",
+      "eventsub": "Eventi",
+      "subtitle": "Integrazione con stream su Twitch, incluso chat bot e accesso API. \nSe usi Twitch come piattaforma di streaming, lo vorrai sicuramente.",
+      "title": "Configurazione Twitch",
+      "events": {
+        "auth-button": "Autenticati via Twitch",
+        "auth-message": "Fai clic sul pulsante qui sotto per autorizzare {{APPNAME}} ad accedere a notifiche del tuo account Twitch:",
+        "authenticated-as": "Autenticato come",
+        "current-status": "Stato attuale",
+        "err-no-user": "Nessun utente twitch è attualmente associato (e quindi gli eventi sono disabilitati!)",
+        "loading-data": "Sto chiedendo i dati utente a Twitch...",
+        "profile-picture": "Immagine del profilo",
+        "sim-events": "Invia evento di prova",
+        "sim": {
+          "channel.update": "Aggiornamento canale",
+          "channel.follow": "Nuovo follower",
+          "channel.subscribe": "Nuovo abbonato",
+          "channel.subscription.gift": "Regalo abbonamento",
+          "channel.subscription.message": "Abbonamento con messaggio",
+          "channel.cheer": "Tifo",
+          "channel.raid": "Raid"
+        }
+      }
+    },
+    "uiconfig": {
+      "language": "Lingua",
+      "partial-translation": "Traduzione parziale",
+      "repeat-onboarding": "Ripeti procedura iniziale",
+      "title": "Impostazioni interfaccia utente"
     }
   },
   "time": {
