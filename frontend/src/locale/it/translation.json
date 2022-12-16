@@ -1,4 +1,7 @@
 {
+  "$meta": {
+    "language-name": "Italiano"
+  },
   "form-actions": {
     "save": "Salva",
     "saving": "Sto salvando...",

@@ -2,8 +2,8 @@ import * as UnstyledLabel from '@radix-ui/react-label';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
 import { styled, theme } from './theme';
-import ControlledInput from '../components/utils/ControlledInput';
-import PasswordField from '../components/utils/PasswordField';
+import ControlledInput from '../components/forms/ControlledInput';
+import PasswordField from '../components/forms/PasswordField';
 
 export const Field = styled('fieldset', {
   all: 'unset',

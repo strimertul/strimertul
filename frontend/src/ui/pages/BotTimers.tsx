@@ -8,8 +8,8 @@ import { modules } from '~/store/api/reducer';
 import { TwitchBotTimer } from '~/store/api/types';
 import AlertContent from '../components/AlertContent';
 import DialogContent from '../components/DialogContent';
-import Interval, { hours, minutes } from '../components/Interval';
-import MultiInput from '../components/MultiInput';
+import Interval, { hours, minutes } from '../components/forms/Interval';
+import MultiInput from '../components/forms/MultiInput';
 import {
   Button,
   Dialog,

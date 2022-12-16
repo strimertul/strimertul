@@ -7,7 +7,7 @@ import { modules } from '~/store/api/reducer';
 import { LoyaltyGoal, LoyaltyReward } from '~/store/api/types';
 import AlertContent from '../components/AlertContent';
 import DialogContent from '../components/DialogContent';
-import Interval from '../components/Interval';
+import Interval from '../components/forms/Interval';
 import {
   Button,
   Checkbox,

@@ -17,8 +17,8 @@ import {
   InputBox,
   FieldNote,
 } from '../theme';
-import SaveButton from '../components/utils/SaveButton';
-import Interval from '../components/Interval';
+import SaveButton from '../components/forms/SaveButton';
+import Interval from '../components/forms/Interval';
 
 export default function LoyaltySettingsPage(): React.ReactElement {
   const { t } = useTranslation();

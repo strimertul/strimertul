@@ -1,4 +1,7 @@
 {
+  "$meta": {
+    "language-name": "English"
+  },
   "menu": {
     "sections": {
       "monitor": "Monitor",
@@ -11,7 +14,8 @@
         "dashboard": "Dashboard"
       },
       "strimertul": {
-        "settings": "Server settings"
+        "settings": "Server settings",
+        "ui-config": "User interface"
       },
       "twitch": {
         "configuration": "Configuration",
@@ -253,7 +257,14 @@
       "not-live": "Offline / Not streaming"
     },
     "onboarding": {
-      "welcome-header": "Welcome to {{APPNAME}}"
+      "welcome-header": "Welcome to {{APPNAME}}",
+      "welcome-p1": "It looks like this is the first time you started {{APPNAME}}. You can click the \"Get started\" button at the bottom to set things up one by one, or just skip everything and configure things manually later.",
+      "welcome-continue-button": "Get started",
+      "skip-button": "Skip onboarding"
+    },
+    "uiconfig": {
+      "title": "User interface settings",
+      "language": "Language"
     }
   },
   "form-actions": {

@@ -12,7 +12,7 @@ import apiReducer, { modules } from '~/store/api/reducer';
 import BrowserLink from '../components/BrowserLink';
 import DefinitionTable from '../components/DefinitionTable';
 import RevealLink from '../components/utils/RevealLink';
-import SaveButton from '../components/utils/SaveButton';
+import SaveButton from '../components/forms/SaveButton';
 import {
   Button,
   ButtonGroup,

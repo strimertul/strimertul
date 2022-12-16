@@ -1,9 +1,10 @@
 import {
   ChatBubbleIcon,
+  CodeIcon,
   DashboardIcon,
   FrameIcon,
-  GearIcon,
   MixerHorizontalIcon,
+  MixIcon,
   StarIcon,
   TableIcon,
   TimerIcon,
@@ -11,7 +12,6 @@ import {
 import { EventsOff, EventsOn } from '@wailsapp/runtime/runtime';
 import { t } from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 import {
@@ -21,14 +21,16 @@ import {
 } from '@wailsapp/go/main/App';
 import { main } from '@wailsapp/go/models';
 
-import { RootState, useAppDispatch } from '~/store';
+import { useAppDispatch, useAppSelector } from '~/store';
 import { createWSClient, useAuthBypass } from '~/store/api/reducer';
 import { ConnectionStatus } from '~/store/api/types';
 import loggingReducer from '~/store/logging/reducer';
 // @ts-expect-error Asset import
 import spinner from '~/assets/icon-loading.svg';
 
+import LogViewer from './components/LogViewer';
 import Sidebar, { RouteSection } from './components/Sidebar';
+import Scrollbar from './components/utils/Scrollbar';
 import AuthDialog from './pages/AuthDialog';
 import TwitchBotCommandsPage from './pages/BotCommands';
 import TwitchBotTimersPage from './pages/BotTimers';
@@ -38,13 +40,12 @@ import DebugPage from './pages/Debug';
 import LoyaltyConfigPage from './pages/LoyaltyConfig';
 import LoyaltyQueuePage from './pages/LoyaltyQueue';
 import LoyaltyRewardsPage from './pages/LoyaltyRewards';
+import OnboardingPage from './pages/Onboarding';
 import ServerSettingsPage from './pages/ServerSettings';
 import StrimertulPage from './pages/Strimertul';
 import TwitchSettingsPage from './pages/TwitchSettings';
+import UISettingsPage from './pages/UISettingsPage';
 import { styled } from './theme';
-import Scrollbar from './components/utils/Scrollbar';
-import LogViewer from './components/LogViewer';
-import OnboardingPage from './pages/Onboarding';
 
 const LoadingDiv = styled('div', {
   display: 'flex',
@@ -87,7 +88,12 @@ const sections: RouteSection[] = [
       {
         title: 'menu.pages.strimertul.settings',
         url: '/http',
-        icon: <GearIcon />,
+        icon: <CodeIcon />,
+      },
+      {
+        title: 'menu.pages.strimertul.ui-config',
+        url: '/ui-config',
+        icon: <MixIcon />,
       },
     ],
   },
@@ -160,10 +166,9 @@ const PageWrapper = styled('div', {
 
 export default function App(): JSX.Element {
   const [ready, setReady] = useState(false);
-  const client = useSelector((state: RootState) => state.api.client);
-  const connected = useSelector(
-    (state: RootState) => state.api.connectionStatus,
-  );
+  const client = useAppSelector((state) => state.api.client);
+  const uiConfig = useAppSelector((state) => state.api.uiConfig);
+  const connected = useAppSelector((state) => state.api.connectionStatus);
   const dispatch = useAppDispatch();
   const location = useLocation();
   const navigate = useNavigate();
@@ -212,10 +217,12 @@ export default function App(): JSX.Element {
     }
   }, [ready, connected]);
 
-  // TODO: Only do this when
+  const onboardingDone = uiConfig?.onboardingDone;
   useEffect(() => {
-    navigate('/setup');
-  }, []);
+    if (!onboardingDone) {
+      navigate('/setup');
+    }
+  }, [ready, onboardingDone]);
 
   if (connected === ConnectionStatus.NotConnected) {
     return <Loading message={t('special.loading')} />;
@@ -244,6 +251,7 @@ export default function App(): JSX.Element {
               <Route path="/about" element={<StrimertulPage />} />
               <Route path="/debug" element={<DebugPage />} />
               <Route path="/http" element={<ServerSettingsPage />} />
+              <Route path="/ui-config" element={<UISettingsPage />} />
               <Route path="/twitch/settings" element={<TwitchSettingsPage />} />
               <Route
                 path="/twitch/bot/commands"

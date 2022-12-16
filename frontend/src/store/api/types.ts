@@ -143,6 +143,11 @@ export interface LoyaltyRedeem {
   request_text: string;
 }
 
+export interface UISettings {
+  onboardingDone: boolean;
+  language: string;
+}
+
 export enum ConnectionStatus {
   NotConnected,
   AuthenticationNeeded,
@@ -176,5 +181,6 @@ export interface APIState {
     twitchBotConfig: TwitchBotConfig;
     loyaltyConfig: LoyaltyConfig;
   };
+  uiConfig: UISettings;
   requestStatus: Record<string, RequestStatus>;
 }

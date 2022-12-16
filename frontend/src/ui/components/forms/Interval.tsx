@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getInterval } from '~/lib/time-utils';
-import { ComboBox, FlexRow, InputBox } from '../theme';
+import { ComboBox, FlexRow, InputBox } from '../../theme';
 
 export interface TimeUnit {
   multiplier: number;

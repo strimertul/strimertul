@@ -230,6 +230,14 @@ export const modules = {
       state.loyalty.redeemQueue = payload;
     },
   ),
+  uiConfig: makeModule(
+    'ui/settings',
+    (state) => state.uiConfig,
+    (state, { payload }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      state.uiConfig = payload;
+    },
+  ),
 };
 
 export const createRedeem = createAsyncThunk(
@@ -280,6 +288,7 @@ const initialState: APIState = {
     twitchBotConfig: null,
     loyaltyConfig: null,
   },
+  uiConfig: null,
   requestStatus: {},
 };
 
