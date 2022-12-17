@@ -125,12 +125,6 @@ export default function StrimertulPage(): React.ReactElement {
               github.com/strimertul/strimertul/issues
             </ChannelLink>
           </Channel>
-          <Channel>
-            <ChannelLink href="https://twitter.com/ashkeelvt">
-              <TwitterLogoIcon width={24} height={24} />
-              twitter.com/AshKeelVT
-            </ChannelLink>
-          </Channel>
         </ChannelList>
       </Section>
       <Section>
