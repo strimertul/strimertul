@@ -415,7 +415,9 @@ function TwitchEventSubSettings() {
       userBlock = (
         <>
           <TwitchUser>
-            <p>{t('pages.twitch-settings.events.authenticated-as')}</p>
+            <TextBlock>
+              {t('pages.twitch-settings.events.authenticated-as')}
+            </TextBlock>
             <TwitchPic
               src={userStatus.profile_image_url}
               alt={t('pages.twitch-settings.events.profile-picture')}
@@ -430,7 +432,7 @@ function TwitchEventSubSettings() {
   }
   return (
     <>
-      <p>{t('pages.twitch-settings.events.auth-message')}</p>
+      <TextBlock>{t('pages.twitch-settings.events.auth-message')}</TextBlock>
       <Button
         variation="primary"
         onClick={() => {

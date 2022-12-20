@@ -45,7 +45,7 @@ import ServerSettingsPage from './pages/ServerSettings';
 import StrimertulPage from './pages/Strimertul';
 import TwitchSettingsPage from './pages/TwitchSettings';
 import UISettingsPage from './pages/UISettingsPage';
-import { styled } from './theme';
+import { styled, TextBlock } from './theme';
 
 const LoadingDiv = styled('div', {
   display: 'flex',
@@ -67,7 +67,7 @@ function Loading({ message }: React.PropsWithChildren<LoadingProps>) {
   return (
     <LoadingDiv>
       <Spinner src={spinner as string} alt="Loading..." />
-      <p>{message}</p>
+      <TextBlock>{message}</TextBlock>
     </LoadingDiv>
   );
 }

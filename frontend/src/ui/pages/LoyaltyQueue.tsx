@@ -137,7 +137,7 @@ function RewardQueue() {
             </TableRow>
           )}
         />
-      )) || <p>{t('pages.loyalty-queue.no-redeems')}</p>}
+      )) || <TextBlock>{t('pages.loyalty-queue.no-redeems')}</TextBlock>}
     </>
   );
 }
@@ -370,7 +370,7 @@ function UserList() {
             </TableRow>
           )}
         />
-      )) || <p>{t('pages.loyalty-queue.no-users')}</p>}
+      )) || <TextBlock>{t('pages.loyalty-queue.no-users')}</TextBlock>}
     </>
   );
 }

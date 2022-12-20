@@ -2,7 +2,7 @@ import { CircleIcon } from '@radix-ui/react-icons';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLiveKey } from '~/lib/react';
-import { PageContainer, SectionHeader, styled } from '../theme';
+import { PageContainer, SectionHeader, styled, TextBlock } from '../theme';
 import WIPNotice from '../components/utils/WIPNotice';
 import BrowserLink from '../components/BrowserLink';
 
@@ -98,7 +98,7 @@ function TwitchSection() {
           </StreamInfo>
         </StreamBlock>
       ) : (
-        <p>{t('pages.dashboard.not-live')}</p>
+        <TextBlock>{t('pages.dashboard.not-live')}</TextBlock>
       )}
     </>
   );
