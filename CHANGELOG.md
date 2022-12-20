@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Application logs are now visible from the UI, check the little floating boxes in the top right!
 - A new app icon drawn by [Sonic_chan](https://twitter.com/Sonic__Chan), say hello to Renko, strimertul's mascot!
 - Hidden fields (Client secret, Kilovolt password) now have a "Reveal" toggle to show the hidden value
+- Added a "Test connection" button in the Twitch API access page to check if the provided Client ID and secret are valid and functional
+- Added language selection (so far English and Italian are the only supported languages)
 
 ### Changed
 
@@ -38,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Stulbe support has been removed across the board, see on Added for more notes
 - Badger has been removed as a possible database, see v3 release notes on migration procedures.
+- The link to Ash Keel's twitter profile has been removed
 
 ## [2.1.1] - 2022-03-24
 
