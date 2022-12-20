@@ -1,7 +1,7 @@
 import { PlusIcon } from '@radix-ui/react-icons';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useModule } from '~/lib/react-utils';
+import { useModule } from '~/lib/react';
 import { useAppDispatch } from '~/store';
 import { modules } from '~/store/api/reducer';
 import {

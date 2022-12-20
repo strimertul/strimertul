@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { RootState } from 'src/store';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { delay } from '~/lib/time-utils';
+import { delay } from '~/lib/time';
 import { ProcessedLogEntry } from '~/store/logging/reducer';
 import {
   Dialog,

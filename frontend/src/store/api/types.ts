@@ -144,6 +144,7 @@ export interface LoyaltyRedeem {
 }
 
 export interface UISettings {
+  onboardingStatus: number;
   onboardingDone: boolean;
   language: string;
 }

@@ -95,7 +95,10 @@
         "current-status": "Current status"
       },
       "app-category": "Category",
-      "app-oauth-redirect-url": "OAuth Redirect URLs"
+      "app-oauth-redirect-url": "OAuth Redirect URLs",
+      "test-button": "Test",
+      "test-failed": "Test failed: \"{{0}}\". Check your app client IDs and secret!",
+      "test-succeeded": "Test succeeded!"
     },
     "botcommands": {
       "title": "Bot commands",
@@ -259,9 +262,16 @@
     },
     "onboarding": {
       "welcome-header": "Welcome to {{APPNAME}}",
-      "welcome-p1": "It looks like this is the first time you started {{APPNAME}}. You can click the \"Get started\" button at the bottom to set things up one by one, or just skip everything and configure things manually later.",
       "welcome-continue-button": "Get started",
-      "skip-button": "Skip onboarding"
+      "skip-button": "Skip onboarding",
+      "welcome-p1": "It looks like this is the first time you started {{APPNAME}}. You can click the \"Get started\" button at the bottom to set things up one by one, or just skip everything and configure things manually later.",
+      "welcome-p2": "Heads up: if you're used to other platforms, this unfortunately will require some more work on your end.",
+      "sections": {
+        "landing": "Welcome",
+        "twitch-config": "Twitch integration",
+        "twitch-bot": "Twitch bot",
+        "done": "All done!"
+      }
     },
     "uiconfig": {
       "title": "User interface settings",

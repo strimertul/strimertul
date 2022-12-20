@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckIcon } from '@radix-ui/react-icons';
-import { useModule, useStatus } from '~/lib/react-utils';
+import { useModule, useStatus } from '~/lib/react';
 import apiReducer, { modules } from '~/store/api/reducer';
 import { useAppDispatch } from '~/store';
 import MultiInput from '../components/forms/MultiInput';

@@ -6,9 +6,10 @@ import React, { useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import eventsubTests from '~/data/eventsub-tests';
-import { useModule, useStatus } from '~/lib/react-utils';
+import { useModule, useStatus } from '~/lib/react';
 import { RootState, useAppDispatch } from '~/store';
 import apiReducer, { modules } from '~/store/api/reducer';
+import { checkTwitchKeys } from '~/lib/twitch';
 import BrowserLink from '../components/BrowserLink';
 import DefinitionTable from '../components/DefinitionTable';
 import RevealLink from '../components/utils/RevealLink';
@@ -35,6 +36,8 @@ import {
   TabList,
   TextBlock,
 } from '../theme';
+import AlertContent from '../components/AlertContent';
+import { Alert } from '../theme/alert';
 
 const StepList = styled('ul', {
   lineHeight: '1.5',
@@ -195,6 +198,8 @@ function TwitchBotSettings() {
   );
 }
 
+type TestResult = { open: boolean; error?: Error };
+
 function TwitchAPISettings() {
   const { t } = useTranslation();
   const [httpConfig] = useModule(modules.httpConfig);
@@ -204,6 +209,27 @@ function TwitchAPISettings() {
   const status = useStatus(loadStatus.save);
   const dispatch = useAppDispatch();
   const [revealClientSecret, setRevealClientSecret] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<TestResult>({
+    open: false,
+  });
+
+  async function checkCredentials() {
+    setTesting(true);
+    if (twitchConfig) {
+      try {
+        await checkTwitchKeys(
+          twitchConfig.api_client_id,
+          twitchConfig.api_client_secret,
+        );
+        setTestResult({ open: true });
+      } catch (e: unknown) {
+        console.log(e);
+        setTestResult({ open: true, error: e as Error });
+      }
+    }
+    setTesting(false);
+  }
 
   return (
     <form
@@ -291,7 +317,40 @@ function TwitchAPISettings() {
           }
         />
       </Field>
-      <SaveButton status={status} />
+      <ButtonGroup>
+        <SaveButton status={status} />
+        <Button
+          type="button"
+          onClick={() => {
+            void checkCredentials();
+          }}
+          disabled={testing}
+        >
+          {t('pages.twitch-settings.test-button')}
+        </Button>
+      </ButtonGroup>
+      <Alert
+        defaultOpen={false}
+        open={testResult.open}
+        onOpenChange={(val: boolean) => {
+          setTestResult({ ...testResult, open: val });
+        }}
+      >
+        <AlertContent
+          variation={testResult.error ? 'danger' : 'default'}
+          description={
+            testResult.error
+              ? t('pages.twitch-settings.test-failed', [
+                  testResult.error.message,
+                ])
+              : t('pages.twitch-settings.test-succeeded')
+          }
+          actionText={t('form-actions.ok')}
+          onAction={() => {
+            setTestResult({ ...testResult, open: false });
+          }}
+        />
+      </Alert>
     </form>
   );
 }

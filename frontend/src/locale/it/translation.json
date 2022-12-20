@@ -258,7 +258,14 @@
       "skip-button": "Salta procedura guidata",
       "welcome-continue-button": "Cominciamo",
       "welcome-header": "Benvenuto su {{APPNAME}}",
-      "welcome-p1": "Sembra che questa sia la prima volta che avvii {{APPNAME}}. \nPuoi fare clic sul pulsante \"Cominciamo\" in basso per impostare tutto con una procedura guidata oppure semplicemente saltare tutto e configurare le cose manualmente in un secondo momento."
+      "welcome-p1": "Sembra che questa sia la prima volta che avvii {{APPNAME}}. \nPuoi fare clic sul pulsante \"Cominciamo\" in basso per impostare tutto con una procedura guidata oppure semplicemente saltare tutto e configurare le cose manualmente in un secondo momento.",
+      "welcome-p2": "Giusto una cosa: se sei abituato ad altre piattaforme, stavolta toccherà un po' più lavoro da parte tua!",
+      "sections": {
+        "done": "Pronti a partire!",
+        "landing": "Benvenuto",
+        "twitch-bot": "Bot per Twitch",
+        "twitch-config": "Integrazione Twitch"
+      }
     },
     "strimertul": {
       "credits-header": "Ringraziamenti",

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useModule, useUserPoints } from '~/lib/react-utils';
-import { SortFunction } from '~/lib/type-utils';
+import { useModule, useUserPoints } from '~/lib/react';
+import { SortFunction } from '~/lib/types';
 import { useAppDispatch } from '~/store';
 import { modules, removeRedeem, setUserPoints } from '~/store/api/reducer';
 import { DataTable } from '../components/DataTable';

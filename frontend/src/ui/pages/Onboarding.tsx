@@ -1,3 +1,4 @@
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import { keyframes } from '@stitches/react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -5,11 +6,30 @@ import { useNavigate } from 'react-router-dom';
 
 // @ts-expect-error Asset import
 import spinner from '~/assets/icon-logo.svg';
-import { useModule } from '~/lib/react-utils';
+import { useModule, useStatus } from '~/lib/react';
+import { languages } from '~/locale/languages';
 import { useAppDispatch } from '~/store';
-import { modules } from '~/store/api/reducer';
+import apiReducer, { modules } from '~/store/api/reducer';
+import AlertContent from '../components/AlertContent';
+import SaveButton from '../components/forms/SaveButton';
+import RevealLink from '../components/utils/RevealLink';
 
-import { Button, PageContainer, styled, TextBlock } from '../theme';
+import {
+  Button,
+  Field,
+  FieldNote,
+  InputBox,
+  Label,
+  MultiToggle,
+  MultiToggleItem,
+  PageContainer,
+  PageHeader,
+  PageTitle,
+  PasswordInputBox,
+  styled,
+  TextBlock,
+} from '../theme';
+import { Alert } from '../theme/alert';
 
 const Container = styled('div', {
   display: 'flex',
@@ -56,6 +76,20 @@ const HeroContainer = styled('div', {
   overflow: 'hidden',
 });
 
+const HeroLanguageSelector = styled('div', {
+  top: '10px',
+  left: '10px',
+  display: 'flex',
+  gap: '1rem',
+  position: 'absolute',
+  zIndex: '10',
+});
+
+const LanguageItem = styled(MultiToggleItem, {
+  fontSize: '1rem',
+  padding: '5px 8px',
+});
+
 const HeroAnimation = styled('div', {
   bottom: '-50px',
   left: '50%',
@@ -95,6 +129,10 @@ const Spinner = styled('img', {
 const StepContainer = styled(PageContainer, {
   display: 'flex',
   flexDirection: 'column',
+  paddingTop: '1rem',
+  '& p': {
+    margin: '1.5rem 0',
+  },
 });
 
 const ActionContainer = styled('div', {
@@ -102,21 +140,81 @@ const ActionContainer = styled('div', {
   display: 'flex',
   justifyContent: 'center',
   gap: '1rem',
+  paddingTop: '1rem',
+});
+
+const StepList = styled('nav', {
+  flex: '1',
+  display: 'flex',
+  alignItems: 'center',
+  padding: '0 1rem',
+  flexWrap: 'wrap',
+  flexDirection: 'row',
+  justifyContent: 'flex-start',
+});
+
+const StepName = styled('div', {
+  padding: '0.5rem',
+  color: '$gray10',
+  '&:not(:last-child)::after': {
+    color: '$gray10',
+    content: '›',
+    margin: '0 0 0 1rem',
+  },
+  display: 'none',
+  '@thin': {
+    display: 'inherit',
+  },
+  variants: {
+    status: {
+      active: {
+        color: '$teal12',
+        display: 'inherit',
+      },
+    },
+    interaction: {
+      clickable: {
+        cursor: 'pointer',
+      },
+    },
+  },
 });
 
 enum OnboardingSteps {
   Landing = 0,
-  ServerConfig = 1,
+  TwitchIntegration = 1,
+  TwitchBot = 2,
+  Done = 999,
 }
 
+const steps = [
+  OnboardingSteps.Landing,
+  OnboardingSteps.TwitchIntegration,
+  OnboardingSteps.TwitchBot,
+  OnboardingSteps.Done,
+];
+
+const stepI18n = {
+  [OnboardingSteps.Landing]: 'pages.onboarding.sections.landing',
+  [OnboardingSteps.TwitchIntegration]:
+    'pages.onboarding.sections.twitch-config',
+  [OnboardingSteps.TwitchBot]: 'pages.onboarding.sections.twitch-bot',
+  [OnboardingSteps.Done]: 'pages.onboarding.sections.done',
+};
+
+const maxKeys = languages.reduce(
+  (current, it) => Math.max(current, it.keys),
+  0,
+);
+
 export default function OnboardingPage() {
-  const { t } = useTranslation();
+  const [t, i18n] = useTranslation();
   const [animationItems, setAnimationItems] = useState<JSX.Element[]>([]);
-  const [currentStep, setStep] = useState(OnboardingSteps.Landing);
   const [uiConfig, setUiConfig] = useModule(modules.uiConfig);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
+  const currentStep = steps[uiConfig?.onboardingStatus || 0];
   const landing = currentStep === OnboardingSteps.Landing;
 
   const onboardingDone = uiConfig?.onboardingDone;
@@ -158,26 +256,10 @@ export default function OnboardingPage() {
     );
   }, []);
 
-  return (
-    <Container>
-      <TopBanner>
-        {landing ? (
-          <HeroContainer>
-            <HeroAnimation>{animationItems}</HeroAnimation>
-            <HeroTitle>{t('pages.onboarding.welcome-header')}</HeroTitle>
-            <HeroContent>
-              <TextBlock>{t('pages.onboarding.welcome-p1')}</TextBlock>
-              <TextBlock css={{ color: '$gray11' }}>
-                Heads up: if you're used to other platforms, this unfortunately
-                will require some more work on your end.
-              </TextBlock>
-            </HeroContent>
-          </HeroContainer>
-        ) : (
-          <div></div>
-        )}
-      </TopBanner>
-      <StepContainer>
+  let currentStepBody: JSX.Element = null;
+  switch (currentStep) {
+    case OnboardingSteps.Landing:
+      currentStepBody = (
         <ActionContainer>
           <Button
             css={{ width: '20vw', justifyContent: 'center' }}
@@ -188,12 +270,91 @@ export default function OnboardingPage() {
           <Button
             css={{ width: '20vw', justifyContent: 'center' }}
             variation="primary"
-            onClick={() => setStep(OnboardingSteps.ServerConfig)}
+            onClick={() => {
+              void dispatch(
+                setUiConfig({
+                  ...uiConfig,
+                  onboardingStatus: (uiConfig?.onboardingStatus ?? 0) + 1,
+                }),
+              );
+            }}
           >
             {t('pages.onboarding.welcome-continue-button')}
           </Button>
         </ActionContainer>
-      </StepContainer>
+      );
+      break;
+  }
+
+  return (
+    <Container>
+      <TopBanner>
+        {landing ? (
+          <HeroContainer>
+            <HeroLanguageSelector>
+              <MultiToggle
+                value={uiConfig?.language ?? i18n.resolvedLanguage}
+                type="single"
+                onValueChange={(newLang) => {
+                  void dispatch(
+                    setUiConfig({ ...uiConfig, language: newLang }),
+                  );
+                }}
+              >
+                {languages.map((lang) => (
+                  <LanguageItem
+                    key={lang.code}
+                    aria-label={lang.name}
+                    value={lang.code}
+                    title={`${lang.name} ${
+                      lang.keys < maxKeys
+                        ? `(${t('pages.uiconfig.partial-translation')})`
+                        : ''
+                    }`}
+                  >
+                    {lang.name}
+                    {lang.keys < maxKeys ? <ExclamationTriangleIcon /> : null}
+                  </LanguageItem>
+                ))}
+              </MultiToggle>
+            </HeroLanguageSelector>
+            <HeroAnimation>{animationItems}</HeroAnimation>
+            <HeroTitle>{t('pages.onboarding.welcome-header')}</HeroTitle>
+            <HeroContent>
+              <TextBlock>{t('pages.onboarding.welcome-p1')}</TextBlock>
+              <TextBlock css={{ color: '$gray11' }}>
+                {t('pages.onboarding.welcome-p2')}
+              </TextBlock>
+            </HeroContent>
+          </HeroContainer>
+        ) : (
+          <StepList>
+            {steps.map((step) => (
+              <StepName
+                key={step}
+                interaction={step < currentStep ? 'clickable' : undefined}
+                status={step === currentStep ? 'active' : undefined}
+                onClick={() => {
+                  // Can't skip ahead
+                  if (step >= currentStep) {
+                    return;
+                  }
+                  void dispatch(
+                    setUiConfig({
+                      ...uiConfig,
+                      onboardingStatus:
+                        steps.findIndex((val) => val === step) ?? 0,
+                    }),
+                  );
+                }}
+              >
+                {t(stepI18n[step])}
+              </StepName>
+            ))}
+          </StepList>
+        )}
+      </TopBanner>
+      <StepContainer>{currentStepBody}</StepContainer>
     </Container>
   );
 }

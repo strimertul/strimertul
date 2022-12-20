@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useModule } from '~/lib/react-utils';
+import { useModule } from '~/lib/react';
 import { languages } from '~/locale/languages';
 import { useAppDispatch } from '~/store';
 import { modules } from '~/store/api/reducer';
@@ -19,15 +19,15 @@ const PartialWarning = styled('small', {
   color: '$yellow11',
 });
 
+const maxKeys = languages.reduce(
+  (current, it) => Math.max(current, it.keys),
+  0,
+);
+
 export default function UISettingsPage(): React.ReactElement {
   const [uiConfig, setUiConfig] = useModule(modules.uiConfig);
   const [t, i18n] = useTranslation();
   const dispatch = useAppDispatch();
-
-  const maxKeys = languages.reduce(
-    (current, it) => Math.max(current, it.keys),
-    0,
-  );
 
   return (
     <PageContainer>
@@ -63,7 +63,13 @@ export default function UISettingsPage(): React.ReactElement {
       <Button
         type="button"
         onClick={() => {
-          void dispatch(setUiConfig({ ...uiConfig, onboardingDone: false }));
+          void dispatch(
+            setUiConfig({
+              ...uiConfig,
+              onboardingDone: false,
+              onboardingStatus: 0,
+            }),
+          );
         }}
       >
         {t('pages.uiconfig.repeat-onboarding')}

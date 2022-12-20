@@ -13,8 +13,10 @@ function PasswordField(
       >
     >,
 ) {
+  const subprops = { ...props };
+  delete subprops.reveal;
   return (
-    <input type={props.reveal ? 'text' : 'password'} {...props}>
+    <input type={props.reveal ? 'text' : 'password'} {...subprops}>
       {props.children}
     </input>
   );

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useModule, useStatus } from '~/lib/react-utils';
+import { useModule, useStatus } from '~/lib/react';
 import { useAppDispatch } from '~/store';
 import apiReducer, { modules } from '~/store/api/reducer';
 import AlertContent from '../components/AlertContent';

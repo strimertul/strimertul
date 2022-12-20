@@ -46,7 +46,7 @@ export const { styled, theme } = createStitches({
     },
   },
   media: {
-    mobile: '(min-width: 640px)',
+    thin: '(min-width: 480px)',
     medium: '(min-width: 768px)',
     wide: '(min-width: 1024px)',
   },

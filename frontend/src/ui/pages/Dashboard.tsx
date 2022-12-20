@@ -1,7 +1,7 @@
 import { CircleIcon } from '@radix-ui/react-icons';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLiveKey } from '~/lib/react-utils';
+import { useLiveKey } from '~/lib/react';
 import { PageContainer, SectionHeader, styled } from '../theme';
 import WIPNotice from '../components/utils/WIPNotice';
 import BrowserLink from '../components/BrowserLink';

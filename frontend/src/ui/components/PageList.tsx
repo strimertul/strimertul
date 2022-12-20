@@ -38,21 +38,13 @@ function PageList({
         },
       }}
     >
-      <ToolbarSection
-        css={{
-          '@mobile': { flex: 1 },
-          '@medium': { flex: 0 },
-        }}
-      >
+      <ToolbarSection css={{ flex: 1, '@medium': { flex: 0 } }}>
         <ToolbarButton
           aria-label={t('pagination.previous')}
           title={t('pagination.previous')}
           disabled={current <= min}
           onClick={() => onPageChange(current - 1)}
-          css={{
-            '@mobile': { flex: 1 },
-            '@medium': { flex: 0 },
-          }}
+          css={{ flex: 1, '@medium': { flex: 0 } }}
         >
           &lsaquo;
         </ToolbarButton>
@@ -61,10 +53,7 @@ function PageList({
           title={t('pagination.next')}
           disabled={current >= max}
           onClick={() => onPageChange(current + 1)}
-          css={{
-            '@mobile': { flex: 1 },
-            '@medium': { flex: 0 },
-          }}
+          css={{ flex: 1, '@medium': { flex: 0 } }}
         >
           &rsaquo;
         </ToolbarButton>
@@ -75,7 +64,7 @@ function PageList({
           onChange={(ev) => onSelectChange(Number(ev.target.value))}
           css={{
             textAlign: 'center',
-            '@mobile': { flex: 1 },
+            flex: 1,
             '@medium': { flex: 0 },
           }}
         >
