@@ -318,7 +318,8 @@
           "channel.cheer": "Tifo",
           "channel.raid": "Raid"
         }
-      }
+      },
+      "test-button": "Fai un test"
     },
     "uiconfig": {
       "language": "Lingua",

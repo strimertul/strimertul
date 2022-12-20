@@ -96,7 +96,7 @@
       },
       "app-category": "Category",
       "app-oauth-redirect-url": "OAuth Redirect URLs",
-      "test-button": "Test",
+      "test-button": "Test connection",
       "test-failed": "Test failed: \"{{0}}\". Check your app client IDs and secret!",
       "test-succeeded": "Test succeeded!"
     },
@@ -269,9 +269,14 @@
       "sections": {
         "landing": "Welcome",
         "twitch-config": "Twitch integration",
+        "twitch-events": "Twitch events",
         "twitch-bot": "Twitch bot",
         "done": "All done!"
-      }
+      },
+      "twitch-p1": "To set-up Twitch, you will need to create an application on the Developer portal, follow the instructions below or click the button at the bottom to skip this step.",
+      "twitch-p2": "Click \"Test connection\" to make sure the Client ID and secret are valid, if the test is successful you will be brought to the next step automatically.",
+      "twitch-skip": "Skip Twitch integration",
+      "twitch-ev-p1": "Now that you've made an app, you need to authenticate your Twitch account to it so we can access your user data like your channel name or events like new followers or raids."
     },
     "uiconfig": {
       "title": "User interface settings",

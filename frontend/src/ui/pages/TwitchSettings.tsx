@@ -214,7 +214,7 @@ function TwitchAPISettings() {
     open: false,
   });
 
-  async function checkCredentials() {
+  const checkCredentials = async () => {
     setTesting(true);
     if (twitchConfig) {
       try {
@@ -229,7 +229,7 @@ function TwitchAPISettings() {
       }
     }
     setTesting(false);
-  }
+  };
 
   return (
     <form
@@ -407,6 +407,14 @@ function TwitchEventSubSettings() {
   useEffect(() => {
     // Get user info
     void getUserInfo();
+
+    const onKeyChange = () => {
+      void getUserInfo();
+    };
+    void kv.subscribeKey('twitch/auth-keys', onKeyChange);
+    return () => {
+      void kv.unsubscribeKey('twitch/auth-keys', onKeyChange);
+    };
   }, []);
 
   let userBlock = <i>{t('pages.twitch-settings.events.loading-data')}</i>;

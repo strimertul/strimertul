@@ -1,31 +1,40 @@
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
+import {
+  ExclamationTriangleIcon,
+  ExternalLinkIcon,
+} from '@radix-ui/react-icons';
 import { keyframes } from '@stitches/react';
+import { GetTwitchLoggedUser, GetTwitchAuthURL } from '@wailsapp/go/main/App';
+import { helix } from '@wailsapp/go/models';
+import { BrowserOpenURL } from '@wailsapp/runtime/runtime';
+import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useModule } from '~/lib/react';
+import { checkTwitchKeys } from '~/lib/twitch';
+import { languages } from '~/locale/languages';
+import { RootState, useAppDispatch } from '~/store';
+import apiReducer, { modules } from '~/store/api/reducer';
 
 // @ts-expect-error Asset import
 import spinner from '~/assets/icon-logo.svg';
-import { useModule, useStatus } from '~/lib/react';
-import { languages } from '~/locale/languages';
-import { useAppDispatch } from '~/store';
-import apiReducer, { modules } from '~/store/api/reducer';
+
 import AlertContent from '../components/AlertContent';
-import SaveButton from '../components/forms/SaveButton';
+import BrowserLink from '../components/BrowserLink';
+import DefinitionTable from '../components/DefinitionTable';
 import RevealLink from '../components/utils/RevealLink';
 
 import {
   Button,
+  ButtonGroup,
   Field,
-  FieldNote,
   InputBox,
   Label,
   MultiToggle,
   MultiToggleItem,
   PageContainer,
-  PageHeader,
-  PageTitle,
   PasswordInputBox,
+  SectionHeader,
   styled,
   TextBlock,
 } from '../theme';
@@ -183,14 +192,14 @@ const StepName = styled('div', {
 enum OnboardingSteps {
   Landing = 0,
   TwitchIntegration = 1,
-  TwitchBot = 2,
+  TwitchEvents = 2,
   Done = 999,
 }
 
 const steps = [
   OnboardingSteps.Landing,
   OnboardingSteps.TwitchIntegration,
-  OnboardingSteps.TwitchBot,
+  OnboardingSteps.TwitchEvents,
   OnboardingSteps.Done,
 ];
 
@@ -198,7 +207,7 @@ const stepI18n = {
   [OnboardingSteps.Landing]: 'pages.onboarding.sections.landing',
   [OnboardingSteps.TwitchIntegration]:
     'pages.onboarding.sections.twitch-config',
-  [OnboardingSteps.TwitchBot]: 'pages.onboarding.sections.twitch-bot',
+  [OnboardingSteps.TwitchEvents]: 'pages.onboarding.sections.twitch-events',
   [OnboardingSteps.Done]: 'pages.onboarding.sections.done',
 };
 
@@ -206,6 +215,296 @@ const maxKeys = languages.reduce(
   (current, it) => Math.max(current, it.keys),
   0,
 );
+
+type TestResult = { open: boolean; error?: Error };
+
+const TwitchStepList = styled('ul', {
+  lineHeight: '1.5',
+  listStyleType: 'none',
+  listStylePosition: 'outside',
+});
+const TwitchStep = styled('li', {
+  marginBottom: '0.5rem',
+  paddingLeft: '1rem',
+  '&::marker': {
+    color: '$teal11',
+    content: '▧',
+    display: 'inline-block',
+    marginLeft: '-0.5rem',
+  },
+});
+
+function TwitchIntegrationStep() {
+  const { t } = useTranslation();
+  const [httpConfig] = useModule(modules.httpConfig);
+  const [twitchConfig, setTwitchConfig] = useModule(modules.twitchConfig);
+  const [uiConfig, setUiConfig] = useModule(modules.uiConfig);
+  const dispatch = useAppDispatch();
+  const [revealClientSecret, setRevealClientSecret] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<TestResult>({
+    open: false,
+  });
+
+  const checkCredentials = async () => {
+    setTesting(true);
+    if (twitchConfig) {
+      try {
+        await checkTwitchKeys(
+          twitchConfig.api_client_id,
+          twitchConfig.api_client_secret,
+        );
+        void dispatch(setTwitchConfig(twitchConfig));
+        void dispatch(
+          setUiConfig({
+            ...uiConfig,
+            onboardingStatus: uiConfig.onboardingStatus + 1,
+          }),
+        );
+      } catch (e: unknown) {
+        setTestResult({ open: true, error: e as Error });
+      }
+    }
+    setTesting(false);
+  };
+
+  function skipTwitch() {
+    void dispatch(
+      setUiConfig({
+        ...uiConfig,
+        onboardingStatus:
+          steps.findIndex((val) => val === OnboardingSteps.TwitchEvents) + 1,
+      }),
+    );
+  }
+
+  return (
+    <form
+      onSubmit={(ev) => {
+        void dispatch(setTwitchConfig(twitchConfig));
+        ev.preventDefault();
+      }}
+    >
+      <TextBlock>{t('pages.onboarding.twitch-p1')}</TextBlock>
+      <TwitchStepList>
+        <TwitchStep>
+          <Trans i18nKey="pages.twitch-settings.apiguide-2">
+            {' '}
+            <BrowserLink href="https://dev.twitch.tv/console/apps/create">
+              https://dev.twitch.tv/console/apps/create
+            </BrowserLink>
+          </Trans>
+        </TwitchStep>
+        <TwitchStep>
+          {t('pages.twitch-settings.apiguide-3')}
+
+          <DefinitionTable
+            entries={{
+              [t('pages.twitch-settings.app-oauth-redirect-url')]: `http://${
+                httpConfig?.bind.indexOf(':') > 0
+                  ? httpConfig.bind
+                  : `localhost${httpConfig?.bind ?? ':4337'}`
+              }/twitch/callback`,
+              [t('pages.twitch-settings.app-category')]: 'Broadcasting Suite',
+            }}
+          />
+        </TwitchStep>
+        <TwitchStep>
+          <Trans i18nKey="pages.twitch-settings.apiguide-4">
+            {'str1 '}
+            <b>str2</b>
+          </Trans>
+        </TwitchStep>
+      </TwitchStepList>
+      <Field size="fullWidth" css={{ marginTop: '2rem' }}>
+        <Label htmlFor="clientid">
+          {t('pages.twitch-settings.app-client-id')}
+        </Label>
+        <InputBox
+          type="text"
+          id="clientid"
+          placeholder={t('pages.twitch-settings.app-client-id')}
+          required={true}
+          value={twitchConfig?.api_client_id ?? ''}
+          onChange={(ev) =>
+            dispatch(
+              apiReducer.actions.twitchConfigChanged({
+                ...twitchConfig,
+                api_client_id: ev.target.value,
+              }),
+            )
+          }
+        />
+      </Field>
+
+      <Field size="fullWidth">
+        <Label htmlFor="clientsecret">
+          {t('pages.twitch-settings.app-client-secret')}
+          <RevealLink
+            value={revealClientSecret}
+            setter={setRevealClientSecret}
+          />
+        </Label>
+        <PasswordInputBox
+          reveal={revealClientSecret}
+          id="clientsecret"
+          placeholder={t('pages.twitch-settings.app-client-secret')}
+          required={true}
+          value={twitchConfig?.api_client_secret ?? ''}
+          onChange={(ev) =>
+            dispatch(
+              apiReducer.actions.twitchConfigChanged({
+                ...twitchConfig,
+                api_client_secret: ev.target.value,
+              }),
+            )
+          }
+        />
+      </Field>
+      <TextBlock>{t('pages.onboarding.twitch-p2')}</TextBlock>
+      <ButtonGroup>
+        <Button
+          type="button"
+          variation={'primary'}
+          onClick={() => {
+            void checkCredentials();
+          }}
+          disabled={testing}
+        >
+          {t('pages.twitch-settings.test-button')}
+        </Button>
+        <Button
+          type="button"
+          onClick={() => {
+            skipTwitch();
+          }}
+        >
+          {t('pages.onboarding.twitch-skip')}
+        </Button>
+      </ButtonGroup>
+      <Alert
+        defaultOpen={false}
+        open={testResult.open}
+        onOpenChange={(val: boolean) => {
+          setTestResult({ ...testResult, open: val });
+        }}
+      >
+        <AlertContent
+          variation={testResult.error ? 'danger' : 'default'}
+          description={
+            testResult.error
+              ? t('pages.twitch-settings.test-failed', [
+                  testResult.error.message,
+                ])
+              : t('pages.twitch-settings.test-succeeded')
+          }
+          actionText={t('form-actions.ok')}
+          onAction={() => {
+            setTestResult({ ...testResult, open: false });
+          }}
+        />
+      </Alert>
+    </form>
+  );
+}
+
+interface SyncError {
+  ok: false;
+  error: string;
+}
+
+const TwitchUser = styled('div', {
+  display: 'flex',
+  gap: '0.8rem',
+  alignItems: 'center',
+  fontSize: '14pt',
+  fontWeight: '300',
+});
+const TwitchPic = styled('img', {
+  width: '48px',
+  borderRadius: '50%',
+});
+const TwitchName = styled('p', { fontWeight: 'bold' });
+
+function TwitchEventsStep() {
+  const { t } = useTranslation();
+  const [userStatus, setUserStatus] = useState<helix.User | SyncError>(null);
+  const [twitchAuthLink, setTwitchAuthLink] = useState('');
+  const kv = useSelector((state: RootState) => state.api.client);
+
+  const getUserInfo = async () => {
+    try {
+      const res = await GetTwitchLoggedUser();
+      setUserStatus(res);
+    } catch (e) {
+      console.error(e);
+      setUserStatus({ ok: false, error: (e as Error).message });
+    }
+  };
+
+  const startAuthFlow = async () => {
+    const url = await GetTwitchAuthURL();
+    BrowserOpenURL(url);
+  };
+
+  useEffect(() => {
+    // Get user info
+    void getUserInfo();
+    void GetTwitchAuthURL().then(setTwitchAuthLink);
+
+    const onKeyChange = () => {
+      void getUserInfo();
+    };
+    void kv.subscribeKey('twitch/auth-keys', onKeyChange);
+    return () => {
+      void kv.unsubscribeKey('twitch/auth-keys', onKeyChange);
+    };
+  }, []);
+
+  let userBlock = <i>{t('pages.twitch-settings.events.loading-data')}</i>;
+  if (userStatus !== null) {
+    if ('id' in userStatus) {
+      userBlock = (
+        <>
+          <TwitchUser>
+            <TextBlock>
+              {t('pages.twitch-settings.events.authenticated-as')}
+            </TextBlock>
+            <TwitchPic
+              src={userStatus.profile_image_url}
+              alt={t('pages.twitch-settings.events.profile-picture')}
+            />
+            <TwitchName>{userStatus.display_name}</TwitchName>
+          </TwitchUser>
+        </>
+      );
+    } else {
+      userBlock = <span>{t('pages.twitch-settings.events.err-no-user')}</span>;
+    }
+  }
+  return (
+    <div>
+      <TextBlock>{t('pages.onboarding.twitch-ev-p1')}</TextBlock>
+      <TextBlock>{t('pages.twitch-settings.events.auth-message')}</TextBlock>
+      <ButtonGroup>
+        <Button
+          variation="primary"
+          onClick={() => {
+            void startAuthFlow();
+          }}
+        >
+          <ExternalLinkIcon /> {t('pages.twitch-settings.events.auth-button')}
+        </Button>
+      </ButtonGroup>
+      <TextBlock>or use the following link: </TextBlock>
+      <BrowserLink href={twitchAuthLink}>{twitchAuthLink}</BrowserLink>
+      <SectionHeader>
+        {t('pages.twitch-settings.events.current-status')}
+      </SectionHeader>
+      {userBlock}
+    </div>
+  );
+}
 
 export default function OnboardingPage() {
   const [t, i18n] = useTranslation();
@@ -283,6 +582,12 @@ export default function OnboardingPage() {
           </Button>
         </ActionContainer>
       );
+      break;
+    case OnboardingSteps.TwitchIntegration:
+      currentStepBody = <TwitchIntegrationStep />;
+      break;
+    case OnboardingSteps.TwitchEvents:
+      currentStepBody = <TwitchEventsStep />;
       break;
   }
 
