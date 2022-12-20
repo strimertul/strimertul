@@ -19,7 +19,7 @@ type AuthResponse struct {
 func (c *Client) GetAuthorizationURL() string {
 	return c.API.GetAuthorizationURL(&helix.AuthorizationURLParams{
 		ResponseType: "code",
-		Scopes:       []string{"bits:read channel:read:subscriptions channel:read:redemptions channel:read:polls channel:read:predictions channel:read:hype_train user_read"},
+		Scopes:       []string{"bits:read channel:read:subscriptions channel:read:redemptions channel:read:polls channel:read:predictions channel:read:hype_train user_read chat:read chat:edit channel:moderate whispers:read whispers:edit"},
 	})
 }
 
