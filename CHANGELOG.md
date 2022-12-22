@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added support for EventSub Websocket subscriptions on Twitch, making Twitch integration fully in-app without having to rely on third party servers. Check the "Events" tab in Twitch configuration for setting it up. The new keys for redeems are `twitch/ev/eventsub-event` and `twitch/eventsub-history`. History has been reduced to 50 to alleviate memory concerns.
+- A new onboarding procedure will walk first time users through setting up Twitch integration, including bot credentials (by default, the same user is used as bot).
 - Application logs are now visible from the UI, check the little floating boxes in the top right!
 - A new app icon drawn by [Sonic_chan](https://twitter.com/Sonic__Chan), say hello to Renko, strimertul's mascot!
 - Hidden fields (Client secret, Kilovolt password) now have a "Reveal" toggle to show the hidden value
