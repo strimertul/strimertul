@@ -135,12 +135,19 @@ const button = {
   display: 'flex',
   alignItems: 'center',
   gap: '0.5rem',
-  '&:hover': {
-    backgroundColor: '$gray5',
-    borderColor: '$gray8',
+  '&:not(:disabled)': {
+    '&:hover': {
+      backgroundColor: '$gray5',
+      borderColor: '$gray8',
+    },
+    '&:active': {
+      background: '$gray6',
+    },
   },
-  '&:active': {
-    background: '$gray6',
+  '&:disabled': {
+    border: '1px solid $gray4',
+    backgroundColor: '$gray3',
+    cursor: 'not-allowed',
   },
   transition: 'all 0.2s',
   variants: {
@@ -188,45 +195,53 @@ const button = {
       primary: {
         border: '1px solid $teal6',
         backgroundColor: '$teal4',
-        '&:hover': {
-          backgroundColor: '$teal5',
-          borderColor: '$teal8',
-        },
-        '&:active': {
-          background: '$teal6',
+        '&:not(:disabled)': {
+          '&:hover': {
+            backgroundColor: '$teal5',
+            borderColor: '$teal8',
+          },
+          '&:active': {
+            background: '$teal6',
+          },
         },
       },
       success: {
         border: '1px solid $grass6',
         backgroundColor: '$grass4',
-        '&:hover': {
-          backgroundColor: '$grass5',
-          borderColor: '$grass8',
-        },
-        '&:active': {
-          background: '$grass6',
+        '&:not(:disabled)': {
+          '&:hover': {
+            backgroundColor: '$grass5',
+            borderColor: '$grass8',
+          },
+          '&:active': {
+            background: '$grass6',
+          },
         },
       },
       error: {
         border: '1px solid $red6',
         backgroundColor: '$red4',
-        '&:hover': {
-          backgroundColor: '$red5',
-          borderColor: '$red8',
-        },
-        '&:active': {
-          background: '$red6',
+        '&:not(:disabled)': {
+          '&:hover': {
+            backgroundColor: '$red5',
+            borderColor: '$red8',
+          },
+          '&:active': {
+            background: '$red6',
+          },
         },
       },
       danger: {
         border: '1px solid $red6',
         backgroundColor: '$red4',
-        '&:hover': {
-          backgroundColor: '$red5',
-          borderColor: '$red8',
-        },
-        '&:active': {
-          background: '$red6',
+        '&:not(:disabled)': {
+          '&:hover': {
+            backgroundColor: '$red5',
+            borderColor: '$red8',
+          },
+          '&:active': {
+            background: '$red6',
+          },
         },
       },
     },
@@ -251,12 +266,14 @@ export const MultiToggleItem = styled(ToggleGroup.Item, {
     borderTopRightRadius: theme.borderRadius.form,
     borderBottomRightRadius: theme.borderRadius.form,
   },
-  '&:hover': {
-    ...button['&:hover'],
-  },
-  "&[data-state='on']": {
-    ...button['&:active'],
-    background: '$gray8',
+  '&:not(:disabled)': {
+    '&:hover': {
+      ...button['&:not(:disabled)']['&:hover'],
+    },
+    "&[data-state='on']": {
+      ...button['&:not(:disabled)']['&:active'],
+      background: '$gray8',
+    },
   },
 });
 

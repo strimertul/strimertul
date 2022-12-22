@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useModule } from '~/lib/react';
-import { checkTwitchKeys } from '~/lib/twitch';
+import { checkTwitchKeys, TwitchCredentials } from '~/lib/twitch';
 import { languages } from '~/locale/languages';
 import { RootState, useAppDispatch } from '~/store';
 import apiReducer, { modules } from '~/store/api/reducer';
@@ -39,6 +39,7 @@ import {
   TextBlock,
 } from '../theme';
 import { Alert } from '../theme/alert';
+import { channels } from './Strimertul';
 
 const Container = styled('div', {
   display: 'flex',
@@ -254,7 +255,12 @@ function TwitchIntegrationStep() {
           twitchConfig.api_client_id,
           twitchConfig.api_client_secret,
         );
-        void dispatch(setTwitchConfig(twitchConfig));
+        void dispatch(
+          setTwitchConfig({
+            ...twitchConfig,
+            enabled: true,
+          }),
+        );
         void dispatch(
           setUiConfig({
             ...uiConfig,
@@ -277,6 +283,10 @@ function TwitchIntegrationStep() {
       }),
     );
   }
+
+  const allFields =
+    (twitchConfig?.api_client_id?.length > 0 ?? false) &&
+    (twitchConfig?.api_client_secret?.length > 0 ?? false);
 
   return (
     <form
@@ -369,7 +379,7 @@ function TwitchIntegrationStep() {
           onClick={() => {
             void checkCredentials();
           }}
-          disabled={testing}
+          disabled={!allFields || testing}
         >
           {t('pages.twitch-settings.test-button')}
         </Button>
@@ -429,8 +439,12 @@ const TwitchName = styled('p', { fontWeight: 'bold' });
 function TwitchEventsStep() {
   const { t } = useTranslation();
   const [userStatus, setUserStatus] = useState<helix.User | SyncError>(null);
-  const [twitchAuthLink, setTwitchAuthLink] = useState('');
+  const [twitchConfig, setTwitchConfig] = useModule(modules.twitchConfig);
+  const [botConfig, setBotConfig] = useModule(modules.twitchBotConfig);
+  const [uiConfig, setUiConfig] = useModule(modules.uiConfig);
+  const [authKeys, setAuthKeys] = useState<TwitchCredentials>(null);
   const kv = useSelector((state: RootState) => state.api.client);
+  const dispatch = useAppDispatch();
 
   const getUserInfo = async () => {
     try {
@@ -447,14 +461,50 @@ function TwitchEventsStep() {
     BrowserOpenURL(url);
   };
 
+  const finishStep = async () => {
+    if ('id' in userStatus) {
+      console.log(authKeys);
+      // Set bot config to sane defaults
+      await dispatch(
+        setTwitchConfig({
+          ...twitchConfig,
+          enable_bot: true,
+        }),
+      );
+      await dispatch(
+        setBotConfig({
+          ...botConfig,
+          username: userStatus.login,
+          oauth: `oauth:${authKeys.access_token}`,
+          channel: userStatus.login,
+          chat_history: 5,
+        }),
+      );
+    }
+    await dispatch(
+      setUiConfig({
+        ...uiConfig,
+        onboardingStatus:
+          steps.findIndex((val) => val === OnboardingSteps.TwitchEvents) + 1,
+      }),
+    );
+  };
+
   useEffect(() => {
     // Get user info
     void getUserInfo();
-    void GetTwitchAuthURL().then(setTwitchAuthLink);
 
-    const onKeyChange = () => {
+    const onKeyChange = (newValue: string) => {
+      setAuthKeys(JSON.parse(newValue) as TwitchCredentials);
       void getUserInfo();
     };
+
+    void kv.getKey('twitch/auth-keys').then((auth) => {
+      if (auth) {
+        setAuthKeys(JSON.parse(auth) as TwitchCredentials);
+      }
+    });
+
     void kv.subscribeKey('twitch/auth-keys', onKeyChange);
     return () => {
       void kv.unsubscribeKey('twitch/auth-keys', onKeyChange);
@@ -476,6 +526,15 @@ function TwitchEventsStep() {
             />
             <TwitchName>{userStatus.display_name}</TwitchName>
           </TwitchUser>
+          <TextBlock>{t('pages.onboarding.twitch-ev-p3')}</TextBlock>
+          <Button
+            variation={'primary'}
+            onClick={() => {
+              void finishStep();
+            }}
+          >
+            {t('pages.onboarding.twitch-complete')}
+          </Button>
         </>
       );
     } else {
@@ -496,12 +555,38 @@ function TwitchEventsStep() {
           <ExternalLinkIcon /> {t('pages.twitch-settings.events.auth-button')}
         </Button>
       </ButtonGroup>
-      <TextBlock>or use the following link: </TextBlock>
-      <BrowserLink href={twitchAuthLink}>{twitchAuthLink}</BrowserLink>
       <SectionHeader>
         {t('pages.twitch-settings.events.current-status')}
       </SectionHeader>
       {userBlock}
+    </div>
+  );
+}
+
+function DoneStep() {
+  const { t } = useTranslation();
+  const [uiConfig, setUiConfig] = useModule(modules.uiConfig);
+  const dispatch = useAppDispatch();
+
+  const done = () => {
+    void dispatch(
+      setUiConfig({
+        ...uiConfig,
+        onboardingDone: true,
+      }),
+    );
+  };
+
+  return (
+    <div>
+      <SectionHeader>{t('pages.onboarding.done-header')}</SectionHeader>
+      <TextBlock>{t('pages.onboarding.done-p1')}</TextBlock>
+      <TextBlock>{t('pages.onboarding.done-p2')}</TextBlock>
+      {channels}
+      <TextBlock>{t('pages.onboarding.done-p3')}</TextBlock>
+      <Button variation={'primary'} onClick={() => done()}>
+        {t('pages.onboarding.done-button')}
+      </Button>
     </div>
   );
 }
@@ -588,6 +673,9 @@ export default function OnboardingPage() {
       break;
     case OnboardingSteps.TwitchEvents:
       currentStepBody = <TwitchEventsStep />;
+      break;
+    case OnboardingSteps.Done:
+      currentStepBody = <DoneStep />;
       break;
   }
 

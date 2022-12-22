@@ -1,7 +1,8 @@
 export interface TwitchCredentials {
   access_token: string;
+  refresh_token: string;
   expires_in: number;
-  token_type: string;
+  score: string[];
 }
 
 export interface TwitchError {
@@ -44,7 +45,6 @@ export async function checkTwitchKeys(
   clientSecret: string,
 ): Promise<void> {
   const creds = await twitchAuth(clientId, clientSecret);
-  console.log(creds);
   const req = await fetch('https://api.twitch.tv/helix/streams?first=1', {
     headers: {
       Authorization: `Bearer ${creds.access_token}`,

@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { keyframes } from '@stitches/react';
 import { Trans, useTranslation } from 'react-i18next';
-import { GitHubLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
+import {
+  DiscordLogoIcon,
+  EnvelopeClosedIcon,
+  GitHubLogoIcon,
+  TwitterLogoIcon,
+} from '@radix-ui/react-icons';
 import { useNavigate } from 'react-router-dom';
 
 // @ts-expect-error Asset import
@@ -79,6 +84,29 @@ const ChannelLink = styled(BrowserLink, {
   },
 });
 
+export const channels = (
+  <ChannelList>
+    <Channel>
+      <ChannelLink href="https://github.com/strimertul/strimertul/issues">
+        <GitHubLogoIcon width={24} height={24} />
+        github.com/strimertul/strimertul/issues
+      </ChannelLink>
+    </Channel>
+    <Channel>
+      <ChannelLink href="https://nebula.cafe/discord">
+        <DiscordLogoIcon width={24} height={24} />
+        nebula.cafe/discord
+      </ChannelLink>
+    </Channel>
+    <Channel>
+      <ChannelLink href="mailto:strimertul@nebula.cafe">
+        <EnvelopeClosedIcon width={24} height={24} />
+        strimertul@nebula.cafe
+      </ChannelLink>
+    </Channel>
+  </ChannelList>
+);
+
 export default function StrimertulPage(): React.ReactElement {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -118,14 +146,7 @@ export default function StrimertulPage(): React.ReactElement {
         <SectionParagraph css={{ paddingBottom: 0 }}>
           {t('pages.strimertul.need-help-p1')}
         </SectionParagraph>
-        <ChannelList>
-          <Channel>
-            <ChannelLink href="https://github.com/strimertul/strimertul/issues">
-              <GitHubLogoIcon width={24} height={24} />
-              github.com/strimertul/strimertul/issues
-            </ChannelLink>
-          </Channel>
-        </ChannelList>
+        {channels}
       </Section>
       <Section>
         <SectionHeader>{t('pages.strimertul.credits-header')}</SectionHeader>

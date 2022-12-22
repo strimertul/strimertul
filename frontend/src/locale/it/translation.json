@@ -264,8 +264,20 @@
         "done": "Pronti a partire!",
         "landing": "Benvenuto",
         "twitch-bot": "Bot per Twitch",
-        "twitch-config": "Integrazione Twitch"
-      }
+        "twitch-config": "Integrazione Twitch",
+        "twitch-events": "Eventi Twitch"
+      },
+      "done-button": "Completa procedura guidata",
+      "done-p1": "Dovremmo esserci per ora. \nPuoi sempre modificare qualsiasi opzione in un secondo momento, comprese configurazioni personalizzate non trattate in questa procedura (ad esempio utilizzare un account Twitch diverso per il bot).",
+      "done-p3": "Fai clic sul pulsante qui sotto per completare questa procedura ed andare nella dashboard di {{APPNAME}}.",
+      "twitch-complete": "Completa integrazione Twitch",
+      "twitch-ev-p3": "Se vedi qui sopra il nome e l'immagine profilo del tuo account, sei a posto! \nFai clic sul pulsante in basso per completare l'integrazione con Twitch.",
+      "twitch-p2": "Fai clic su \"Test connessione\" per assicurarti che l'ID client e il segreto specificati siano validi, se il test ha esito positivo verrai portato automaticamente al passaggio successivo.",
+      "twitch-skip": "Salta integrazione con Twitch",
+      "twitch-p1": "Per configurare Twitch dovrai creare un'applicazione sul portale per gli sviluppatori. Segui le istruzioni di seguito o fai clic sul pulsante in basso per saltare questo passaggio.",
+      "twitch-ev-p1": "Ora che hai creato un'app, devi autenticarci il tuo account Twitch in modo che possiamo accedere a dati come il nome del tuo canale o eventi come nuovi follower o raid.",
+      "done-p2": "In caso di domande o problemi, contattaci in uno di questi modi:",
+      "done-header": "È tutto pronto!"
     },
     "strimertul": {
       "credits-header": "Ringraziamenti",
@@ -305,7 +317,7 @@
         "auth-message": "Fai clic sul pulsante qui sotto per autorizzare {{APPNAME}} ad accedere a notifiche del tuo account Twitch:",
         "authenticated-as": "Autenticato come",
         "current-status": "Stato attuale",
-        "err-no-user": "Nessun utente twitch è attualmente associato (e quindi gli eventi sono disabilitati!)",
+        "err-no-user": "Nessun utente twitch è attualmente associato",
         "loading-data": "Sto chiedendo i dati utente a Twitch...",
         "profile-picture": "Immagine del profilo",
         "sim-events": "Invia evento di prova",
@@ -319,7 +331,9 @@
           "channel.raid": "Raid"
         }
       },
-      "test-button": "Fai un test"
+      "test-button": "Test connessione",
+      "test-failed": "Test fallito: \"{{0}}\". \nControlla ID e segreto client dell'app!",
+      "test-succeeded": "Test riuscito!"
     },
     "uiconfig": {
       "language": "Lingua",

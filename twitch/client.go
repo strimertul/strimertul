@@ -95,10 +95,11 @@ func NewManager(db *database.LocalDBClient, server *http.Server, logger *zap.Log
 			return
 		}
 
-		oldBot := manager.client.Bot
-		err = oldBot.Close()
-		if err != nil {
-			client.logger.Warn("failed to disconnect old bot from Twitch IRC", zap.Error(err))
+		if manager.client.Bot != nil {
+			err = manager.client.Bot.Close()
+			if err != nil {
+				client.logger.Warn("failed to disconnect old bot from Twitch IRC", zap.Error(err))
+			}
 		}
 
 		bot := newBot(manager.client, newBotConfig)
@@ -159,6 +160,14 @@ func (c *Client) Merge(old *Client) {
 	// Copy bot instance and some params
 	c.streamOnline.Set(old.streamOnline.Get())
 	c.Bot = old.Bot
+	c.ensureRoute()
+}
+
+// Hacky function to deal with sync issues when restarting client
+func (c *Client) ensureRoute() {
+	if c.Config.Get().Enabled {
+		c.server.RegisterRoute(CallbackRoute, c)
+	}
 }
 
 func newClient(config Config, db *database.LocalDBClient, server *http.Server, logger *zap.Logger) (*Client, error) {
@@ -277,8 +286,10 @@ func (c *Client) Close() error {
 	c.server.UnregisterRoute(CallbackRoute)
 	defer c.cancel()
 
-	if err := c.Bot.Close(); err != nil {
-		return err
+	if c.Bot != nil {
+		if err := c.Bot.Close(); err != nil {
+			return err
+		}
 	}
 
 	return nil

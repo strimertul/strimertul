@@ -79,7 +79,7 @@
         "loading-data": "Querying user data from Twitch APIs…",
         "authenticated-as": "Authenticated as",
         "profile-picture": "Profile picture",
-        "err-no-user": "No twitch user is currently associated (and therefore events are disabled!)",
+        "err-no-user": "No twitch user is currently associated",
         "sim": {
           "channel.update": "Channel update",
           "channel.follow": "New follow",
@@ -273,10 +273,17 @@
         "twitch-bot": "Twitch bot",
         "done": "All done!"
       },
-      "twitch-p1": "To set-up Twitch, you will need to create an application on the Developer portal, follow the instructions below or click the button at the bottom to skip this step.",
+      "twitch-p1": "To set-up Twitch you will need to create an application on the Developer portal. Follow the instructions below or click the button at the bottom to skip this step.",
       "twitch-p2": "Click \"Test connection\" to make sure the Client ID and secret are valid, if the test is successful you will be brought to the next step automatically.",
       "twitch-skip": "Skip Twitch integration",
-      "twitch-ev-p1": "Now that you've made an app, you need to authenticate your Twitch account to it so we can access your user data like your channel name or events like new followers or raids."
+      "twitch-ev-p1": "Now that you've made an app, you need to authenticate your Twitch account to it so we can access your user data like your channel name or events like new followers or raids.",
+      "twitch-ev-p3": "If the above shows your account name and picture correctly, you're all set! Click the button below to complete Twitch integration.",
+      "twitch-complete": "Complete Twitch integration",
+      "done-header": "You're all set!",
+      "done-p1": "That should be enough for now. You can always change any option later, including custom configurations not covered in this procedure (e.g. using a different Twitch account for the bot).",
+      "done-p2": "If you have questions or issues, please reach out at any of these places:",
+      "done-button": "Complete onboarding",
+      "done-p3": "Click the button below to finish the onboarding and go to {{APPNAME}}'s dashboard."
     },
     "uiconfig": {
       "title": "User interface settings",

@@ -23,7 +23,7 @@ interface LoadStatus {
   save: RequestStatus;
 }
 
-export function useLiveKeyRaw(key: string) {
+export function useLiveKeyString(key: string) {
   const client = useSelector((state: RootState) => state.api.client);
   const [data, setData] = useState<string>(null);
 
@@ -39,7 +39,7 @@ export function useLiveKeyRaw(key: string) {
 }
 
 export function useLiveKey<T>(key: string): T {
-  const data = useLiveKeyRaw(key);
+  const data = useLiveKeyString(key);
   return data ? (JSON.parse(data) as T) : null;
 }
 

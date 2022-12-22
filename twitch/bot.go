@@ -1,6 +1,7 @@
 package twitch
 
 import (
+	"errors"
 	"strings"
 	"text/template"
 	"time"
@@ -185,7 +186,11 @@ func newBot(api *Client, config BotConfig) *Bot {
 	var customCommands map[string]BotCustomCommand
 	err := api.db.GetJSON(CustomCommandsKey, &customCommands)
 	if err != nil {
-		bot.logger.Error("failed to load custom commands", zap.Error(err))
+		if errors.Is(err, database.ErrEmptyKey) {
+			customCommands = make(map[string]BotCustomCommand)
+		} else {
+			bot.logger.Error("failed to load custom commands", zap.Error(err))
+		}
 	}
 	bot.customCommands.Set(customCommands)
 
