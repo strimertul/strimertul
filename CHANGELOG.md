@@ -41,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Stulbe support has been removed across the board, see on Added for more notes
 - Badger has been removed as a possible database, see v3 release notes on migration procedures.
-- The link to Ash Keel's twitter profile has been removed
+- The link to Ash Keel's Twitter profile has been removed
 
 ## [2.1.1] - 2022-03-24
 
