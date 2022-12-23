@@ -13,16 +13,16 @@ jobs:
       fail-fast: false
       matrix:
         build: [
-          { platform: linux/amd64, os: ubuntu-latest },
-          { platform: windows/amd64, os: windows-latest },
-          { platform: darwin/universal, os: macos-latest }
+          { name: strimertul-linux-amd64, platform: linux/amd64, os: ubuntu-latest },
+          { name: "strimertul-windows.exe", platform: windows/amd64, os: windows-latest },
+          { name: "strimertul-macos.dmg", platform: darwin/universal, os: macos-latest }
         ]
     runs-on: ${{ matrix.build.os }}
     steps:
       - uses: actions/checkout@v2
       - uses: ashkeel/wails-build-action@8b31d0d320d1b4b4def7d9f3a8a141b257b17391
         with:
-          build-name: strimertul
+          build-name: ${{ matrix.build.name }}
           build-platform: ${{ matrix.build.platform }}
           windows-nsis-installer: false
           macos-package-type: dmg
