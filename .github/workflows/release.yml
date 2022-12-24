@@ -20,11 +20,11 @@ jobs:
     runs-on: ${{ matrix.build.os }}
     steps:
       - uses: actions/checkout@v2
-      - uses: ashkeel/wails-build-action@8b31d0d320d1b4b4def7d9f3a8a141b257b17391
+      - uses: ashkeel/wails-build-action@70a14692b73d5a442a1d4303765e8916ec3f7de2
         with:
           build-name: ${{ matrix.build.name }}
           build-platform: ${{ matrix.build.platform }}
           windows-nsis-installer: false
           macos-package-type: dmg
-          use-upx: true
           go-version: 1.19
+          draft: true
