@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.build.os }}
     steps:
       - uses: actions/checkout@v2
-      - uses: ashkeel/wails-build-action@a5b199f715d43a43da481dbd224964cc9baf01f6
+      - uses: ashkeel/wails-build-action@07cf6afbe4d05bd4f5b5c189c938fc245e1f68dd
         with:
           build-name: ${{ matrix.build.name }}
           build-platform: ${{ matrix.build.platform }}
