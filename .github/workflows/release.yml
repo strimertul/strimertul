@@ -15,16 +15,17 @@ jobs:
         build: [
           { name: strimertul-linux-amd64, platform: linux/amd64, os: ubuntu-latest },
           { name: "strimertul-windows.exe", platform: windows/amd64, os: windows-latest },
-          { name: "strimertul-macos.dmg", platform: darwin/universal, os: macos-latest }
+          { name: "strimertul-macos", platform: darwin/universal, os: macos-latest }
         ]
     runs-on: ${{ matrix.build.os }}
     steps:
       - uses: actions/checkout@v2
-      - uses: ashkeel/wails-build-action@70a14692b73d5a442a1d4303765e8916ec3f7de2
+      - uses: ashkeel/wails-build-action@a5b199f715d43a43da481dbd224964cc9baf01f6
         with:
           build-name: ${{ matrix.build.name }}
           build-platform: ${{ matrix.build.platform }}
           windows-nsis-installer: false
+          macos-package-file-name: strimertul
           macos-package-type: dmg
           go-version: 1.19
           draft: true
