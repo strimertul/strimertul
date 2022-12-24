@@ -122,7 +122,7 @@ func newBot(api *Client, config BotConfig) *Bot {
 		}
 
 		// Run through custom commands
-		for cmd, data := range bot.customCommands.Get() {
+		for cmd, data := range bot.customCommands.Copy() {
 			if !data.Enabled {
 				continue
 			}
@@ -244,6 +244,7 @@ func (b *Bot) handleWriteMessageRPC(value string) {
 }
 
 func (b *Bot) updateTemplates() error {
+	b.customTemplates.Set(make(map[string]*template.Template))
 	for cmd, tmpl := range b.customCommands.Copy() {
 		tpl, err := template.New("").Funcs(sprig.TxtFuncMap()).Funcs(b.customFunctions).Parse(tmpl.Response)
 		if err != nil {

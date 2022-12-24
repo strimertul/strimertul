@@ -49,7 +49,6 @@ func cmdCustom(bot *Bot, cmd string, data BotCustomCommand, message irc.PrivateM
 		return
 	}
 
-	// Add future logic (like counters etc.) here, for now it's just fixed messages
 	var buf bytes.Buffer
 	tpl, ok := bot.customTemplates.GetKey(cmd)
 	if !ok {
