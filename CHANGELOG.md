@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `game` command not working when the specified channel contained the @ symbol at the beginning.
 - Fixed strimertul crashing at start if the database folder didn't exist and a database driver was not manually specified
 - Fixed strimertul crashing after a minute of being open if Twitch was not configured.
+- Fixed issue where deleted commands would still be functional until strimertul was restarted
 
 ### Removed
 
