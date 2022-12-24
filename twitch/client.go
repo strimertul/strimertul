@@ -98,17 +98,19 @@ func NewManager(db *database.LocalDBClient, server *http.Server, logger *zap.Log
 		if manager.client.Bot != nil {
 			err = manager.client.Bot.Close()
 			if err != nil {
-				client.logger.Warn("failed to disconnect old bot from Twitch IRC", zap.Error(err))
+				manager.client.logger.Warn("failed to disconnect old bot from Twitch IRC", zap.Error(err))
 			}
 		}
 
-		bot := newBot(manager.client, newBotConfig)
-		if client.Config.Get().EnableBot {
+		if manager.client.Config.Get().EnableBot {
+			bot := newBot(manager.client, newBotConfig)
 			go bot.Connect()
+			manager.client.Bot = bot
+		} else {
+			manager.client.Bot = nil
 		}
 
-		client.Bot = bot
-		client.logger.Info("reloaded/restarted Twitch bot")
+		manager.client.logger.Info("reloaded/restarted Twitch bot")
 	})
 	if err != nil {
 		client.logger.Error("could not setup twitch bot config reload subscription", zap.Error(err))
