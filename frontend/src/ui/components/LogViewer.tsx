@@ -82,20 +82,24 @@ const LevelToggle = styled(MultiToggleItem, {
       info: {},
       warn: {
         backgroundColor: '$yellow4',
-        '&:hover': {
-          backgroundColor: '$yellow5',
-        },
-        "&[data-state='on']": {
-          backgroundColor: '$yellow8',
+        '&:not(:disabled)': {
+          '&:hover': {
+            backgroundColor: '$yellow5',
+          },
+          "&[data-state='on']": {
+            backgroundColor: '$yellow8',
+          },
         },
       },
       error: {
         backgroundColor: '$red4',
-        '&:hover': {
-          backgroundColor: '$red5',
-        },
-        "&[data-state='on']": {
-          backgroundColor: '$red8',
+        '&:not(:disabled)': {
+          '&:hover': {
+            backgroundColor: '$red5',
+          },
+          "&[data-state='on']": {
+            backgroundColor: '$red8',
+          },
         },
       },
     },
@@ -289,14 +293,14 @@ const LogEntriesContainer = styled('div', {
 });
 
 interface LogDialogProps {
-  initialFilter: LogLevel;
+  initialFilter: LogLevel[];
 }
 
 function LogDialog({ initialFilter }: LogDialogProps) {
   const logEntries = useSelector((state: RootState) => state.logging.messages);
   const [filter, setFilter] = useState({
     ...emptyFilter,
-    [initialFilter]: true,
+    ...Object.fromEntries(initialFilter.map((f) => [f, true])),
   });
   const { t } = useTranslation();
   const enabled = levels.filter((level) => filter[level]);
@@ -413,7 +417,11 @@ function LogViewer() {
           }
         }}
       >
-        {activeDialog ? <LogDialog initialFilter={activeDialog} /> : null}
+        {activeDialog ? (
+          <LogDialog
+            initialFilter={levels.slice(levels.indexOf(activeDialog))}
+          />
+        ) : null}
       </Dialog>
     </div>
   );

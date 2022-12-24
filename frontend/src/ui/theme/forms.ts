@@ -272,7 +272,7 @@ export const MultiToggleItem = styled(ToggleGroup.Item, {
     },
     "&[data-state='on']": {
       ...button['&:not(:disabled)']['&:active'],
-      background: '$gray8',
+      backgroundColor: '$gray8',
     },
   },
 });
