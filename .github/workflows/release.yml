@@ -14,7 +14,7 @@ jobs:
       matrix:
         build: [
           { name: strimertul-linux-amd64, platform: linux/amd64, os: ubuntu-latest },
-          { name: "strimertul-windows.exe", platform: windows/amd64, os: windows-latest },
+          { name: "strimertul-windows", platform: windows/amd64, os: windows-latest },
           { name: "strimertul-macos", platform: darwin/universal, os: macos-latest }
         ]
     runs-on: ${{ matrix.build.os }}
