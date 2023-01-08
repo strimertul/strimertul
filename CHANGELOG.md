@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [current]
 
+## [3.0.0]
+
 ### Added
 
 - Added support for EventSub Websocket subscriptions on Twitch, making Twitch integration fully in-app without having to rely on third party servers. Check the "Events" tab in Twitch configuration for setting it up. The new keys for redeems are `twitch/ev/eventsub-event` and `twitch/eventsub-history`. History has been reduced to 50 to alleviate memory concerns.
@@ -152,7 +154,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Stulbe integration for alerts
 
-[current]: https://github.com/strimertul/strimertul/compare/v2.1.1...HEAD
+[current]: https://github.com/strimertul/strimertul/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/strimertul/strimertul/compare/v2.1.1...v3.0.0
 [2.1.1]: https://github.com/strimertul/strimertul/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/strimertul/strimertul/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/strimertul/strimertul/compare/v1.7.0...v2.0.0
