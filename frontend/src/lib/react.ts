@@ -29,6 +29,7 @@ export function useLiveKeyString(key: string) {
 
   useEffect(() => {
     const subscriber: SubscriptionHandler = (v) => setData(v);
+    void client.getKey(key).then((value) => setData(value));
     void client.subscribeKey(key, subscriber);
     return () => {
       void client.unsubscribeKey(key, subscriber);
