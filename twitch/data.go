@@ -48,4 +48,4 @@ const (
 	EventSubHistoryKey = "twitch/eventsub-history"
 )
 
-const EventSubHistorySize = 50
+const EventSubHistorySize = 100
