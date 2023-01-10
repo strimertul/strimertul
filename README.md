@@ -33,6 +33,12 @@ Check out the [project's wiki](https://github.com/strimertul/strimertul/wiki) fo
 
 This project uses Wails, check out the [Getting Started](https://wails.io/docs/gettingstarted/installation) guide on how to install it.
 
+Due to Google's [aggressive behavior and refusal to conform to standard internet "don't be a dick" code](https://drewdevault.com/2022/05/25/Google-has-been-DDoSing-sourcehut.html) (aka DDoSsing), you will need to put this to be able to clone all dependecies:
+
+```sh
+export GOPRIVATE=git.sr.ht
+```
+
 To run in live development mode, run `wails dev` in the project directory. This will run a Vite development server that will provide hot reload of frontend changes, while hard-reloading on backend changes.
 
 ## Building
@@ -43,7 +49,7 @@ To build a redistributable, production mode package, use `wails build`.
 
 - Renko, strimertül's mascot and app icon, was drawn by [Sonic_Chan]
 
-[Sonic_Chan]: https://twitter.com/Sonic__Chan
+[sonic_chan]: https://twitter.com/Sonic__Chan
 
 ## License
 

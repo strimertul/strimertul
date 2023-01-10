@@ -5,6 +5,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+env:
+  GOPRIVATE: git.sr.ht
+
 jobs:
   build:
     strategy:

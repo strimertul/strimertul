@@ -7,16 +7,28 @@ on:
       - "v*.*.*-beta.*"
       - "v*.*.*-rc.*"
 
+env:
+  GOPRIVATE: git.sr.ht
+
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
-        build: [
-          { name: strimertul-linux-amd64, platform: linux/amd64, os: ubuntu-latest },
-          { name: "strimertul", platform: windows/amd64, os: windows-latest },
-          { name: "strimertul", platform: darwin/universal, os: macos-latest }
-        ]
+        build:
+          [
+            {
+              name: strimertul-linux-amd64,
+              platform: linux/amd64,
+              os: ubuntu-latest,
+            },
+            { name: "strimertul", platform: windows/amd64, os: windows-latest },
+            {
+              name: "strimertul",
+              platform: darwin/universal,
+              os: macos-latest,
+            },
+          ]
     runs-on: ${{ matrix.build.os }}
     steps:
       - uses: actions/checkout@v2
