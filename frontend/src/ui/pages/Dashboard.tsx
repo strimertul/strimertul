@@ -1,12 +1,11 @@
-import { CircleIcon } from '@radix-ui/react-icons';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useLiveKey } from '~/lib/react';
+import { CircleIcon, InfoCircledIcon } from '@radix-ui/react-icons';
+import { Trans, useTranslation } from 'react-i18next';
 import {
   EventSubNotification,
   EventSubNotificationType,
   unwrapEvent,
 } from '~/lib/eventSub';
+import { useLiveKey } from '~/lib/react';
 import { PageContainer, SectionHeader, styled, TextBlock } from '../theme';
 import WIPNotice from '../components/utils/WIPNotice';
 import BrowserLink from '../components/BrowserLink';
@@ -81,31 +80,236 @@ const TwitchEventContainer = styled('div', {
   background: '$gray3',
   padding: '8px',
   borderRadius: '5px',
+  display: 'flex',
+  alignItems: 'center',
+});
+
+const TwitchEventContent = styled('div', {
+  flex: 1,
+});
+const TwitchEventTime = styled('time', {
+  color: '$gray10',
+  fontSize: '13px',
 });
 
 const supportedMessages: EventSubNotificationType[] = [
   EventSubNotificationType.Followed,
+  EventSubNotificationType.CustomRewardRedemptionAdded,
+  EventSubNotificationType.StreamWentOnline,
+  EventSubNotificationType.StreamWentOffline,
+  EventSubNotificationType.ChannelUpdated,
+  EventSubNotificationType.Raided,
+  EventSubNotificationType.Cheered,
+  EventSubNotificationType.Subscription,
+  EventSubNotificationType.SubscriptionWithMessage,
+  EventSubNotificationType.SubscriptionGifted,
 ];
 
 function TwitchEvent({ data }: { data: EventSubNotification }) {
+  const { t } = useTranslation();
+
   let content: JSX.Element | string;
   const message = unwrapEvent(data);
   switch (message.type) {
     case EventSubNotificationType.Followed: {
-      content = `${message.event.user_name} followed you!`;
+      content = (
+        <>
+          <Trans
+            t={t}
+            i18nKey={'pages.dashboard.twitch-events.events.follow'}
+            values={{ name: message.event.user_name }}
+            components={{
+              n: <b />,
+            }}
+          />
+        </>
+      );
       break;
     }
+    case EventSubNotificationType.CustomRewardRedemptionAdded: {
+      content = (
+        <>
+          <Trans
+            t={t}
+            i18nKey={'pages.dashboard.twitch-events.events.redemption'}
+            values={{
+              name: message.event.user_name,
+              reward: message.event.reward.title,
+            }}
+            components={{
+              n: <b />,
+              r: <b />,
+            }}
+          />
+        </>
+      );
+      break;
+    }
+    case EventSubNotificationType.StreamWentOnline: {
+      content = (
+        <>
+          <Trans
+            t={t}
+            i18nKey={'pages.dashboard.twitch-events.events.stream-start'}
+          />
+        </>
+      );
+      break;
+    }
+    case EventSubNotificationType.StreamWentOffline: {
+      content = (
+        <>
+          <Trans
+            t={t}
+            i18nKey={'pages.dashboard.twitch-events.events.stream-stop'}
+          />
+        </>
+      );
+      break;
+    }
+    case EventSubNotificationType.ChannelUpdated: {
+      content = (
+        <>
+          <Trans
+            t={t}
+            i18nKey={'pages.dashboard.twitch-events.events.channel-updated'}
+          />
+        </>
+      );
+      break;
+    }
+    case EventSubNotificationType.Raided: {
+      content = (
+        <>
+          <Trans
+            t={t}
+            i18nKey={'pages.dashboard.twitch-events.events.raided'}
+            values={{
+              name: message.event.from_broadcaster_user_name,
+              viewers: message.event.viewers,
+            }}
+            components={{
+              n: <b />,
+              v: <b />,
+            }}
+          />
+        </>
+      );
+      break;
+    }
+    case EventSubNotificationType.Cheered: {
+      content = (
+        <>
+          <Trans
+            t={t}
+            i18nKey={'pages.dashboard.twitch-events.events.cheered'}
+            values={{
+              name: message.event.is_anonymous
+                ? t('pages.dashboard.twitch-events.anonymous')
+                : message.event.user_name,
+              bits: message.event.bits,
+            }}
+            components={{
+              n: <b />,
+              b: <b />,
+            }}
+          />
+        </>
+      );
+      break;
+    }
+    case EventSubNotificationType.Subscription:
+      content = (
+        <>
+          <Trans
+            t={t}
+            i18nKey={'pages.dashboard.twitch-events.events.subscribed'}
+            values={{
+              name: message.event.user_name,
+              tier: message.event.tier.substring(0, 1),
+            }}
+            components={{
+              n: <b />,
+              t: <></>,
+            }}
+          />
+        </>
+      );
+      break;
+    case EventSubNotificationType.SubscriptionWithMessage:
+      content = (
+        <>
+          <Trans
+            t={t}
+            i18nKey={'pages.dashboard.twitch-events.events.subscribed-multi'}
+            values={{
+              name: message.event.user_name,
+              months: message.event.cumulative_months,
+              tier: message.event.tier.substring(0, 1),
+            }}
+            components={{
+              n: <b />,
+              m: <></>,
+              t: <></>,
+            }}
+          />
+        </>
+      );
+      break;
+    case EventSubNotificationType.SubscriptionGifted:
+      content = (
+        <>
+          <Trans
+            t={t}
+            i18nKey={'pages.dashboard.twitch-events.events.subscrition-gift'}
+            values={{
+              count: message.event.total,
+              name: message.event.is_anonymous
+                ? t('pages.dashboard.twitch-events.anonymous')
+                : message.event.user_name,
+              tier: message.event.tier.substring(0, 1),
+            }}
+            components={{
+              n: <b />,
+              c: <></>,
+              t: <></>,
+            }}
+          />
+        </>
+      );
+      break;
     default:
       content = <small>{message.type}</small>;
   }
-  return <TwitchEventContainer>{content}</TwitchEventContainer>;
+  const date = new Date(message.subscription.created_at);
+
+  return (
+    <TwitchEventContainer>
+      <TwitchEventContent>{content}</TwitchEventContent>
+      <TwitchEventTime
+        title={date.toLocaleString()}
+        dateTime={message.subscription.created_at}
+      >
+        {date.toLocaleTimeString()}
+      </TwitchEventTime>
+    </TwitchEventContainer>
+  );
 }
 
 function TwitchEventLog({ events }: { events: EventSubNotification[] }) {
+  const { t } = useTranslation();
   // TODO Include a note specifying that it's not ALL events!!
   return (
     <>
-      <SectionHeader>Latest events</SectionHeader>
+      <SectionHeader>
+        {t('pages.dashboard.twitch-events.header')}
+        <a
+          style={{ marginLeft: '10px' }}
+          title={t('pages.dashboard.twitch-events.warning')}
+        >
+          <InfoCircledIcon />
+        </a>
+      </SectionHeader>
       <Scrollbar vertical={true} viewport={{ maxHeight: '200px' }}>
         <EventListContainer>
           {events

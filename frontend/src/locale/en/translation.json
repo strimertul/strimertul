@@ -258,7 +258,25 @@
       "twitch-status": "Twitch stream status",
       "live": "Live!",
       "x-viewers": "{{count}} viewers",
-      "not-live": "Offline / Not streaming"
+      "not-live": "Offline / Not streaming",
+      "twitch-events": {
+        "header": "Latest events",
+        "warning": "This section only contains events that happened while {{APPNAME}} was open, so only use it for recent stuff",
+        "anonymous": "An anonymous viewer",
+        "events": {
+          "follow": "<n>{{name}}</n> followed you",
+          "redemption": "<n>{{name}}</n> redeemed <r>{{reward}}</r>",
+          "stream-start": "You started streaming",
+          "stream-stop": "You stopped streaming",
+          "channel-updated": "Stream info changed",
+          "raided": "<n>{{name}}</n> raided you with <v>{{viewers}} viewers</v>",
+          "cheered": "<n>{{name}}</n> cheered you with <b>{{bits}} bits</b>",
+          "subscribed": "<n>{{name}}</n> subscribed to you <t>(Tier {{tier}})</t>",
+          "subscribed-multi": "<n>{{name}}</n> subscribed to you <m>({{months}} months)</m> <t>(Tier {{tier}})</t>",
+          "subscrition-gift_one": "<n>{{name}}</n> gifted <c>{{count}}</c> subscription <t>(Tier {{tier}})</t>",
+          "subscrition-gift_other": "<n>{{name}}</n> gifted <c>{{count}}</c> subscriptions <t>(Tier {{tier}})</t>"
+        }
+      }
     },
     "onboarding": {
       "welcome-header": "Welcome to {{APPNAME}}",
