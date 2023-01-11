@@ -260,7 +260,7 @@
       "x-viewers": "{{count}} viewers",
       "not-live": "Offline / Not streaming",
       "twitch-events": {
-        "header": "Latest events",
+        "header": "Recent events",
         "warning": "This section only contains events that happened while {{APPNAME}} was open, so only use it for recent stuff",
         "anonymous": "An anonymous viewer",
         "events": {

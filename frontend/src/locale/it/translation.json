@@ -139,7 +139,25 @@
       "live": "In onda!",
       "not-live": "Offline / Non in streaming",
       "twitch-status": "Stato stream Twitch",
-      "x-viewers": "{{count}} spettatori"
+      "x-viewers": "{{count}} spettatori",
+      "twitch-events": {
+        "anonymous": "Uno spettatore anonimo",
+        "header": "Eventi recenti",
+        "warning": "Questa sezione contiene solo gli eventi accaduti mentre {{APPNAME}} era aperto, quindi utilizzala solo per cose recenti",
+        "events": {
+          "channel-updated": "Informazioni stream modificate",
+          "cheered": "<n>{{name}}</n> ti ha tifato con <b>{{bits}} bit</b>",
+          "follow": "<n>{{name}}</n> ti ha seguito",
+          "raided": "<n>{{name}}</n> ti ha fatto un raid con <v>{{viewers}} spettatori</v>",
+          "redemption": "<n>{{name}}</n> ha riscattato <r>{{reward}}</r>",
+          "stream-start": "Hai iniziato un nuovo stream",
+          "stream-stop": "Hai chiuso lo stream",
+          "subscribed": "<n>{{name}}</n> si è abbonato <t>(Livello {{tier}})</t>",
+          "subscribed-multi": "<n>{{name}}</n> si è abbonato <m>({{months}} mesi)</m> <t>(Livello {{tier}})</t>",
+          "subscrition-gift_one": "<n>{{name}}</n> ha regalato <c>{{count}}</c> abbonamento <t>(Livello {{tier}})</t>",
+          "subscrition-gift_other": "<n>{{name}}</n> ha regalato <c>{{count}}</c> abbonamenti <t>(Livello {{tier}})</t>"
+        }
+      }
     },
     "debug": {
       "big-ass-warning": "L'utilizzo di questa pagina può danneggiare gravemente il tuo database. \nSpero tu sappia cosa stai facendo!",
