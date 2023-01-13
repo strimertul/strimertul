@@ -310,10 +310,11 @@ function TwitchEventLog({ events }: { events: EventSubNotification[] }) {
           <InfoCircledIcon />
         </a>
       </SectionHeader>
-      <Scrollbar vertical={true} viewport={{ maxHeight: '200px' }}>
+      <Scrollbar vertical={true} viewport={{ maxHeight: '250px' }}>
         <EventListContainer>
           {events
             .filter((ev) => supportedMessages.includes(ev.subscription.type))
+            .reverse()
             .map((ev) => (
               <TwitchEvent
                 key={`${ev.subscription.id}-${ev.subscription.created_at}`}
