@@ -275,7 +275,8 @@
           "subscribed-multi": "<n>{{name}}</n> subscribed to you <m>({{months}} months)</m> <t>(Tier {{tier}})</t>",
           "subscrition-gift_one": "<n>{{name}}</n> gifted <c>{{count}}</c> subscription <t>(Tier {{tier}})</t>",
           "subscrition-gift_other": "<n>{{name}}</n> gifted <c>{{count}}</c> subscriptions <t>(Tier {{tier}})</t>"
-        }
+        },
+        "replay": "Replay event"
       }
     },
     "onboarding": {

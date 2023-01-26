@@ -4,10 +4,9 @@ import { helix } from '@wailsapp/go/models';
 import { BrowserOpenURL } from '@wailsapp/runtime/runtime';
 import React, { useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 import eventsubTests from '~/data/eventsub-tests';
 import { useModule, useStatus } from '~/lib/react';
-import { RootState, useAppDispatch } from '~/store';
+import { useAppDispatch, useAppSelector } from '~/store';
 import apiReducer, { modules } from '~/store/api/reducer';
 import { checkTwitchKeys } from '~/lib/twitch';
 import BrowserLink from '../components/BrowserLink';
@@ -376,7 +375,7 @@ const TwitchName = styled('p', { fontWeight: 'bold' });
 function TwitchEventSubSettings() {
   const { t } = useTranslation();
   const [userStatus, setUserStatus] = useState<helix.User | SyncError>(null);
-  const kv = useSelector((state: RootState) => state.api.client);
+  const kv = useAppSelector((state) => state.api.client);
 
   const getUserInfo = async () => {
     try {

@@ -1,4 +1,4 @@
-import { CircleIcon, InfoCircledIcon } from '@radix-ui/react-icons';
+import { CircleIcon, InfoCircledIcon, UpdateIcon } from '@radix-ui/react-icons';
 import { Trans, useTranslation } from 'react-i18next';
 import {
   EventSubNotification,
@@ -6,6 +6,7 @@ import {
   unwrapEvent,
 } from '~/lib/eventSub';
 import { useLiveKey } from '~/lib/react';
+import { useAppSelector } from '~/store';
 import { PageContainer, SectionHeader, styled, TextBlock } from '../theme';
 import WIPNotice from '../components/utils/WIPNotice';
 import BrowserLink from '../components/BrowserLink';
@@ -87,6 +88,17 @@ const TwitchEventContainer = styled('div', {
 const TwitchEventContent = styled('div', {
   flex: 1,
 });
+const TwitchEventActions = styled('div', {
+  display: 'flex',
+  margin: '0 10px',
+  '& a': {
+    color: '$gray10',
+    '&:hover': {
+      color: '$gray12',
+      cursor: 'pointer',
+    },
+  },
+});
 const TwitchEventTime = styled('time', {
   color: '$gray10',
   fontSize: '13px',
@@ -107,6 +119,17 @@ const supportedMessages: EventSubNotificationType[] = [
 
 function TwitchEvent({ data }: { data: EventSubNotification }) {
   const { t } = useTranslation();
+  const client = useAppSelector((state) => state.api.client);
+
+  const replay = () => {
+    void client.putJSON('twitch/ev/eventsub-event', {
+      ...data,
+      subscription: {
+        ...data.subscription,
+        created_at: new Date().toISOString(),
+      },
+    });
+  };
 
   let content: JSX.Element | string;
   const message = unwrapEvent(data);
@@ -292,13 +315,23 @@ function TwitchEvent({ data }: { data: EventSubNotification }) {
       >
         {date.toLocaleTimeString()}
       </TwitchEventTime>
+      <TwitchEventActions>
+        <a
+          aria-label={t('pages.dashboard.twitch-events.replay')}
+          title={t('pages.dashboard.twitch-events.replay')}
+          onClick={() => {
+            replay();
+          }}
+        >
+          <UpdateIcon />
+        </a>
+      </TwitchEventActions>
     </TwitchEventContainer>
   );
 }
 
 function TwitchEventLog({ events }: { events: EventSubNotification[] }) {
   const { t } = useTranslation();
-  // TODO Include a note specifying that it's not ALL events!!
   return (
     <>
       <SectionHeader>
@@ -360,7 +393,6 @@ function TwitchSection() {
   const twitchEvents = useLiveKey<EventSubNotification[]>(
     'twitch/eventsub-history',
   );
-  console.log(twitchEvents);
 
   return (
     <>
