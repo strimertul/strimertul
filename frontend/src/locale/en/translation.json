@@ -15,7 +15,8 @@
       },
       "strimertul": {
         "settings": "Server settings",
-        "ui-config": "User interface"
+        "ui-config": "User interface",
+        "extensions": "Extensions"
       },
       "twitch": {
         "configuration": "Configuration",
@@ -309,6 +310,9 @@
       "language": "Language",
       "repeat-onboarding": "Repeat onboarding",
       "partial-translation": "Partial translation"
+    },
+    "extensions": {
+      "title": "Extensions"
     }
   },
   "form-actions": {

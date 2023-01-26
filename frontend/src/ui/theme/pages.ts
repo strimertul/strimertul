@@ -2,6 +2,7 @@ import { styled } from './theme';
 
 export const PageContainer = styled('div', {
   padding: '2rem',
+  paddingTop: '1rem',
   maxWidth: '1000px',
   width: '100%',
   margin: '0 auto',
@@ -12,7 +13,7 @@ export const PageHeader = styled('header', {});
 export const PageTitle = styled('h1', {
   fontSize: '25pt',
   fontWeight: '600',
-  marginBottom: '0.5rem',
+  marginBottom: '1rem',
 });
 
 export const SectionHeader = styled('h2', {

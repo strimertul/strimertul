@@ -45,6 +45,7 @@ import ServerSettingsPage from './pages/ServerSettings';
 import StrimertulPage from './pages/Strimertul';
 import TwitchSettingsPage from './pages/TwitchSettings';
 import UISettingsPage from './pages/UISettingsPage';
+import ExtensionsPage from './pages/Extensions';
 import { styled, TextBlock } from './theme';
 
 const LoadingDiv = styled('div', {
@@ -88,12 +89,17 @@ const sections: RouteSection[] = [
       {
         title: 'menu.pages.strimertul.settings',
         url: '/http',
-        icon: <CodeIcon />,
+        icon: <MixerHorizontalIcon />,
       },
       {
         title: 'menu.pages.strimertul.ui-config',
         url: '/ui-config',
         icon: <MixIcon />,
+      },
+      {
+        title: 'menu.pages.strimertul.extensions',
+        url: '/extensions',
+        icon: <CodeIcon />,
       },
     ],
   },
@@ -256,6 +262,7 @@ export default function App(): JSX.Element {
               <Route path="/debug" element={<DebugPage />} />
               <Route path="/http" element={<ServerSettingsPage />} />
               <Route path="/ui-config" element={<UISettingsPage />} />
+              <Route path="/extensions" element={<ExtensionsPage />} />
               <Route path="/twitch/settings" element={<TwitchSettingsPage />} />
               <Route
                 path="/twitch/bot/commands"
