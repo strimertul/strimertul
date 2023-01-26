@@ -15,6 +15,7 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	_ "net/http/pprof"
@@ -117,6 +118,17 @@ func cliMain(ctx *cli.Context) error {
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		OnStartup:        app.startup,
 		OnShutdown:       app.stop,
+		OnBeforeClose: func(ctx context.Context) (prevent bool) {
+			dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
+				Type:    runtime.QuestionDialog,
+				Title:   "Quit?",
+				Message: "Are you sure you want to quit?",
+			})
+			if err != nil {
+				return false
+			}
+			return dialog != "Yes"
+		},
 		Bind: []interface{}{
 			app,
 		},
