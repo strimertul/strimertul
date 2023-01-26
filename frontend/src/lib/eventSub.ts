@@ -46,6 +46,7 @@ export interface EventSubSubscription {
 export interface EventSubNotification {
   subscription: EventSubSubscription;
   event: unknown;
+  date?: string;
 }
 
 export const unwrapEvent = (message: EventSubNotification) =>

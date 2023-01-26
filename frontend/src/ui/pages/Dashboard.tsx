@@ -133,6 +133,7 @@ function TwitchEvent({ data }: { data: EventSubNotification }) {
 
   let content: JSX.Element | string;
   const message = unwrapEvent(data);
+  let date = data.date ? new Date(data.date) : null;
   switch (message.type) {
     case EventSubNotificationType.Followed: {
       content = (
@@ -147,6 +148,7 @@ function TwitchEvent({ data }: { data: EventSubNotification }) {
           />
         </>
       );
+      date = new Date(message.event.followed_at);
       break;
     }
     case EventSubNotificationType.CustomRewardRedemptionAdded: {
@@ -166,6 +168,7 @@ function TwitchEvent({ data }: { data: EventSubNotification }) {
           />
         </>
       );
+      date = new Date(message.event.redeemed_at);
       break;
     }
     case EventSubNotificationType.StreamWentOnline: {
@@ -177,6 +180,7 @@ function TwitchEvent({ data }: { data: EventSubNotification }) {
           />
         </>
       );
+      date = new Date(message.event.started_at);
       break;
     }
     case EventSubNotificationType.StreamWentOffline: {
@@ -304,16 +308,15 @@ function TwitchEvent({ data }: { data: EventSubNotification }) {
     default:
       content = <small>{message.type}</small>;
   }
-  const date = new Date(message.subscription.created_at);
 
   return (
     <TwitchEventContainer>
       <TwitchEventContent>{content}</TwitchEventContent>
       <TwitchEventTime
-        title={date.toLocaleString()}
+        title={date?.toLocaleString()}
         dateTime={message.subscription.created_at}
       >
-        {date.toLocaleTimeString()}
+        {date?.toLocaleTimeString()}
       </TwitchEventTime>
       <TwitchEventActions>
         <a
@@ -332,6 +335,7 @@ function TwitchEvent({ data }: { data: EventSubNotification }) {
 
 function TwitchEventLog({ events }: { events: EventSubNotification[] }) {
   const { t } = useTranslation();
+  console.log(events);
   return (
     <>
       <SectionHeader>
@@ -349,10 +353,7 @@ function TwitchEventLog({ events }: { events: EventSubNotification[] }) {
             .filter((ev) => supportedMessages.includes(ev.subscription.type))
             .reverse()
             .map((ev) => (
-              <TwitchEvent
-                key={`${ev.subscription.id}-${ev.subscription.created_at}`}
-                data={ev}
-              />
+              <TwitchEvent key={`${ev.subscription.id}-${ev.date}`} data={ev} />
             ))}
         </EventListContainer>
       </Scrollbar>

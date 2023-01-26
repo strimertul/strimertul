@@ -111,6 +111,7 @@ func (c *Client) processEvent(message EventSubWebsocketMessage) {
 	if err != nil {
 		c.logger.Error("eventsub ws decode error", zap.String("message-type", message.Metadata.MessageType), zap.Error(err))
 	}
+	notificationData.Date = time.Now()
 
 	err = c.db.PutJSON(EventSubEventKey, notificationData)
 	if err != nil {
@@ -207,6 +208,7 @@ type WelcomeMessagePayload struct {
 type NotificationMessagePayload struct {
 	Subscription helix.EventSubSubscription `json:"subscription"`
 	Event        jsoniter.RawMessage        `json:"event"`
+	Date         time.Time                  `json:"date,omitempty"`
 }
 
 type EventSubMetadata struct {
