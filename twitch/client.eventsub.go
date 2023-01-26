@@ -26,7 +26,7 @@ func (c *Client) connectWebsocket() {
 		for {
 			messageType, messageData, err := connection.ReadMessage()
 			if err != nil {
-				c.logger.Warn("eventsub ws read error", zap.Error(err))
+				c.logger.Error("eventsub ws read error", zap.Error(err))
 				wsErr <- err
 				return
 			}
