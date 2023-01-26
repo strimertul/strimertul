@@ -335,7 +335,6 @@ function TwitchEvent({ data }: { data: EventSubNotification }) {
 
 function TwitchEventLog({ events }: { events: EventSubNotification[] }) {
   const { t } = useTranslation();
-  console.log(events);
   return (
     <>
       <SectionHeader>
@@ -351,7 +350,9 @@ function TwitchEventLog({ events }: { events: EventSubNotification[] }) {
         <EventListContainer>
           {events
             .filter((ev) => supportedMessages.includes(ev.subscription.type))
-            .reverse()
+            .sort((a, b) =>
+              a.date && b.date ? Date.parse(b.date) - Date.parse(a.date) : 0,
+            )
             .map((ev) => (
               <TwitchEvent key={`${ev.subscription.id}-${ev.date}`} data={ev} />
             ))}
