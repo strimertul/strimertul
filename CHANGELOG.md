@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [current]
 
+### Added
+
+- Added recent event list in the dashboard, please be aware that this list only refers to events that have happened while strimertul was open and is mostly for development/troubleshooting
+
+### Changed
+
+- Bumped recent event limit to 100 to deal with some spammy events
+
+### Fixed
+
+- Fixed some values in the UI not updating or being assigned upon first load
+
 ## [3.0.0]
 
 ### Added
