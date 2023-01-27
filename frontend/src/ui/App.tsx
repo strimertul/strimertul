@@ -202,6 +202,7 @@ export default function App(): JSX.Element {
     };
   }, []);
 
+  // Wait for main process to give us the OK to hit kilovolt
   useEffect(() => {
     void IsServerReady().then(setReady);
     EventsOn('ready', (newValue: boolean) => {
@@ -212,6 +213,7 @@ export default function App(): JSX.Element {
     };
   }, []);
 
+  // Connect to kilovolt as soon as it's available
   useEffect(() => {
     if (!ready) {
       return;

@@ -601,6 +601,7 @@ export default function OnboardingPage() {
   const currentStep = steps[uiConfig?.onboardingStatus || 0];
   const landing = currentStep === OnboardingSteps.Landing;
 
+  // Skip onboarding if we've already done it
   const onboardingDone = uiConfig?.onboardingDone;
   useEffect(() => {
     if (onboardingDone) {
