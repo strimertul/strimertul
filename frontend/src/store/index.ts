@@ -4,11 +4,13 @@ import thunkMiddleware from 'redux-thunk';
 
 import apiReducer from './api/reducer';
 import loggingReducer from './logging/reducer';
+import extensionsReducer from './extensions/reducer';
 
 const store = configureStore({
   reducer: {
     api: apiReducer.reducer,
     logging: loggingReducer.reducer,
+    extensions: extensionsReducer.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

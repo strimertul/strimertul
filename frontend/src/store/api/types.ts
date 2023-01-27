@@ -3,21 +3,21 @@
 import KilovoltWS from '@strimertul/kilovolt-client';
 import type { kvError } from '@strimertul/kilovolt-client/types/messages';
 
-interface HTTPConfig {
+export interface HTTPConfig {
   bind: string;
   enable_static_server: boolean;
   kv_password: string;
   path: string;
 }
 
-interface TwitchConfig {
+export interface TwitchConfig {
   enabled: boolean;
   enable_bot: boolean;
   api_client_id: string;
   api_client_secret: string;
 }
 
-interface TwitchBotConfig {
+export interface TwitchBotConfig {
   username: string;
   oauth: string;
   channel: string;
@@ -32,7 +32,7 @@ export const accessLevels = [
   'streamer',
 ] as const;
 
-export type AccessLevelType = typeof accessLevels[number];
+export type AccessLevelType = (typeof accessLevels)[number];
 
 export interface TwitchBotCustomCommand {
   description: string;

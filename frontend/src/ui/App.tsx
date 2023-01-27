@@ -25,8 +25,7 @@ import { useAppDispatch, useAppSelector } from '~/store';
 import { createWSClient, useAuthBypass } from '~/store/api/reducer';
 import { ConnectionStatus } from '~/store/api/types';
 import loggingReducer from '~/store/logging/reducer';
-// @ts-expect-error Asset import
-import spinner from '~/assets/icon-loading.svg';
+import { initializeExtensions } from '~/store/extensions/reducer';
 
 import LogViewer from './components/LogViewer';
 import Sidebar, { RouteSection } from './components/Sidebar';
@@ -46,32 +45,9 @@ import StrimertulPage from './pages/Strimertul';
 import TwitchSettingsPage from './pages/TwitchSettings';
 import UISettingsPage from './pages/UISettingsPage';
 import ExtensionsPage from './pages/Extensions';
-import { styled, TextBlock } from './theme';
+import { styled } from './theme';
+import Loading from './components/Loading';
 
-const LoadingDiv = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  minHeight: '100vh',
-});
-
-const Spinner = styled('img', {
-  maxWidth: '100px',
-});
-
-interface LoadingProps {
-  message: string;
-}
-
-function Loading({ message }: React.PropsWithChildren<LoadingProps>) {
-  return (
-    <LoadingDiv>
-      <Spinner src={spinner as string} alt="Loading..." />
-      <TextBlock>{message}</TextBlock>
-    </LoadingDiv>
-  );
-}
 const sections: RouteSection[] = [
   {
     title: 'menu.sections.monitor',
@@ -220,9 +196,16 @@ export default function App(): JSX.Element {
     }
     if (!client) {
       void connectToKV();
+      return;
     }
     if (connected === ConnectionStatus.AuthenticationNeeded) {
+      // If Kilovolt is protected by password (pretty much always) use the bypass
       void dispatch(useAuthBypass());
+      return;
+    }
+    if (connected === ConnectionStatus.Connected) {
+      // Once connected, initialize UI subsystems
+      void dispatch(initializeExtensions());
     }
   }, [ready, connected]);
 
@@ -237,7 +220,7 @@ export default function App(): JSX.Element {
   }, [ready, uiConfig]);
 
   if (connected === ConnectionStatus.NotConnected) {
-    return <Loading message={t('special.loading')} />;
+    return <Loading size="fullscreen" message={t('special.loading')} />;
   }
 
   if (connected === ConnectionStatus.AuthenticationNeeded) {
