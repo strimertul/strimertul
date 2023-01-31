@@ -2,10 +2,18 @@ import Editor from '@monaco-editor/react';
 import { InputIcon, PlusIcon } from '@radix-ui/react-icons';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { blankTemplate, Extension } from '~/lib/extensions/extension';
+import { blankTemplate } from '~/lib/extensions/extension';
+import { ExtensionStatus } from '~/lib/extensions/types';
 import slug from '~/lib/slug';
 import { useAppDispatch, useAppSelector } from '~/store';
-import extensionsReducer, { saveExtension } from '~/store/extensions/reducer';
+import extensionsReducer, {
+  ExtensionEntry,
+  removeExtension,
+  saveExtension,
+  startExtension,
+  stopExtension,
+} from '~/store/extensions/reducer';
+import AlertContent from '../components/AlertContent';
 import Loading from '../components/Loading';
 import {
   Button,
@@ -13,6 +21,7 @@ import {
   Field,
   FlexRow,
   InputBox,
+  MultiButton,
   PageContainer,
   PageHeader,
   PageTitle,
@@ -22,13 +31,129 @@ import {
   TabContent,
   TabList,
 } from '../theme';
+import { Alert, AlertTrigger } from '../theme/alert';
 
-interface ExtensionListProps {
-  extensions: Record<string, Extension>;
-  onNewClicked: () => void;
+const ExtensionRow = styled('article', {
+  marginBottom: '0.4rem',
+  backgroundColor: '$gray2',
+  margin: '0.5rem 0',
+  padding: '0.3rem 0.5rem',
+  borderLeft: '5px solid $teal8',
+  borderRadius: '0.25rem',
+  borderBottom: '1px solid $gray4',
+  transition: 'all 50ms',
+  '&:hover': {
+    backgroundColor: '$gray3',
+  },
+  variants: {
+    status: {
+      enabled: {},
+      disabled: {
+        borderLeftColor: '$red6',
+        backgroundColor: '$gray3',
+        color: '$gray10',
+      },
+    },
+  },
+});
+
+const ExtensionName = styled('div', {
+  flex: '1',
+});
+const ExtensionActions = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.25rem',
+});
+
+const isRunning = (status: ExtensionStatus) =>
+  status === ExtensionStatus.Running || status === ExtensionStatus.Finished;
+
+type ExtensionListItemProps = {
+  enabled: boolean;
+  entry: ExtensionEntry;
+  status: ExtensionStatus;
+  onEdit: () => void;
+  onRemove: () => void;
+  onToggleEnable: () => void;
+  onToggleStatus: () => void;
+};
+
+function ExtensionListItem(props: ExtensionListItemProps) {
+  const { t } = useTranslation();
+  return (
+    <ExtensionRow
+      status={props.enabled && isRunning(props.status) ? 'enabled' : 'disabled'}
+    >
+      <FlexRow>
+        <ExtensionName>
+          {props.entry.name} {props.enabled ? `(${props.status})` : null}
+        </ExtensionName>
+        <ExtensionActions>
+          <MultiButton>
+            <Button
+              styling="multi"
+              size="small"
+              onClick={() => props.onToggleEnable()}
+            >
+              {t(
+                props.entry.options.enabled
+                  ? 'form-actions.disable'
+                  : 'form-actions.enable',
+              )}
+            </Button>
+            {props.enabled ? (
+              <>
+                <Button
+                  styling="multi"
+                  size="small"
+                  onClick={() => props.onToggleStatus()}
+                >
+                  {t(
+                    isRunning(props.status)
+                      ? 'form-actions.stop'
+                      : 'form-actions.start',
+                  )}
+                </Button>
+              </>
+            ) : null}
+
+            <Button styling="multi" size="small" onClick={() => props.onEdit()}>
+              {t('form-actions.edit')}
+            </Button>
+            <Alert>
+              <AlertTrigger asChild>
+                <Button styling="multi" size="small">
+                  {t('form-actions.delete')}
+                </Button>
+              </AlertTrigger>
+              <AlertContent
+                variation="danger"
+                title={t('pages.extensions.remove-alert', {
+                  name: props.entry.name,
+                })}
+                description={t('form-actions.warning-delete')}
+                actionText={t('form-actions.delete')}
+                actionButtonProps={{ variation: 'danger' }}
+                showCancel={true}
+                onAction={() => props.onRemove()}
+              />
+            </Alert>
+          </MultiButton>
+        </ExtensionActions>
+      </FlexRow>
+    </ExtensionRow>
+  );
 }
 
-function ExtensionList({ extensions, onNewClicked }: ExtensionListProps) {
+interface ExtensionListProps {
+  onNew: () => void;
+  onEdit: (name: string) => void;
+}
+
+function ExtensionList({ onNew, onEdit }: ExtensionListProps) {
+  const extensions = useAppSelector((state) => state.extensions);
+  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const [filter, setFilter] = useState('');
   const filterLC = filter.toLowerCase();
@@ -40,7 +165,7 @@ function ExtensionList({ extensions, onNewClicked }: ExtensionListProps) {
       </PageHeader>
       <Field size="fullWidth" spacing="none">
         <FlexRow css={{ flex: 1, alignItems: 'stretch' }} spacing="1">
-          <Button variation="primary" onClick={() => onNewClicked()}>
+          <Button variation="primary" onClick={() => onNew()}>
             <PlusIcon /> {t('pages.extensions.create')}
           </Button>
           <InputBox
@@ -51,10 +176,39 @@ function ExtensionList({ extensions, onNewClicked }: ExtensionListProps) {
           />
         </FlexRow>
       </Field>
-      {Object.values(extensions)
+      {Object.values(extensions.installed)
         ?.filter((r) => r.name.toLowerCase().includes(filterLC))
         .map((e) => (
-          <div key={e.name}>{e.name}</div>
+          <ExtensionListItem
+            key={e.name}
+            entry={e}
+            enabled={e.options.enabled}
+            status={extensions.status[e.name]}
+            onEdit={() => onEdit(e.name)}
+            onRemove={() => {
+              // Toggle enabled status
+              void dispatch(removeExtension(e.name));
+            }}
+            onToggleEnable={() => {
+              // Toggle enabled status
+              void dispatch(
+                saveExtension({
+                  ...e,
+                  options: {
+                    ...e.options,
+                    enabled: !e.options.enabled,
+                  },
+                }),
+              );
+            }}
+            onToggleStatus={() => {
+              if (isRunning(extensions.status[e.name])) {
+                void dispatch(stopExtension(e.name));
+              } else {
+                void dispatch(startExtension(e.name));
+              }
+            }}
+          />
         ))}
     </PageContainer>
   );
@@ -80,10 +234,13 @@ const EditorDropdown = styled(ComboBox, {
 function ExtensionEditor() {
   const extensions = useAppSelector((state) => state.extensions);
   const dispatch = useAppDispatch();
-  const currentFile =
-    extensions.editorCurrentFile in extensions.unsaved
-      ? extensions.unsaved[extensions.editorCurrentFile]
-      : extensions.installed[extensions.editorCurrentFile].source;
+  const isUnsaved =
+    extensions.editorCurrentFile in extensions.unsaved &&
+    extensions.unsaved[extensions.editorCurrentFile] !==
+      extensions.installed[extensions.editorCurrentFile]?.source;
+  const currentFile = isUnsaved
+    ? extensions.unsaved[extensions.editorCurrentFile]
+    : extensions.installed[extensions.editorCurrentFile].source;
   return (
     <div
       style={{
@@ -98,6 +255,11 @@ function ExtensionEditor() {
       >
         <EditorDropdown
           value={extensions.editorCurrentFile}
+          onChange={(ev) => {
+            void dispatch(
+              extensionsReducer.actions.editorSelectedFile(ev.target.value),
+            );
+          }}
           css={{ flex: '1' }}
         >
           {Object.values(extensions.installed)
@@ -109,7 +271,8 @@ function ExtensionEditor() {
             ))}
           {Object.keys(extensions.unsaved).map((ext) => (
             <option key={ext} value={ext}>
-              {ext}*
+              {ext}
+              {isUnsaved ? '*' : ''}
             </option>
           ))}
         </EditorDropdown>
@@ -118,7 +281,7 @@ function ExtensionEditor() {
         </EditorButton>
         <EditorButton
           size="small"
-          disabled={!(extensions.editorCurrentFile in extensions.unsaved)}
+          disabled={!isUnsaved}
           onClick={() => {
             void dispatch(
               saveExtension({
@@ -127,7 +290,7 @@ function ExtensionEditor() {
                 options:
                   extensions.editorCurrentFile in extensions.installed
                     ? extensions.installed[extensions.editorCurrentFile].options
-                    : { autostart: false },
+                    : { enabled: false },
               }),
             );
           }}
@@ -169,12 +332,18 @@ export default function ExtensionsPage(): React.ReactElement {
       extensionsReducer.actions.extensionDrafted({
         name: defaultName,
         source: blankTemplate(defaultName),
-        options: { autostart: false },
+        options: { enabled: false },
       }),
     );
 
     // Set it as current file in editor
     dispatch(extensionsReducer.actions.editorSelectedFile(defaultName));
+    setCurrentTab('editor');
+  };
+
+  const editClicked = (name: string) => {
+    // Set it as current file in editor
+    dispatch(extensionsReducer.actions.editorSelectedFile(name));
     setCurrentTab('editor');
   };
 
@@ -202,8 +371,8 @@ export default function ExtensionsPage(): React.ReactElement {
       </TabList>
       <TabContent css={{ paddingTop: '1rem' }} value="list">
         <ExtensionList
-          extensions={extensions.installed}
-          onNewClicked={() => newClicked()}
+          onNew={() => newClicked()}
+          onEdit={(name) => editClicked(name)}
         />
       </TabContent>
       <TabContent css={{ paddingTop: '0' }} value="editor">

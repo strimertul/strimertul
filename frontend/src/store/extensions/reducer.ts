@@ -4,14 +4,18 @@ import { Extension } from '~/lib/extensions/extension';
 import {
   ExtensionDependencies,
   ExtensionOptions,
+  ExtensionRunOptions,
+  ExtensionStatus,
 } from '~/lib/extensions/types';
 import { RootState } from '..';
 import { HTTPConfig } from '../api/types';
 
 interface ExtensionsState {
   ready: boolean;
-  installed: Record<string, Extension>;
+  installed: Record<string, ExtensionEntry>;
+  running: Record<string, Extension>;
   unsaved: Record<string, string>;
+  status: Record<string, ExtensionStatus>;
   editorCurrentFile: string;
   dependencies: ExtensionDependencies;
 }
@@ -25,8 +29,10 @@ export interface ExtensionEntry {
 const initialState: ExtensionsState = {
   ready: false,
   installed: {},
+  running: {},
   unsaved: {},
   editorCurrentFile: null,
+  status: {},
   dependencies: {
     kilovolt: { address: '' },
   },
@@ -54,15 +60,16 @@ const extensionsReducer = createSlice({
     extensionSourceChanged(state, { payload }: PayloadAction<string>) {
       state.unsaved[state.editorCurrentFile] = payload;
     },
+    extensionStatusChanged(
+      state,
+      { payload }: PayloadAction<{ name: string; status: ExtensionStatus }>,
+    ) {
+      state.status[payload.name] = payload.status;
+    },
     extensionAdded(state, { payload }: PayloadAction<ExtensionEntry>) {
       // Remove from unsaved
       if (payload.name in state.unsaved) {
         delete state.unsaved[payload.name];
-      }
-
-      // If running, terminate running instance
-      if (payload.name in state.installed) {
-        state.installed[payload.name]?.dispose();
       }
 
       // If we don't have a file selected in the editor, set a default as soon as possible
@@ -70,20 +77,93 @@ const extensionsReducer = createSlice({
         state.editorCurrentFile = payload.name;
       }
 
+      state.installed[payload.name] = payload;
+    },
+    extensionInstanceAdded(state, { payload }: PayloadAction<Extension>) {
+      // If running, terminate running instance
+      if (payload.info.name in state.running) {
+        state.running[payload.info.name]?.dispose();
+      }
+
       // Create new instance with stored code
-      state.installed[payload.name] = new Extension(
-        payload.name,
-        payload.source,
-        payload.options,
-        {
-          kilovolt: { ...state.dependencies.kilovolt },
-        },
-      );
+      state.status[payload.info.name] = ExtensionStatus.GettingReady;
+      state.running[payload.info.name] = payload;
+    },
+    extensionRemoved(state, { payload }: PayloadAction<string>) {
+      // If running, terminate running instance
+      if (payload in state.running) {
+        state.running[payload]?.dispose();
+      }
+
+      // Remove from other lists
+      delete state.installed[payload];
+      delete state.running[payload];
+      delete state.unsaved[payload];
+      delete state.status[payload];
+
+      // If it's the currently selected file in the editor, select another or none
+      if (state.editorCurrentFile === payload) {
+        const others = Object.keys(state.installed);
+        state.editorCurrentFile = others.length > 0 ? others[0] : null;
+      }
     },
   },
 });
 
 const extensionPrefix = 'ui/extensions/installed/';
+
+export const createExtensionInstance = createAsyncThunk(
+  'extensions/new-instance',
+  (
+    payload: {
+      entry: ExtensionEntry;
+      dependencies: ExtensionDependencies;
+      runOptions?: ExtensionRunOptions;
+    },
+    { dispatch },
+  ) => {
+    const ext = new Extension(
+      payload.entry,
+      payload.dependencies,
+      payload.runOptions,
+    );
+    ext.addEventListener(
+      'statusChanged',
+      (ev: CustomEvent<ExtensionStatus>) => {
+        dispatch(
+          extensionsReducer.actions.extensionStatusChanged({
+            name: payload.entry.name,
+            status: ev.detail,
+          }),
+        );
+      },
+    );
+    dispatch(extensionsReducer.actions.extensionAdded(payload.entry));
+    dispatch(extensionsReducer.actions.extensionInstanceAdded(ext));
+  },
+);
+
+export const refreshExtensionInstance = createAsyncThunk(
+  'extensions/refresh-instance',
+  async (payload: ExtensionEntry, { dispatch, getState }) => {
+    const { extensions } = getState() as RootState;
+    if (payload.options.enabled) {
+      await dispatch(
+        createExtensionInstance({
+          entry: payload,
+          dependencies: extensions.dependencies,
+        }),
+      );
+    } else {
+      // If running, terminate running instance
+      if (payload.name in extensions.running) {
+        extensions.running[payload.name]?.dispose();
+      }
+
+      dispatch(extensionsReducer.actions.extensionAdded(payload));
+    }
+  },
+);
 
 export const initializeExtensions = createAsyncThunk(
   'extensions/initialize',
@@ -95,19 +175,18 @@ export const initializeExtensions = createAsyncThunk(
     const httpConfig = await api.client.getJSON<HTTPConfig>('http/config');
 
     // Set dependencies
-    dispatch(
-      extensionsReducer.actions.initialized({
-        kilovolt: {
-          address: `ws://${httpConfig.bind}/ws`,
-          password: httpConfig.kv_password,
-        },
-      }),
-    );
+    const deps = {
+      kilovolt: {
+        address: `ws://${httpConfig.bind}/ws`,
+        password: httpConfig.kv_password,
+      },
+    };
+    dispatch(extensionsReducer.actions.initialized(deps));
 
     // Become reactive to extension changes
     await api.client.subscribePrefix(extensionPrefix, (newValue, newKey) => {
-      dispatch(
-        extensionsReducer.actions.extensionAdded({
+      void dispatch(
+        refreshExtensionInstance({
           ...(JSON.parse(newValue) as ExtensionEntry),
           name: newKey.substring(extensionPrefix.length),
         }),
@@ -115,15 +194,54 @@ export const initializeExtensions = createAsyncThunk(
     });
 
     // Get installed extensions
-    const extensions = await api.client.getKeysByPrefix(extensionPrefix);
-    Object.entries(extensions).forEach(([extName, extContent]) =>
-      dispatch(
-        extensionsReducer.actions.extensionAdded({
+    const installed = await api.client.getKeysByPrefix(extensionPrefix);
+    await Promise.all(
+      Object.entries(installed).map(async ([extName, extContent]) => {
+        const entry = {
           ...(JSON.parse(extContent) as ExtensionEntry),
           name: extName.substring(extensionPrefix.length),
-        }),
-      ),
+        };
+        if (entry.options.enabled) {
+          await dispatch(
+            createExtensionInstance({
+              entry,
+              dependencies: deps,
+            }),
+          );
+        } else {
+          dispatch(extensionsReducer.actions.extensionAdded(entry));
+        }
+      }),
     );
+  },
+);
+
+export const startExtension = createAsyncThunk(
+  'extensions/start',
+  async (name: string, { getState, dispatch }) => {
+    const { extensions } = getState() as RootState;
+
+    // If terminated, re-create extension
+    if (extensions.running[name].status === ExtensionStatus.Terminated) {
+      await dispatch(
+        createExtensionInstance({
+          entry: extensions.installed[name],
+          dependencies: extensions.dependencies,
+          runOptions: { autostart: true },
+        }),
+      );
+      return;
+    }
+
+    extensions.running[name].start();
+  },
+);
+
+export const stopExtension = createAsyncThunk(
+  'extensions/stop',
+  (name: string, { getState }) => {
+    const { extensions } = getState() as RootState;
+    extensions.running[name].stop();
   },
 );
 
@@ -133,6 +251,16 @@ export const saveExtension = createAsyncThunk(
     // Get kv client
     const { api } = getState() as RootState;
     await api.client.putJSON(extensionPrefix + entry.name, entry);
+  },
+);
+
+export const removeExtension = createAsyncThunk(
+  'extensions/remove',
+  async (name: string, { getState, dispatch }) => {
+    // Get kv client
+    const { api } = getState() as RootState;
+    dispatch(extensionsReducer.actions.extensionRemoved(name));
+    await api.client.deleteKey(extensionPrefix + name);
   },
 );
 

@@ -49,9 +49,7 @@ onmessage = async (ev: MessageEvent<ExtensionHostCommand>) => {
       extFn = ExtensionFunction.constructor('kv', cmd.source);
       setStatus(ExtensionStatus.Ready);
 
-      if (cmd.options.autostart) {
-        start();
-      }
+      start();
       break;
     }
     case 'start':

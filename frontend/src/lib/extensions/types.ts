@@ -6,8 +6,11 @@ export interface ExtensionDependencies {
 }
 
 export interface ExtensionOptions {
-  autostart: boolean;
+  enabled: boolean;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface ExtensionRunOptions {}
 
 export enum ExtensionStatus {
   GettingReady = 'not-ready',
@@ -22,7 +25,7 @@ export type ExtensionHostCommand = EHParamMessage | EHStartMessage;
 export type ExtensionHostMessage = EHStatusChangeMessage;
 interface EHParamMessage {
   kind: 'arguments';
-  options: ExtensionOptions;
+  options: ExtensionRunOptions;
   dependencies: ExtensionDependencies;
   source: string;
 }

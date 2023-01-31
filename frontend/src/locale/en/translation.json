@@ -317,7 +317,8 @@
       "create": "Create new",
       "search": "Search by name",
       "tab-manage": "Manage",
-      "tab-editor": "Editor"
+      "tab-editor": "Editor",
+      "remove-alert": "Remove extension \"{{name}}\"?"
     }
   },
   "form-actions": {
@@ -336,7 +337,9 @@
     "create": "Create",
     "submit": "Submit",
     "password-reveal": "Reveal",
-    "password-hide": "Hide"
+    "password-hide": "Hide",
+    "start": "Start",
+    "stop": "Stop"
   },
   "debug": {
     "dev-build": "Development build"

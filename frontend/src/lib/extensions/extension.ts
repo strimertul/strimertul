@@ -1,9 +1,10 @@
+import { ExtensionEntry } from '~/store/extensions/reducer';
 import {
   ExtensionStatus,
-  ExtensionOptions,
   ExtensionDependencies,
   ExtensionHostMessage,
   ExtensionHostCommand,
+  ExtensionRunOptions,
 } from './types';
 
 export const blankTemplate = (slug: string) => `// ==Extension==
@@ -22,10 +23,9 @@ export class Extension extends EventTarget {
   private workerError?: ErrorEvent;
 
   constructor(
-    public readonly name: string,
-    public readonly source: string,
-    public readonly options: ExtensionOptions,
+    public readonly info: ExtensionEntry,
     dependencies: ExtensionDependencies,
+    runOptions: ExtensionRunOptions = { autostart: false },
   ) {
     super();
 
@@ -43,14 +43,13 @@ export class Extension extends EventTarget {
     // Initialize ext host
     this.send({
       kind: 'arguments',
-      source,
-      options,
+      source: info.source,
+      options: runOptions,
       dependencies,
     });
   }
 
   private send(cmd: ExtensionHostCommand) {
-    console.log(cmd);
     this.worker.postMessage(cmd);
   }
 
@@ -74,6 +73,13 @@ export class Extension extends EventTarget {
     return this.workerError;
   }
 
+  public get running() {
+    return (
+      this.status === ExtensionStatus.Running ||
+      this.status === ExtensionStatus.Finished
+    );
+  }
+
   start() {
     switch (this.status) {
       case ExtensionStatus.Ready:
@@ -94,6 +100,9 @@ export class Extension extends EventTarget {
   }
 
   stop() {
+    if (this.workerStatus === ExtensionStatus.Terminated) {
+      return;
+    }
     this.worker.terminate();
     this.workerStatus = ExtensionStatus.Terminated;
     this.dispatchEvent(
