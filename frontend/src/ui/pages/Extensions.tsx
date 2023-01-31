@@ -1,5 +1,5 @@
 import Editor from '@monaco-editor/react';
-import { InputIcon, PlusIcon } from '@radix-ui/react-icons';
+import { InputIcon, PlusIcon, ZoomInIcon } from '@radix-ui/react-icons';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { blankTemplate } from '~/lib/extensions/extension';
@@ -9,18 +9,24 @@ import { useAppDispatch, useAppSelector } from '~/store';
 import extensionsReducer, {
   ExtensionEntry,
   removeExtension,
+  renameExtension,
   saveExtension,
   startExtension,
   stopExtension,
 } from '~/store/extensions/reducer';
 import AlertContent from '../components/AlertContent';
+import DialogContent from '../components/DialogContent';
 import Loading from '../components/Loading';
 import {
   Button,
   ComboBox,
+  ControlledInputBox,
+  Dialog,
+  DialogActions,
   Field,
   FlexRow,
   InputBox,
+  Label,
   MultiButton,
   PageContainer,
   PageHeader,
@@ -232,15 +238,25 @@ const EditorDropdown = styled(ComboBox, {
 });
 
 function ExtensionEditor() {
+  const [dialogRename, setDialogRename] = useState({ open: false, name: '' });
   const extensions = useAppSelector((state) => state.extensions);
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
+
+  // Normally you can't navigate here without this being set but there is an instant
+  // where you can and it messes up the dropdown, so don't render anything for that
+  // split second
+  if (!extensions.editorCurrentFile) {
+    return <></>;
+  }
+
   const isUnsaved =
     extensions.editorCurrentFile in extensions.unsaved &&
     extensions.unsaved[extensions.editorCurrentFile] !==
       extensions.installed[extensions.editorCurrentFile]?.source;
   const currentFile = isUnsaved
     ? extensions.unsaved[extensions.editorCurrentFile]
-    : extensions.installed[extensions.editorCurrentFile].source;
+    : extensions.installed[extensions.editorCurrentFile]?.source;
   return (
     <div
       style={{
@@ -276,7 +292,13 @@ function ExtensionEditor() {
             </option>
           ))}
         </EditorDropdown>
-        <EditorButton size="small" title="rename script">
+        <EditorButton
+          size="small"
+          title={t('pages.extensions.rename')}
+          onClick={() =>
+            setDialogRename({ open: true, name: extensions.editorCurrentFile })
+          }
+        >
           <InputIcon />
         </EditorButton>
         <EditorButton
@@ -295,7 +317,7 @@ function ExtensionEditor() {
             );
           }}
         >
-          Save
+          {t('form-actions.save')}
         </EditorButton>
       </FlexRow>
       <Editor
@@ -307,6 +329,82 @@ function ExtensionEditor() {
           void dispatch(extensionsReducer.actions.extensionSourceChanged(ev));
         }}
       />
+      <Dialog
+        open={dialogRename.open}
+        onOpenChange={(state) =>
+          setDialogRename({ ...dialogRename, open: state })
+        }
+      >
+        <DialogContent
+          title={t('pages.extensions.rename-dialog', {
+            name: extensions.editorCurrentFile,
+          })}
+          closeButton={true}
+        >
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!(e.target as HTMLFormElement).checkValidity()) {
+                return;
+              }
+
+              // Only rename if it changed
+              if (extensions.editorCurrentFile !== dialogRename.name) {
+                void dispatch(
+                  renameExtension({
+                    from: extensions.editorCurrentFile,
+                    to: dialogRename.name,
+                  }),
+                );
+              }
+
+              setDialogRename({ ...dialogRename, open: false });
+            }}
+          >
+            <Field size="fullWidth" spacing="narrow">
+              <Label htmlFor="renamed">
+                {t('pages.extensions.rename-new-name')}
+              </Label>
+              <ControlledInputBox
+                id="renamed"
+                type="text"
+                required
+                value={dialogRename.name}
+                onChange={(e) => {
+                  setDialogRename({
+                    ...dialogRename,
+                    name: e.target.value,
+                  });
+                  if (
+                    Object.values(extensions.installed).find(
+                      (r) => r.name === e.target.value,
+                    )
+                  ) {
+                    (e.target as HTMLInputElement).setCustomValidity(
+                      t('pages.extensions.name-already-in-use'),
+                    );
+                  } else {
+                    (e.target as HTMLInputElement).setCustomValidity('');
+                  }
+                }}
+              />
+            </Field>
+            <DialogActions>
+              <Button variation="primary" type="submit">
+                {t('form-actions.rename')}
+              </Button>
+              <Button
+                type="button"
+                onClick={() =>
+                  setDialogRename({ ...dialogRename, open: false })
+                }
+              >
+                {t('form-actions.cancel')}
+              </Button>
+            </DialogActions>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -185,10 +185,16 @@ export const initializeExtensions = createAsyncThunk(
 
     // Become reactive to extension changes
     await api.client.subscribePrefix(extensionPrefix, (newValue, newKey) => {
+      const name = newKey.substring(extensionPrefix.length);
+      // Check for deleted
+      if (!newValue || newValue === '') {
+        void dispatch(extensionsReducer.actions.extensionRemoved(name));
+        return;
+      }
       void dispatch(
         refreshExtensionInstance({
           ...(JSON.parse(newValue) as ExtensionEntry),
-          name: newKey.substring(extensionPrefix.length),
+          name,
         }),
       );
     });
@@ -256,11 +262,36 @@ export const saveExtension = createAsyncThunk(
 
 export const removeExtension = createAsyncThunk(
   'extensions/remove',
-  async (name: string, { getState, dispatch }) => {
+  async (name: string, { getState }) => {
     // Get kv client
     const { api } = getState() as RootState;
-    dispatch(extensionsReducer.actions.extensionRemoved(name));
     await api.client.deleteKey(extensionPrefix + name);
+  },
+);
+
+export const renameExtension = createAsyncThunk(
+  'extensions/rename',
+  async (payload: { from: string; to: string }, { getState, dispatch }) => {
+    const { extensions } = getState() as RootState;
+
+    // Save old entries
+    const unsaved = extensions.unsaved[payload.from];
+    const entry = extensions.installed[payload.from];
+
+    // Remove and re-add under new name
+    await dispatch(removeExtension(payload.from));
+    await dispatch(
+      saveExtension({
+        ...entry,
+        name: payload.to,
+      }),
+    );
+
+    // Set unsaved and current file
+    dispatch(extensionsReducer.actions.editorSelectedFile(payload.to));
+    if (unsaved) {
+      dispatch(extensionsReducer.actions.extensionSourceChanged(unsaved));
+    }
   },
 );
 

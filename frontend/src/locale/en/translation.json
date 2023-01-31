@@ -318,7 +318,11 @@
       "search": "Search by name",
       "tab-manage": "Manage",
       "tab-editor": "Editor",
-      "remove-alert": "Remove extension \"{{name}}\"?"
+      "remove-alert": "Remove extension \"{{name}}\"?",
+      "rename": "Rename extension",
+      "rename-dialog": "Rename extension \"{{name}}\"",
+      "name-already-in-use": "Name already in use",
+      "rename-new-name": "New name"
     }
   },
   "form-actions": {
@@ -339,7 +343,8 @@
     "password-reveal": "Reveal",
     "password-hide": "Hide",
     "start": "Start",
-    "stop": "Stop"
+    "stop": "Stop",
+    "rename": "Rename"
   },
   "debug": {
     "dev-build": "Development build"
