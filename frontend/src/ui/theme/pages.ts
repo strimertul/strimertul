@@ -6,6 +6,14 @@ export const PageContainer = styled('div', {
   maxWidth: '1000px',
   width: '100%',
   margin: '0 auto',
+  variants: {
+    spacing: {
+      narrow: {
+        padding: '0 2rem',
+        paddingTop: '0',
+      },
+    },
+  },
 });
 
 export const PageHeader = styled('header', {});

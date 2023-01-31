@@ -312,7 +312,12 @@
       "partial-translation": "Partial translation"
     },
     "extensions": {
-      "title": "Extensions"
+      "title": "Extensions",
+      "loading": "Just one second, the extension subsystem is still getting ready!",
+      "create": "Create new",
+      "search": "Search by name",
+      "tab-manage": "Manage",
+      "tab-editor": "Editor"
     }
   },
   "form-actions": {

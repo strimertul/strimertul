@@ -1,7 +1,9 @@
 import * as Tabs from '@radix-ui/react-tabs';
 import { styled } from './theme';
 
-export const TabContainer = styled(Tabs.Root, {});
+export const TabContainer = styled(Tabs.Root, {
+  width: '100%',
+});
 
 export const TabList = styled(Tabs.List, {
   borderBottom: '1px solid $gray6',
@@ -17,6 +19,9 @@ export const TabButton = styled(Tabs.Trigger, {
     borderBottom: '2px solid $teal9',
   },
   marginBottom: '-1px',
+  '&:disabled': {
+    opacity: 0.3,
+  },
 });
 
 export const TabContent = styled(Tabs.Content, {

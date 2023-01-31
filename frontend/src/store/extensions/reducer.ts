@@ -11,6 +11,8 @@ import { HTTPConfig } from '../api/types';
 interface ExtensionsState {
   ready: boolean;
   installed: Record<string, Extension>;
+  unsaved: Record<string, string>;
+  editorCurrentFile: string;
   dependencies: ExtensionDependencies;
 }
 
@@ -23,6 +25,8 @@ export interface ExtensionEntry {
 const initialState: ExtensionsState = {
   ready: false,
   installed: {},
+  unsaved: {},
+  editorCurrentFile: null,
   dependencies: {
     kilovolt: { address: '' },
   },
@@ -36,7 +40,37 @@ const extensionsReducer = createSlice({
       state.dependencies = payload;
       state.ready = true;
     },
+    editorSelectedFile(state, { payload }: PayloadAction<string>) {
+      state.editorCurrentFile = payload;
+    },
+    extensionDrafted(state, { payload }: PayloadAction<ExtensionEntry>) {
+      state.unsaved[payload.name] = payload.source;
+
+      // If we don't have a file selected in the editor, set a default as soon as possible
+      if (!state.editorCurrentFile) {
+        state.editorCurrentFile = payload.name;
+      }
+    },
+    extensionSourceChanged(state, { payload }: PayloadAction<string>) {
+      state.unsaved[state.editorCurrentFile] = payload;
+    },
     extensionAdded(state, { payload }: PayloadAction<ExtensionEntry>) {
+      // Remove from unsaved
+      if (payload.name in state.unsaved) {
+        delete state.unsaved[payload.name];
+      }
+
+      // If running, terminate running instance
+      if (payload.name in state.installed) {
+        state.installed[payload.name]?.dispose();
+      }
+
+      // If we don't have a file selected in the editor, set a default as soon as possible
+      if (!state.editorCurrentFile) {
+        state.editorCurrentFile = payload.name;
+      }
+
+      // Create new instance with stored code
       state.installed[payload.name] = new Extension(
         payload.name,
         payload.source,
@@ -48,6 +82,8 @@ const extensionsReducer = createSlice({
     },
   },
 });
+
+const extensionPrefix = 'ui/extensions/installed/';
 
 export const initializeExtensions = createAsyncThunk(
   'extensions/initialize',
@@ -67,6 +103,36 @@ export const initializeExtensions = createAsyncThunk(
         },
       }),
     );
+
+    // Become reactive to extension changes
+    await api.client.subscribePrefix(extensionPrefix, (newValue, newKey) => {
+      dispatch(
+        extensionsReducer.actions.extensionAdded({
+          ...(JSON.parse(newValue) as ExtensionEntry),
+          name: newKey.substring(extensionPrefix.length),
+        }),
+      );
+    });
+
+    // Get installed extensions
+    const extensions = await api.client.getKeysByPrefix(extensionPrefix);
+    Object.entries(extensions).forEach(([extName, extContent]) =>
+      dispatch(
+        extensionsReducer.actions.extensionAdded({
+          ...(JSON.parse(extContent) as ExtensionEntry),
+          name: extName.substring(extensionPrefix.length),
+        }),
+      ),
+    );
+  },
+);
+
+export const saveExtension = createAsyncThunk(
+  'extensions/save',
+  async (entry: ExtensionEntry, { getState }) => {
+    // Get kv client
+    const { api } = getState() as RootState;
+    await api.client.putJSON(extensionPrefix + entry.name, entry);
   },
 );
 

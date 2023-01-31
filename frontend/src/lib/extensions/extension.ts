@@ -6,6 +6,14 @@ import {
   ExtensionHostCommand,
 } from './types';
 
+export const blankTemplate = (slug: string) => `// ==Extension==
+// @name        ${slug}
+// @version     1.0
+// @author      Put your name here!
+// @description A new extension for strimertul
+// ==/Extension==
+`;
+
 export class Extension extends EventTarget {
   private readonly worker: Worker;
 
@@ -16,7 +24,7 @@ export class Extension extends EventTarget {
   constructor(
     public readonly name: string,
     public readonly source: string,
-    options: ExtensionOptions,
+    public readonly options: ExtensionOptions,
     dependencies: ExtensionDependencies,
   ) {
     super();
@@ -91,6 +99,10 @@ export class Extension extends EventTarget {
     this.dispatchEvent(
       new CustomEvent('statusChanged', { detail: this.workerStatus }),
     );
+  }
+
+  dispose() {
+    this.stop();
   }
 }
 
