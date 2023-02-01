@@ -1,4 +1,5 @@
 import Kilovolt from '@strimertul/kilovolt-client';
+import * as ts from 'typescript';
 import {
   ExtensionHostCommand,
   ExtensionHostMessage,
@@ -45,8 +46,13 @@ onmessage = async (ev: MessageEvent<ExtensionHostCommand>) => {
       );
       await kv.wait();
 
+      // Transpile TS into JS
+      const out = ts.transpileModule(cmd.source, {
+        compilerOptions: { module: ts.ModuleKind.CommonJS },
+      });
+
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      extFn = ExtensionFunction.constructor('kv', cmd.source);
+      extFn = ExtensionFunction.constructor('kv', out.outputText);
       setStatus(ExtensionStatus.Ready);
 
       start();

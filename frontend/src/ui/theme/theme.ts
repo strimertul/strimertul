@@ -28,6 +28,7 @@ export const globalStyles = globalCss({
   p: {
     lineHeight: 1.5,
   },
+  '.monaco-editor': { position: 'absolute !important' },
 });
 
 export const { styled, theme } = createStitches({
