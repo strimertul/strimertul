@@ -10,14 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added recent event list in the dashboard, please be aware that this list only refers to events that have happened while strimertul was open and is mostly for development/troubleshooting
+- Added way to "replay" events, useful for overlay interactions
+- Added extensions with a built-in editor (docs soon tm)
 
 ### Changed
 
 - Bumped recent event limit to 100 to deal with some spammy events
+- When closing the all a quick warning will ask you if you are really sure (it's not a trick I just keep doing it by mistake)
 
 ### Fixed
 
 - Fixed some values in the UI not updating or being assigned upon first load
+- The loyalty system was non-functional after an internal rewrite in 3.0.0, this has been fixed
+- Fixed a crash due to Twitch returning corrupted responses to status polling
 
 ## [3.0.0]
 
