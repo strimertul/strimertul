@@ -18,7 +18,10 @@
     "disable": "Disabilita",
     "submit": "Invia",
     "password-hide": "Nascondi",
-    "password-reveal": "Mostra"
+    "password-reveal": "Mostra",
+    "rename": "Rinomina",
+    "start": "Avvia",
+    "stop": "Ferma"
   },
   "special": {
     "wip": {
@@ -67,7 +70,8 @@
       },
       "strimertul": {
         "settings": "Impostazioni server",
-        "ui-config": "Opzioni interfaccia"
+        "ui-config": "Opzioni interfaccia",
+        "extensions": "Estensioni"
       },
       "twitch": {
         "bot-alerts": "Avvisi in chat",
@@ -359,6 +363,28 @@
       "partial-translation": "Traduzione parziale",
       "repeat-onboarding": "Ripeti procedura iniziale",
       "title": "Impostazioni interfaccia utente"
+    },
+    "extensions": {
+      "create": "Crea nuovo",
+      "loading": "Solo un secondo, il sistema di estensioni si sta ancora preparando!",
+      "remove-alert": "Rimuovere l'estensione \"{{name}}\"?",
+      "format": "Formatta codice",
+      "name-already-in-use": "Nome già in uso",
+      "rename": "Rinomina estensione",
+      "rename-dialog": "Rinominare l'estensione \"{{name}}\"",
+      "rename-new-name": "Nuovo nome",
+      "search": "Cerca per nome",
+      "statuses": {
+        "error": "Errore riscontrato",
+        "main-loop-finished": "Attivo",
+        "not-ready": "Caricamento in corso",
+        "ready": "Non attivo",
+        "running": "In esecuzione",
+        "terminated": "Fermato"
+      },
+      "tab-editor": "Editor",
+      "tab-manage": "Gestisci",
+      "title": "Estensioni"
     }
   },
   "time": {
