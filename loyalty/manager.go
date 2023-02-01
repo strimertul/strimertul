@@ -73,7 +73,7 @@ func NewManager(db *database.LocalDBClient, twitchManager *twitch.Manager, logge
 
 	// Retrieve configs
 	var rewards []Reward
-	if err := db.GetJSON(RewardsKey, &rewards); err != nil {
+	if err := db.GetJSON(RewardsKey, &rewards); err == nil {
 		loyalty.Rewards.Set(rewards)
 	} else {
 		if !errors.Is(err, database.ErrEmptyKey) {
@@ -82,7 +82,7 @@ func NewManager(db *database.LocalDBClient, twitchManager *twitch.Manager, logge
 	}
 
 	var goals []Goal
-	if err := db.GetJSON(GoalsKey, &goals); err != nil {
+	if err := db.GetJSON(GoalsKey, &goals); err == nil {
 		loyalty.Goals.Set(goals)
 	} else {
 		if !errors.Is(err, database.ErrEmptyKey) {
@@ -91,7 +91,7 @@ func NewManager(db *database.LocalDBClient, twitchManager *twitch.Manager, logge
 	}
 
 	var queue []Redeem
-	if err := db.GetJSON(QueueKey, &queue); err != nil {
+	if err := db.GetJSON(QueueKey, &queue); err == nil {
 		loyalty.Queue.Set(queue)
 	} else {
 		if !errors.Is(err, database.ErrEmptyKey) {

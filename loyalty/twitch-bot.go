@@ -16,6 +16,7 @@ import (
 func (m *Manager) SetupTwitch() {
 	bot := m.twitchManager.Client().Bot
 	if bot == nil {
+		m.logger.Warn("bot is offline or not configured, could not setup commands")
 		return
 	}
 
@@ -120,6 +121,8 @@ func (m *Manager) SetupTwitch() {
 			}
 		}
 	}()
+
+	m.logger.Info("loyalty twitch setup completed")
 }
 
 func (m *Manager) StopTwitch() {
