@@ -260,6 +260,36 @@ export const saveExtension = createAsyncThunk(
   },
 );
 
+export const isUnsaved = (ext: ExtensionsState) =>
+  ext.editorCurrentFile in ext.unsaved &&
+  ext.unsaved[ext.editorCurrentFile] !==
+    ext.installed[ext.editorCurrentFile]?.source;
+
+export const currentFile = (ext: ExtensionsState) =>
+  isUnsaved(ext)
+    ? ext.unsaved[ext.editorCurrentFile]
+    : ext.installed[ext.editorCurrentFile]?.source;
+
+export const saveCurrentExtension = createAsyncThunk(
+  'extensions/save-current',
+  async (_: void, { getState, dispatch }) => {
+    const { extensions } = getState() as RootState;
+    if (!isUnsaved(extensions)) {
+      return;
+    }
+    await dispatch(
+      saveExtension({
+        name: extensions.editorCurrentFile,
+        source: currentFile(extensions),
+        options:
+          extensions.editorCurrentFile in extensions.installed
+            ? extensions.installed[extensions.editorCurrentFile].options
+            : { enabled: false },
+      }),
+    );
+  },
+);
+
 export const removeExtension = createAsyncThunk(
   'extensions/remove',
   async (name: string, { getState }) => {
