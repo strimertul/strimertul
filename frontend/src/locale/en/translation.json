@@ -323,7 +323,15 @@
       "rename-dialog": "Rename extension \"{{name}}\"",
       "name-already-in-use": "Name already in use",
       "rename-new-name": "New name",
-      "format": "Format code"
+      "format": "Format code",
+      "statuses": {
+        "not-ready": "Loading",
+        "ready": "Not running",
+        "running": "Running",
+        "main-loop-finished": "Active",
+        "error": "Error encountered",
+        "terminated": "Stopped"
+      }
     }
   },
   "form-actions": {

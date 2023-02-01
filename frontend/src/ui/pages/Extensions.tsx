@@ -1,11 +1,18 @@
 import Editor, { Monaco, useMonaco } from '@monaco-editor/react';
-import { InputIcon, PilcrowIcon, PlusIcon } from '@radix-ui/react-icons';
+import {
+  InfoCircledIcon,
+  InputIcon,
+  PilcrowIcon,
+  PlusIcon,
+} from '@radix-ui/react-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { blankTemplate } from '~/lib/extensions/extension';
 import { kilovoltDefinition } from '~/lib/extensions/helpers';
+import { parseExtensionMetadata } from '~/lib/extensions/metadata';
 import { ExtensionStatus } from '~/lib/extensions/types';
 import slug from '~/lib/slug';
+import * as HoverCard from '@radix-ui/react-hover-card';
 import { useAppDispatch, useAppSelector } from '~/store';
 import extensionsReducer, {
   currentFile,
@@ -42,6 +49,7 @@ import {
   TabList,
 } from '../theme';
 import { Alert, AlertTrigger } from '../theme/alert';
+import { keyframes } from '@stitches/react';
 
 const ExtensionRow = styled('article', {
   marginBottom: '0.4rem',
@@ -69,6 +77,24 @@ const ExtensionRow = styled('article', {
 
 const ExtensionName = styled('div', {
   flex: '1',
+  display: 'flex',
+  gap: '0.5rem',
+  alignItems: 'baseline',
+});
+const ExtensionStatusNote = styled('div', {
+  textTransform: 'uppercase',
+  fontSize: '10pt',
+  color: '$gray10',
+  variants: {
+    color: {
+      active: {
+        color: '$teal11',
+      },
+      error: {
+        color: '$red9',
+      },
+    },
+  },
 });
 const ExtensionActions = styled('div', {
   display: 'flex',
@@ -76,8 +102,34 @@ const ExtensionActions = styled('div', {
   gap: '0.25rem',
 });
 
+const ExtensionInfoCard = styled(HoverCard.Content, {
+  borderRadius: 6,
+  display: 'flex',
+  padding: '0.5rem',
+  width: '300px',
+  gap: '0.5rem',
+  flexDirection: 'column',
+  border: '2px solid $gray6',
+  backgroundColor: '$gray2',
+  alignItems: 'flex-start',
+  boxShadow: '0px 5px 20px rgba(0,0,0,0.4)',
+  animationDuration: '400ms',
+  animationTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+  willChange: 'transform, opacity',
+});
+
 const isRunning = (status: ExtensionStatus) =>
   status === ExtensionStatus.Running || status === ExtensionStatus.Finished;
+
+const colorByStatus = (status: ExtensionStatus) => {
+  if (isRunning(status)) {
+    return 'active';
+  }
+  if (status === ExtensionStatus.Error) {
+    return 'error';
+  }
+  return null;
+};
 
 type ExtensionListItemProps = {
   enabled: boolean;
@@ -91,13 +143,42 @@ type ExtensionListItemProps = {
 
 function ExtensionListItem(props: ExtensionListItemProps) {
   const { t } = useTranslation();
+  const metadata = parseExtensionMetadata(props.entry.source);
   return (
     <ExtensionRow
       status={props.enabled && isRunning(props.status) ? 'enabled' : 'disabled'}
     >
       <FlexRow>
         <ExtensionName>
-          {props.entry.name} {props.enabled ? `(${props.status})` : null}
+          {metadata ? (
+            <HoverCard.Root>
+              <HoverCard.Trigger asChild>
+                <FlexRow css={{ gap: '0.3rem' }}>
+                  {props.entry.name}
+                  <InfoCircledIcon />
+                </FlexRow>
+              </HoverCard.Trigger>
+              <HoverCard.Portal>
+                <ExtensionInfoCard sideOffset={5}>
+                  <div>
+                    <b>{metadata.name || 'Unnamed extension'}</b>{' '}
+                    {metadata.version ? `v${metadata.version}` : null}
+                    {metadata.author ? ` by ${metadata.author}` : null}
+                  </div>
+                  {metadata.description ? (
+                    <small>{metadata.description}</small>
+                  ) : null}
+                </ExtensionInfoCard>
+              </HoverCard.Portal>
+            </HoverCard.Root>
+          ) : (
+            props.entry.name
+          )}
+          {props.enabled ? (
+            <ExtensionStatusNote color={colorByStatus(props.status)}>
+              {t(`pages.extensions.statuses.${props.status}`)}
+            </ExtensionStatusNote>
+          ) : null}
         </ExtensionName>
         <ExtensionActions>
           <MultiButton>
