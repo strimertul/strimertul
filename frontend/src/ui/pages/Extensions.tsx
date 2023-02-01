@@ -49,7 +49,6 @@ import {
   TabList,
 } from '../theme';
 import { Alert, AlertTrigger } from '../theme/alert';
-import { keyframes } from '@stitches/react';
 
 const ExtensionRow = styled('article', {
   marginBottom: '0.4rem',
