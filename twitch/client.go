@@ -236,6 +236,7 @@ func (c *Client) runStatusPoll() {
 			})
 			if err != nil {
 				c.logger.Error("Error checking stream status", zap.Error(err))
+				return
 			} else {
 				c.streamOnline.Set(len(status.Data.Streams) > 0)
 			}
