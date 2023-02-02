@@ -6,10 +6,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nicklaw5/helix/v2"
+
 	"github.com/strimertul/strimertul/twitch"
 
 	"git.sr.ht/~hamcha/containers/sync"
-	irc "github.com/gempir/go-twitch-irc/v3"
+	irc "github.com/gempir/go-twitch-irc/v4"
 	"go.uber.org/zap"
 )
 
@@ -70,27 +72,48 @@ func (m *Manager) SetupTwitch() {
 			case <-time.After(time.Duration(config.Points.Interval) * time.Second):
 			}
 
+			client := m.twitchManager.Client()
+
 			// If stream is confirmed offline, don't give points away!
-			isOnline := m.twitchManager.Client().IsLive()
+			isOnline := client.IsLive()
+			m.logger.Info("isOnline", zap.Bool("isOnline", isOnline))
+
 			if !isOnline {
 				continue
 			}
 
-			// Check that bot is online and working
-			bot := m.twitchManager.Client().Bot
-			if bot == nil {
-				m.logger.Warn("bot is offline or not configured, could not assign points")
-				continue
-			}
-
-			m.logger.Debug("awarding points")
-
 			// Get user list
-			users, err := bot.Client.Userlist(bot.Config.Channel)
-			if err != nil {
-				m.logger.Error("error listing users", zap.Error(err))
-				continue
+			cursor := ""
+			var users []string
+			for {
+				userClient, err := client.GetUserClient()
+				if err != nil {
+					m.logger.Error("could not get user api client for list of chatters", zap.Error(err))
+					return
+				}
+				res, err := userClient.GetChannelChatChatters(&helix.GetChatChattersParams{
+					BroadcasterID: client.User.ID,
+					ModeratorID:   client.User.ID,
+					First:         "1000",
+					After:         cursor,
+				})
+				m.logger.Info("res", zap.Any("data", res))
+				if err != nil {
+					m.logger.Error("could not retrieve list of chatters", zap.Error(err))
+					return
+				}
+				for _, user := range res.Data.Chatters {
+					users = append(users, user.UserLogin)
+				}
+				cursor = res.Data.Pagination.Cursor
+				if cursor == "" {
+					break
+				}
 			}
+
+			m.logger.Info("awarding points")
+
+			m.logger.Info("eligible users", zap.String("list", strings.Join(users, ",")))
 
 			// Iterate for each user in the list
 			pointsToGive := make(map[string]int64)

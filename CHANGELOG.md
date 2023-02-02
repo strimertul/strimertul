@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [current]
 
+UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your user to make sure it has a necessary new permission for the loyalty system to work.
+
 ### Added
 
 - Added recent event list in the dashboard, please be aware that this list only refers to events that have happened while strimertul was open and is mostly for development/troubleshooting

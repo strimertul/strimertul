@@ -147,6 +147,7 @@ type Client struct {
 	Bot        *Bot
 	db         *database.LocalDBClient
 	API        *helix.Client
+	User       helix.User
 	logger     *zap.Logger
 	eventCache *lru.Cache
 	server     *http.Server
@@ -207,8 +208,22 @@ func newClient(config Config, db *database.LocalDBClient, server *http.Server, l
 		client.API = api
 		server.RegisterRoute(CallbackRoute, client)
 
+		if userClient, err := client.GetUserClient(); err == nil {
+			users, err := userClient.GetUsers(&helix.UsersParams{})
+			if err != nil {
+				client.logger.Error("failed looking up user", zap.Error(err))
+			}
+			if len(users.Data.Users) < 1 {
+				client.logger.Error("no users found")
+			}
+			client.User = users.Data.Users[0]
+
+			go client.connectWebsocket(userClient)
+		} else {
+			client.logger.Warn("twitch user not identified, this will break most features")
+		}
+
 		go client.runStatusPoll()
-		go client.connectWebsocket()
 	}
 
 	return client, nil
@@ -217,13 +232,6 @@ func newClient(config Config, db *database.LocalDBClient, server *http.Server, l
 func (c *Client) runStatusPoll() {
 	c.logger.Info("status poll started")
 	for {
-		// Wait for next poll (or cancellation)
-		select {
-		case <-c.ctx.Done():
-			return
-		case <-time.After(60 * time.Second):
-		}
-
 		// Make sure we're configured and connected properly first
 		if !c.Config.Get().Enabled || c.Bot == nil || c.Bot.Config.Channel == "" {
 			continue
@@ -246,6 +254,13 @@ func (c *Client) runStatusPoll() {
 				c.logger.Warn("Error saving stream info", zap.Error(err))
 			}
 		}()
+
+		// Wait for next poll (or cancellation)
+		select {
+		case <-c.ctx.Done():
+			return
+		case <-time.After(60 * time.Second):
+		}
 	}
 }
 

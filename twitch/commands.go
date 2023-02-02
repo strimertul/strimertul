@@ -7,7 +7,7 @@ import (
 	"strings"
 	"text/template"
 
-	irc "github.com/gempir/go-twitch-irc/v3"
+	irc "github.com/gempir/go-twitch-irc/v4"
 	"github.com/nicklaw5/helix/v2"
 	"go.uber.org/zap"
 )

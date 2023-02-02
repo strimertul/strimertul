@@ -12,7 +12,7 @@ import (
 
 const websocketEndpoint = "wss://eventsub-beta.wss.twitch.tv/ws"
 
-func (c *Client) connectWebsocket() {
+func (c *Client) connectWebsocket(userClient *helix.Client) {
 	connection, _, err := websocket.DefaultDialer.Dial(websocketEndpoint, nil)
 	if err != nil {
 		c.logger.Error("could not connect to eventsub ws", zap.Error(err))
@@ -67,7 +67,7 @@ func (c *Client) connectWebsocket() {
 			}
 			c.logger.Info("eventsub ws connection established", zap.String("session-id", welcomeData.Session.Id))
 			// Add subscription to websocket session
-			err = c.addSubscriptionsForSession(welcomeData.Session.Id)
+			err = c.addSubscriptionsForSession(userClient, welcomeData.Session.Id)
 			if err != nil {
 				c.logger.Error("could not add subscriptions", zap.Error(err))
 			}
@@ -133,37 +133,23 @@ func (c *Client) processEvent(message EventSubWebsocketMessage) {
 	}
 }
 
-func (c *Client) addSubscriptionsForSession(session string) error {
+func (c *Client) addSubscriptionsForSession(userClient *helix.Client, session string) error {
 	if c.savedSubscriptions[session] {
 		// Already subscribed
 		return nil
 	}
-
-	client, err := c.GetUserClient()
-	if err != nil {
-		return fmt.Errorf("failed getting API client for user: %w", err)
-	}
-
-	users, err := client.GetUsers(&helix.UsersParams{})
-	if err != nil {
-		return fmt.Errorf("failed looking up user: %w", err)
-	}
-	if len(users.Data.Users) < 1 {
-		return fmt.Errorf("no users found")
-	}
-	user := users.Data.Users[0]
 
 	transport := helix.EventSubTransport{
 		Method:    "websocket",
 		SessionID: session,
 	}
 	for topic, version := range subscriptionVersions {
-		sub, err := client.CreateEventSubSubscription(&helix.EventSubSubscription{
+		sub, err := userClient.CreateEventSubSubscription(&helix.EventSubSubscription{
 			Type:      topic,
 			Version:   version,
 			Status:    "enabled",
 			Transport: transport,
-			Condition: topicCondition(topic, user.ID),
+			Condition: topicCondition(topic, c.User.ID),
 		})
 		if sub.Error != "" || sub.ErrorMessage != "" {
 			c.logger.Error("subscription error", zap.String("err", sub.Error), zap.String("message", sub.ErrorMessage))

@@ -22,7 +22,7 @@ func (c *Client) GetAuthorizationURL() string {
 	}
 	return c.API.GetAuthorizationURL(&helix.AuthorizationURLParams{
 		ResponseType: "code",
-		Scopes:       []string{"bits:read channel:read:subscriptions channel:read:redemptions channel:read:polls channel:read:predictions channel:read:hype_train user_read chat:read chat:edit channel:moderate whispers:read whispers:edit"},
+		Scopes:       []string{"bits:read channel:read:subscriptions channel:read:redemptions channel:read:polls channel:read:predictions channel:read:hype_train user_read chat:read chat:edit channel:moderate whispers:read whispers:edit moderator:read:chatters"},
 	})
 }
 
@@ -59,6 +59,10 @@ func (c *Client) GetUserClient() (*helix.Client, error) {
 }
 
 func (c *Client) GetLoggedUser() (helix.User, error) {
+	if c.User.ID != "" {
+		return c.User, nil
+	}
+
 	client, err := c.GetUserClient()
 	if err != nil {
 		return helix.User{}, fmt.Errorf("failed getting API client for user: %w", err)
@@ -71,8 +75,9 @@ func (c *Client) GetLoggedUser() (helix.User, error) {
 	if len(users.Data.Users) < 1 {
 		return helix.User{}, fmt.Errorf("no users found")
 	}
+	c.User = users.Data.Users[0]
 
-	return users.Data.Users[0], nil
+	return c.User, nil
 }
 
 func (c *Client) ServeHTTP(w http.ResponseWriter, req *http.Request) {

@@ -8,7 +8,7 @@ import (
 
 	"git.sr.ht/~hamcha/containers/sync"
 	"github.com/Masterminds/sprig/v3"
-	irc "github.com/gempir/go-twitch-irc/v3"
+	irc "github.com/gempir/go-twitch-irc/v4"
 	"go.uber.org/zap"
 
 	"github.com/strimertul/strimertul/database"
