@@ -76,8 +76,6 @@ func (m *Manager) SetupTwitch() {
 
 			// If stream is confirmed offline, don't give points away!
 			isOnline := client.IsLive()
-			m.logger.Info("isOnline", zap.Bool("isOnline", isOnline))
-
 			if !isOnline {
 				continue
 			}
@@ -97,7 +95,6 @@ func (m *Manager) SetupTwitch() {
 					First:         "1000",
 					After:         cursor,
 				})
-				m.logger.Info("res", zap.Any("data", res))
 				if err != nil {
 					m.logger.Error("could not retrieve list of chatters", zap.Error(err))
 					return
@@ -110,10 +107,6 @@ func (m *Manager) SetupTwitch() {
 					break
 				}
 			}
-
-			m.logger.Info("awarding points")
-
-			m.logger.Info("eligible users", zap.String("list", strings.Join(users, ",")))
 
 			// Iterate for each user in the list
 			pointsToGive := make(map[string]int64)
