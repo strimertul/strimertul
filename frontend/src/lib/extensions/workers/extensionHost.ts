@@ -65,20 +65,27 @@ onmessage = async (ev: MessageEvent<ExtensionHostCommand>) => {
       );
       await kv.wait();
 
-      // Transpile TS into JS
-      const out = ts.transpileModule(cmd.source, {
-        compilerOptions: { module: ts.ModuleKind.CommonJS },
-      });
+      try {
+        // Transpile TS into JS
+        const out = ts.transpileModule(cmd.source, {
+          compilerOptions: { module: ts.ModuleKind.ES2022 },
+        });
 
-      // Replace console.* methods with something that logs to UI
-      console.log = log('info');
-      console.info = log('info');
-      console.warn = log('warn');
-      console.error = log('error');
+        // Replace console.* methods with something that logs to UI
+        console.log = log('info');
+        console.info = log('info');
+        console.warn = log('warn');
+        console.error = log('error');
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      extFn = ExtensionFunction.constructor('kv', out.outputText);
-      setStatus(ExtensionStatus.Ready);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        extFn = ExtensionFunction.constructor('kv', out.outputText);
+        setStatus(ExtensionStatus.Ready);
+      } catch (error: unknown) {
+        sendMessage({
+          kind: 'error',
+          error,
+        });
+      }
 
       start();
       break;

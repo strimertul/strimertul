@@ -354,7 +354,7 @@ const setupLibrary = (monaco: Monaco, source: string, url: string) => {
     return;
   }
 
-  monaco.languages.typescript.javascriptDefaults.addExtraLib(source, url);
+  monaco.languages.typescript.typescriptDefaults.addExtraLib(source, url);
   monaco.editor.createModel(source, 'typescript', monaco.Uri.parse(url));
 };
 
@@ -368,13 +368,15 @@ function ExtensionEditor() {
 
   useEffect(() => {
     if (monaco) {
-      monaco.languages.typescript.javascriptDefaults.setEagerModelSync(true);
-      monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+      monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
+      monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
         noSemanticValidation: false,
         noSyntaxValidation: false,
+        diagnosticCodesToIgnore: [1375, 2792],
       });
-      monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+      monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
         target: monaco.languages.typescript.ScriptTarget.ES2020,
+        module: monaco.languages.typescript.ModuleKind.ESNext,
         allowNonTsExtensions: true,
       });
       setupLibrary(monaco, kilovoltDefinition, 'ts:index.d.ts');
