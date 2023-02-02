@@ -26,12 +26,31 @@ function setStatus(status: ExtensionStatus) {
   });
 }
 
+function log(level: string) {
+  // eslint-disable-next-line func-names
+  return function (...args: { toString(): string }[]) {
+    const message = args.join(' ');
+    sendMessage({
+      kind: 'log',
+      level,
+      message,
+    });
+  };
+}
+
 function start() {
   if (!extFn || !kv || extensionStatus !== ExtensionStatus.Ready)
     throw new Error('extension not ready');
-  void extFn(kv).then(() => {
-    setStatus(ExtensionStatus.Finished);
-  });
+  void extFn(kv)
+    .then(() => {
+      setStatus(ExtensionStatus.Finished);
+    })
+    .catch((error: Error) => {
+      sendMessage({
+        kind: 'error',
+        error,
+      });
+    });
   setStatus(ExtensionStatus.Running);
 }
 
@@ -50,6 +69,12 @@ onmessage = async (ev: MessageEvent<ExtensionHostCommand>) => {
       const out = ts.transpileModule(cmd.source, {
         compilerOptions: { module: ts.ModuleKind.CommonJS },
       });
+
+      // Replace console.* methods with something that logs to UI
+      console.log = log('info');
+      console.info = log('info');
+      console.warn = log('warn');
+      console.error = log('error');
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       extFn = ExtensionFunction.constructor('kv', out.outputText);

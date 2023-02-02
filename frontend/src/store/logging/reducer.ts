@@ -41,10 +41,13 @@ const loggingReducer = createSlice({
     loadedLogData(state, { payload }: PayloadAction<main.LogEntry[]>) {
       state.messages = payload
         .map(processEntry)
-        .sort((a, b) => b.time.getTime() - a.time.getTime());
+        .sort((a, b) => a.time.getTime() - b.time.getTime());
     },
     receivedEvent(state, { payload }: PayloadAction<main.LogEntry>) {
-      state.messages = [processEntry(payload), ...state.messages];
+      state.messages.push(processEntry(payload));
+    },
+    uiLogEvent(state, { payload }: PayloadAction<ProcessedLogEntry>) {
+      state.messages.push(payload);
     },
     clearedEvents(state) {
       state.messages = [];

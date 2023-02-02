@@ -6,9 +6,11 @@ import {
   ExtensionOptions,
   ExtensionRunOptions,
   ExtensionStatus,
+  LogMessage,
 } from '~/lib/extensions/types';
 import { RootState } from '..';
 import { HTTPConfig } from '../api/types';
+import loggingReducer from '../logging/reducer';
 
 interface ExtensionsState {
   ready: boolean;
@@ -127,6 +129,17 @@ export const createExtensionInstance = createAsyncThunk(
       payload.dependencies,
       payload.runOptions,
     );
+    ext.addEventListener('log', (ev: CustomEvent<LogMessage>) => {
+      dispatch(
+        loggingReducer.actions.uiLogEvent({
+          time: new Date(),
+          caller: `extensionHost/${payload.entry.name}`,
+          level: ev.detail.level,
+          message: ev.detail.message,
+          data: { extension: payload.entry.name },
+        }),
+      );
+    });
     ext.addEventListener(
       'statusChanged',
       (ev: CustomEvent<ExtensionStatus>) => {

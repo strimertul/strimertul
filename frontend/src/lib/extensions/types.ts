@@ -22,7 +22,10 @@ export enum ExtensionStatus {
 }
 
 export type ExtensionHostCommand = EHParamMessage | EHStartMessage;
-export type ExtensionHostMessage = EHStatusChangeMessage;
+export type ExtensionHostMessage =
+  | EHStatusChangeMessage
+  | EHErrorMessage
+  | EHLogMessage;
 interface EHParamMessage {
   kind: 'arguments';
   options: ExtensionRunOptions;
@@ -35,4 +38,18 @@ interface EHStartMessage {
 interface EHStatusChangeMessage {
   kind: 'status-change';
   status: ExtensionStatus;
+}
+interface EHErrorMessage {
+  kind: 'error';
+  error: unknown;
+}
+interface EHLogMessage {
+  kind: 'log';
+  level: string;
+  message: string;
+}
+
+export interface LogMessage {
+  level: string;
+  message: string;
 }

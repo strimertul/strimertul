@@ -20,7 +20,7 @@ export class Extension extends EventTarget {
 
   private workerStatus = ExtensionStatus.GettingReady;
 
-  private workerError?: ErrorEvent;
+  private workerError?: ErrorEvent | Error;
 
   constructor(
     public readonly info: ExtensionEntry,
@@ -34,7 +34,7 @@ export class Extension extends EventTarget {
       { type: 'module' },
     );
     this.worker.onerror = (ev) => {
-      this.workerError = ev;
+      this.status = ExtensionStatus.Error;
       this.dispatchEvent(new CustomEvent('error', { detail: ev }));
     };
     this.worker.onmessage = (ev: MessageEvent<ExtensionHostMessage>) =>
@@ -57,12 +57,25 @@ export class Extension extends EventTarget {
     const msg = ev.data;
     switch (msg.kind) {
       case 'status-change':
-        this.workerStatus = msg.status;
-        this.dispatchEvent(
-          new CustomEvent('statusChanged', { detail: msg.status }),
-        );
+        this.status = msg.status;
+        break;
+      case 'error':
+        if (msg.error instanceof Error) {
+          this.workerError = msg.error;
+        } else {
+          this.workerError = new Error(msg.error.toString());
+        }
+        this.status = ExtensionStatus.Error;
+        break;
+      case 'log':
+        this.dispatchEvent(new CustomEvent('log', { detail: msg }));
         break;
     }
+  }
+
+  private set status(newValue: ExtensionStatus) {
+    this.workerStatus = newValue;
+    this.dispatchEvent(new CustomEvent('statusChanged', { detail: newValue }));
   }
 
   public get status() {
@@ -100,14 +113,11 @@ export class Extension extends EventTarget {
   }
 
   stop() {
-    if (this.workerStatus === ExtensionStatus.Terminated) {
+    if (this.status === ExtensionStatus.Terminated) {
       return;
     }
     this.worker.terminate();
-    this.workerStatus = ExtensionStatus.Terminated;
-    this.dispatchEvent(
-      new CustomEvent('statusChanged', { detail: this.workerStatus }),
-    );
+    this.status = ExtensionStatus.Terminated;
   }
 
   dispose() {

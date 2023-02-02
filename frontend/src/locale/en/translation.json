@@ -331,7 +331,8 @@
         "main-loop-finished": "Active",
         "error": "Error encountered",
         "terminated": "Stopped"
-      }
+      },
+      "error-alert": "Error details for {{name}}"
     }
   },
   "form-actions": {

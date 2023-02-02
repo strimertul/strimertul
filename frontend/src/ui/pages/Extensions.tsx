@@ -1,5 +1,6 @@
 import Editor, { Monaco, useMonaco } from '@monaco-editor/react';
 import {
+  ExclamationTriangleIcon,
   InfoCircledIcon,
   InputIcon,
   PilcrowIcon,
@@ -134,6 +135,7 @@ type ExtensionListItemProps = {
   enabled: boolean;
   entry: ExtensionEntry;
   status: ExtensionStatus;
+  error?: Error | ErrorEvent;
   onEdit: () => void;
   onRemove: () => void;
   onToggleEnable: () => void;
@@ -174,9 +176,32 @@ function ExtensionListItem(props: ExtensionListItemProps) {
             props.entry.name
           )}
           {props.enabled ? (
-            <ExtensionStatusNote color={colorByStatus(props.status)}>
-              {t(`pages.extensions.statuses.${props.status}`)}
-            </ExtensionStatusNote>
+            <>
+              <ExtensionStatusNote color={colorByStatus(props.status)}>
+                {t(`pages.extensions.statuses.${props.status}`)}
+              </ExtensionStatusNote>
+              {props.error ? (
+                <Alert>
+                  <AlertTrigger asChild>
+                    <Button variation="danger" size="small">
+                      <ExclamationTriangleIcon />
+                    </Button>
+                  </AlertTrigger>
+                  <AlertContent
+                    variation="danger"
+                    title={t('pages.extensions.error-alert', {
+                      name: props.entry.name,
+                    })}
+                    actionButtonProps={{
+                      variation: 'danger',
+                    }}
+                    showCancel={false}
+                  >
+                    <code>{props.error.toString()}</code>
+                  </AlertContent>
+                </Alert>
+              ) : null}
+            </>
           ) : null}
         </ExtensionName>
         <ExtensionActions>
@@ -274,6 +299,7 @@ function ExtensionList({ onNew, onEdit }: ExtensionListProps) {
             entry={e}
             enabled={e.options.enabled}
             status={extensions.status[e.name]}
+            error={extensions.running[e.name]?.error}
             onEdit={() => onEdit(e.name)}
             onRemove={() => {
               // Toggle enabled status

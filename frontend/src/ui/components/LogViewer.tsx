@@ -366,7 +366,7 @@ function LogDialog({ initialFilter }: LogDialogProps) {
           viewport={{ maxHeight: 'calc(80vh - 100px)' }}
         >
           <LogEntriesContainer>
-            {filtered.map((entry) => (
+            {filtered.reverse().map((entry) => (
               <LogItem
                 key={entry.caller + entry.time.getTime().toString()}
                 data={entry}
