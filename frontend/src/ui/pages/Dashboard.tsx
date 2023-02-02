@@ -50,7 +50,6 @@ const LiveIndicator = styled('div', {
   alignItems: 'center',
   justifyContent: 'center',
   fontWeight: 'bold',
-  zIndex: 2,
   backgroundSize: 'cover',
   backgroundPosition: 'center',
 });
