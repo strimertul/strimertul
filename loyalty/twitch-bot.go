@@ -280,7 +280,7 @@ func (m *Manager) cmdContributeGoal(bot *twitch.Bot, message irc.PrivateMessage)
 	// Do we not have any goal we can contribute to? Hooray I guess?
 	if goalIndex < 0 {
 		if hasGoals {
-			bot.Client.Say(message.Channel, fmt.Sprintf("%s: All active community goals have been reached already! ShowOfHands", message.User.DisplayName))
+			bot.Client.Say(message.Channel, fmt.Sprintf("%s: All active community goals have been reached already! NewRecord", message.User.DisplayName))
 		} else {
 			bot.Client.Say(message.Channel, fmt.Sprintf("%s: There are no active community goals right now :(!", message.User.DisplayName))
 		}
@@ -290,13 +290,13 @@ func (m *Manager) cmdContributeGoal(bot *twitch.Bot, message irc.PrivateMessage)
 	// Parse parameters if provided
 	parts := strings.Fields(message.Message)
 	if len(parts) > 1 {
-		newpoints, err := strconv.ParseInt(parts[1], 10, 64)
+		newPoints, err := strconv.ParseInt(parts[1], 10, 64)
 		if err == nil {
-			if newpoints <= 0 {
+			if newPoints <= 0 {
 				bot.Client.Say(message.Channel, fmt.Sprintf("Nice try %s SoBayed", message.User.DisplayName))
 				return
 			}
-			points = newpoints
+			points = newPoints
 		}
 		if len(parts) > 2 {
 			found := false
@@ -330,18 +330,24 @@ func (m *Manager) cmdContributeGoal(bot *twitch.Bot, message irc.PrivateMessage)
 	}
 
 	// Add points to goal
-	if err := m.PerformContribution(selectedGoal, message.User.Name, points); err != nil {
+	points, err := m.PerformContribution(selectedGoal, message.User.Name, points)
+	if err != nil {
 		m.logger.Error("error while contributing to goal", zap.Error(err))
 		return
 	}
+	if points == 0 {
+		bot.Client.Say(message.Channel, fmt.Sprintf("%s: Sorry but you're broke", message.User.DisplayName))
+		return
+	}
 
+	selectedGoal = m.Goals.Get()[goalIndex]
 	config := m.Config.Get()
 	newRemaining := selectedGoal.TotalGoal - selectedGoal.Contributed
-	bot.Client.Say(message.Channel, fmt.Sprintf("ShowOfHands %s contributed %d %s to \"%s\"!! Only %d %s left!", message.User.DisplayName, points, config.Currency, selectedGoal.Name, newRemaining, config.Currency))
+	bot.Client.Say(message.Channel, fmt.Sprintf("NewRecord %s contributed %d %s to \"%s\"!! Only %d %s left!", message.User.DisplayName, points, config.Currency, selectedGoal.Name, newRemaining, config.Currency))
 
 	// Check if goal was reached!
 	// TODO Replace this with sub from loyalty system or something?
 	if newRemaining <= 0 {
-		bot.Client.Say(message.Channel, fmt.Sprintf("ShowOfHands The community goal \"%s\" was reached! ShowOfHands", selectedGoal.Name))
+		bot.Client.Say(message.Channel, fmt.Sprintf("FallWinning The community goal \"%s\" was reached! FallWinning", selectedGoal.Name))
 	}
 }

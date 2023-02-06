@@ -212,13 +212,12 @@ func newClient(config Config, db *database.LocalDBClient, server *http.Server, l
 			users, err := userClient.GetUsers(&helix.UsersParams{})
 			if err != nil {
 				client.logger.Error("failed looking up user", zap.Error(err))
+			} else if len(users.Data.Users) < 1 {
+				client.logger.Error("no users found, please authenticate in Twitch configuration -> Events")
+			} else {
+				client.User = users.Data.Users[0]
+				go client.connectWebsocket(userClient)
 			}
-			if len(users.Data.Users) < 1 {
-				client.logger.Error("no users found")
-			}
-			client.User = users.Data.Users[0]
-
-			go client.connectWebsocket(userClient)
 		} else {
 			client.logger.Warn("twitch user not identified, this will break most features")
 		}

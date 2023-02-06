@@ -313,7 +313,7 @@ func (m *Manager) ContributeGoal(goal Goal, user string, points int64) error {
 	return ErrGoalNotFound
 }
 
-func (m *Manager) PerformContribution(goal Goal, user string, points int64) error {
+func (m *Manager) PerformContribution(goal Goal, user string, points int64) (int64, error) {
 	// Get user balance
 	balance := m.GetPoints(user)
 
@@ -324,7 +324,7 @@ func (m *Manager) PerformContribution(goal Goal, user string, points int64) erro
 
 	// Check if goal was reached already
 	if goal.Contributed >= goal.TotalGoal {
-		return ErrGoalAlreadyReached
+		return 0, ErrGoalAlreadyReached
 	}
 
 	// If remaining points are lower than what user is contributing, only take what's needed
@@ -335,11 +335,11 @@ func (m *Manager) PerformContribution(goal Goal, user string, points int64) erro
 
 	// Remove points from user
 	if err := m.TakePoints(map[string]int64{user: points}); err != nil {
-		return err
+		return 0, err
 	}
 
 	// Add points to goal
-	return m.ContributeGoal(goal, user, points)
+	return points, m.ContributeGoal(goal, user, points)
 }
 
 func (m *Manager) GetReward(id string) Reward {
