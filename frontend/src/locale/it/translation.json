@@ -384,7 +384,8 @@
       },
       "tab-editor": "Editor",
       "tab-manage": "Gestisci",
-      "title": "Estensioni"
+      "title": "Estensioni",
+      "error-alert": "Dettagli errore per {{name}}"
     }
   },
   "time": {

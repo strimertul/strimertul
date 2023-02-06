@@ -25,6 +25,8 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 - Fixed some values in the UI not updating or being assigned upon first load
 - The loyalty system was non-functional after an internal rewrite in 3.0.0, this has been fixed
 - Fixed a crash due to Twitch returning corrupted responses to status polling
+- Fixed issue where the LIVE stream preview would overlap dialog windows
+- 
 
 ## [3.0.0]
 
