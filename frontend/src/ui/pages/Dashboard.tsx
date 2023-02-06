@@ -414,7 +414,6 @@ export default function Dashboard(): React.ReactElement {
   return (
     <PageContainer>
       <TwitchSection />
-      <WIPNotice />
     </PageContainer>
   );
 }
