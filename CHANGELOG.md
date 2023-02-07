@@ -18,7 +18,7 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 ### Changed
 
 - Bumped recent event limit to 100 to deal with some spammy events
-- When closing the all a quick warning will ask you if you are really sure (it's not a trick I just keep doing it by mistake)
+- When closing the app a quick dialog will ask you if you are really sure (it's not a trick I just keep doing it by mistake). Sometimes it does it twice, it's a known issue.
 
 ### Fixed
 
@@ -26,7 +26,6 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 - The loyalty system was non-functional after an internal rewrite in 3.0.0, this has been fixed
 - Fixed a crash due to Twitch returning corrupted responses to status polling
 - Fixed issue where the LIVE stream preview would overlap dialog windows
-- 
 
 ## [3.0.0]
 
