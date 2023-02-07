@@ -64,18 +64,21 @@ func (c *Client) connectWebsocket(userClient *helix.Client) {
 			err = json.Unmarshal(wsMessage.Payload, &welcomeData)
 			if err != nil {
 				c.logger.Error("eventsub ws decode error", zap.String("message-type", wsMessage.Metadata.MessageType), zap.Error(err))
+				break
 			}
 			c.logger.Info("eventsub ws connection established", zap.String("session-id", welcomeData.Session.Id))
 			// Add subscription to websocket session
 			err = c.addSubscriptionsForSession(userClient, welcomeData.Session.Id)
 			if err != nil {
 				c.logger.Error("could not add subscriptions", zap.Error(err))
+				break
 			}
 		case "session_reconnect":
 			var reconnectData WelcomeMessagePayload
 			err = json.Unmarshal(wsMessage.Payload, &reconnectData)
 			if err != nil {
 				c.logger.Error("eventsub ws decode error", zap.String("message-type", wsMessage.Metadata.MessageType), zap.Error(err))
+				break
 			}
 			c.logger.Info("eventsub ws connection reset requested", zap.String("session-id", reconnectData.Session.Id), zap.String("reconnect-url", reconnectData.Session.ReconnectUrl))
 
@@ -83,6 +86,7 @@ func (c *Client) connectWebsocket(userClient *helix.Client) {
 			newConnection, _, err := websocket.DefaultDialer.Dial(reconnectData.Session.ReconnectUrl, nil)
 			if err != nil {
 				c.logger.Error("eventsub ws reconnect error", zap.Error(err))
+				break
 			} else {
 				_ = connection.Close()
 				connection = newConnection

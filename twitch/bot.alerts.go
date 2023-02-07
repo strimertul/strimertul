@@ -20,17 +20,17 @@ const BotAlertsKey = "twitch/bot-modules/alerts/config"
 type eventSubNotification struct {
 	Subscription helix.EventSubSubscription `json:"subscription"`
 	Challenge    string                     `json:"challenge"`
-	Event        jsoniter.RawMessage        `json:"event"`
+	Event        jsoniter.RawMessage        `json:"event" desc:"Event payload, as JSON object"`
 }
 
 type BotAlertsConfig struct {
 	Follow struct {
-		Enabled  bool     `json:"enabled"`
-		Messages []string `json:"messages"`
+		Enabled  bool     `json:"enabled" desc:"Enable chat message alert on follow"`
+		Messages []string `json:"messages" desc:"List of message to write on follow, one at random will be picked"`
 	} `json:"follow"`
 	Subscription struct {
-		Enabled    bool     `json:"enabled"`
-		Messages   []string `json:"messages"`
+		Enabled    bool     `json:"enabled" desc:"Enable chat message alert on subscription"`
+		Messages   []string `json:"messages" desc:"List of message to write on subscription, one at random will be picked"`
 		Variations []struct {
 			MinStreak *int     `json:"min_streak,omitempty"`
 			IsGifted  *bool    `json:"is_gifted,omitempty"`
@@ -38,8 +38,8 @@ type BotAlertsConfig struct {
 		} `json:"variations"`
 	} `json:"subscription"`
 	GiftSub struct {
-		Enabled    bool     `json:"enabled"`
-		Messages   []string `json:"messages"`
+		Enabled    bool     `json:"enabled" desc:"Enable chat message alert on gifted subscription"`
+		Messages   []string `json:"messages" desc:"List of message to write on gifted subscription, one at random will be picked"`
 		Variations []struct {
 			MinCumulative *int     `json:"min_cumulative,omitempty"`
 			IsAnonymous   *bool    `json:"is_anonymous,omitempty"`
@@ -47,16 +47,16 @@ type BotAlertsConfig struct {
 		} `json:"variations"`
 	} `json:"gift_sub"`
 	Raid struct {
-		Enabled    bool     `json:"enabled"`
-		Messages   []string `json:"messages"`
+		Enabled    bool     `json:"enabled" desc:"Enable chat message alert on raid"`
+		Messages   []string `json:"messages" desc:"List of message to write on raid, one at random will be picked"`
 		Variations []struct {
 			MinViewers *int     `json:"min_viewers,omitempty"`
 			Messages   []string `json:"messages"`
 		} `json:"variations"`
 	} `json:"raid"`
 	Cheer struct {
-		Enabled    bool     `json:"enabled"`
-		Messages   []string `json:"messages"`
+		Enabled    bool     `json:"enabled" desc:"Enable chat message alert on cheer"`
+		Messages   []string `json:"messages" desc:"List of message to write on cheer, one at random will be picked"`
 		Variations []struct {
 			MinAmount *int     `json:"min_amount,omitempty"`
 			Messages  []string `json:"messages"`

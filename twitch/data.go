@@ -4,22 +4,38 @@ const CallbackRoute = "/twitch/callback"
 
 const ConfigKey = "twitch/config"
 
+// Config is the general configuration for the Twitch subsystem
 type Config struct {
-	Enabled         bool   `json:"enabled"`
-	EnableBot       bool   `json:"enable_bot"`
-	APIClientID     string `json:"api_client_id"`
-	APIClientSecret string `json:"api_client_secret"`
+	// Enable subsystem
+	Enabled bool `json:"enabled" desc:"Enable subsystem"`
+
+	// Enable the chatbot
+	EnableBot bool `json:"enable_bot" desc:"Enable the chatbot"`
+
+	// Twitch API App Client ID
+	APIClientID string `json:"api_client_id" desc:"Twitch API App Client ID"`
+
+	// Twitch API App Client Secret
+	APIClientSecret string `json:"api_client_secret" desc:"Twitch API App Client Secret"`
 }
 
 const StreamInfoKey = "twitch/stream-info"
 
 const BotConfigKey = "twitch/bot-config"
 
+// BotConfig is the general configuration for the Twitch chatbot
 type BotConfig struct {
-	Username    string `json:"username"`
-	Token       string `json:"oauth"`
-	Channel     string `json:"channel"`
-	ChatHistory int    `json:"chat_history"`
+	// Chatbot username (for internal use, ignored by Twitch)
+	Username string `json:"username" desc:"Chatbot username (for internal use, ignored by Twitch)"`
+
+	// OAuth key for IRC authentication
+	Token string `json:"oauth" desc:"OAuth key for IRC authentication"`
+
+	// Twitch channel to join and use
+	Channel string `json:"channel" desc:"Twitch channel to join and use"`
+
+	// How many messages to keep in twitch/chat-history
+	ChatHistory int `json:"chat_history" desc:"How many messages to keep in twitch/chat-history"`
 }
 
 const (
@@ -28,11 +44,19 @@ const (
 	ChatActivityKey = "twitch/chat-activity"
 )
 
+// BotCustomCommand is a definition of a custom command of the chatbot
 type BotCustomCommand struct {
-	Description string          `json:"description"`
-	AccessLevel AccessLevelType `json:"access_level"`
-	Response    string          `json:"response"`
-	Enabled     bool            `json:"enabled"`
+	// Command description
+	Description string `json:"description" desc:"Command description"`
+
+	// Minimum access level needed to use the command
+	AccessLevel AccessLevelType `json:"access_level" desc:"Minimum access level needed to use the command"`
+
+	// Response template (in Go templating format)
+	Response string `json:"response" desc:"Response template (in Go templating format)"`
+
+	// Is the command enabled?
+	Enabled bool `json:"enabled" desc:"Is the command enabled?"`
 }
 
 const CustomCommandsKey = "twitch/bot-custom-commands"

@@ -8,3 +8,4 @@
 strimertul_*
 build/bin
 *.log
+api.json

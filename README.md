@@ -6,6 +6,7 @@ Small broadcasting suite for Twitch, includes:
 - Loyalty points system with redeems and community goals
 - Twitch chat integration with custom commands
 - Support for Twitch alerts and channel point redeems
+- Built-in runner for simple extensions to add extra features
 
 **Note:** some technical/coding experience is currently required to be able to use this effectively, see the technical overview below for more information.
 

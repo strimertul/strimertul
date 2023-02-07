@@ -4,6 +4,8 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/strimertul/strimertul/docs"
+
 	"git.sr.ht/~hamcha/containers/sync"
 	"github.com/nicklaw5/helix/v2"
 	"github.com/urfave/cli/v2"
@@ -136,4 +138,8 @@ func (a *App) GetTwitchLoggedUser() (helix.User, error) {
 
 func (a *App) GetLastLogs() []LogEntry {
 	return lastLogs.Get()
+}
+
+func (a *App) GetDocumentation() map[string]docs.KeyObject {
+	return docs.Keys
 }

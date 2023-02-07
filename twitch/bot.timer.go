@@ -14,15 +14,24 @@ import (
 const BotTimersKey = "twitch/bot-modules/timers/config"
 
 type BotTimersConfig struct {
-	Timers map[string]BotTimer `json:"timers"`
+	Timers map[string]BotTimer `json:"timers" desc:"List of timers as a dictionary"`
 }
 
 type BotTimer struct {
-	Enabled             bool     `json:"enabled"`               // Whether the timer is enabled
-	Name                string   `json:"name"`                  // Timer name (must be unique)
-	MinimumChatActivity int      `json:"minimum_chat_activity"` // Minimum chat messages in the last 5 minutes
-	MinimumDelay        int      `json:"minimum_delay"`         // In seconds
-	Messages            []string `json:"messages"`              // Messages to write (randomly chosen)
+	// Whether the timer is enabled
+	Enabled bool `json:"enabled" desc:"Enable the timer"`
+
+	// Timer name (must be unique)
+	Name string `json:"name" desc:"Timer name (must be unique)"`
+
+	// Minimum chat messages in the last 5 minutes for timer to trigger
+	MinimumChatActivity int `json:"minimum_chat_activity" desc:"Minimum chat messages in the last 5 minutes for timer to trigger"`
+
+	// Minimum amount of time (in seconds) that needs to pass before it triggers again
+	MinimumDelay int `json:"minimum_delay" desc:"Minimum amount of time (in seconds) that needs to pass before it triggers again"`
+
+	// Messages to write (randomly chosen)
+	Messages []string `json:"messages" desc:"Messages to write (randomly chosen)"`
 }
 
 const AverageMessageWindow = 5
