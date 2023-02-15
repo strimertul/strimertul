@@ -6,14 +6,14 @@ require (
 	git.sr.ht/~hamcha/containers v0.3.2
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
-	github.com/cockroachdb/pebble v0.0.0-20230126224944-0a21ab1b22f5
+	github.com/cockroachdb/pebble v0.0.0-20230209222158-0568b5fd3d14
 	github.com/gempir/go-twitch-irc/v4 v4.0.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/hashicorp/golang-lru v0.5.1
 	github.com/json-iterator/go v1.1.12
 	github.com/nicklaw5/helix/v2 v2.11.0
-	github.com/strimertul/kilovolt/v9 v9.0.1
-	github.com/strimertul/kv-pebble v1.2.0
+	github.com/strimertul/kilovolt/v9 v9.1.0
+	github.com/strimertul/kv-pebble v1.2.1
 	github.com/urfave/cli/v2 v2.24.1
 	github.com/wailsapp/wails/v2 v2.3.1
 	go.uber.org/zap v1.24.0
@@ -34,7 +34,7 @@ require (
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
-	github.com/getsentry/sentry-go v0.17.0 // indirect
+	github.com/getsentry/sentry-go v0.18.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.3 // indirect
@@ -79,9 +79,9 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/crypto v0.5.0 // indirect
-	golang.org/x/exp v0.0.0-20230126173853-a67bb567ff2e // indirect
+	golang.org/x/exp v0.0.0-20230206171751-46f607a40771 // indirect
 	golang.org/x/net v0.5.0 // indirect
-	golang.org/x/sys v0.4.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )

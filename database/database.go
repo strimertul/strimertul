@@ -93,11 +93,11 @@ func (mod *LocalDBClient) SubscribePrefix(fn kv.SubscriptionCallback, prefixes .
 }
 
 func (mod *LocalDBClient) SubscribeKey(key string, fn func(string)) (err error, cancelFn CancelFunc) {
-	_, err = mod.makeRequest(kv.CmdSubscribePrefix, map[string]interface{}{"prefix": key})
+	_, err = mod.makeRequest(kv.CmdSubscribeKey, map[string]interface{}{"key": key})
 	if err != nil {
 		return err, nil
 	}
-	id := mod.client.SetPrefixSubCallback(key, func(changedKey string, value string) {
+	id := mod.client.SetKeySubCallback(key, func(changedKey string, value string) {
 		if key != changedKey {
 			return
 		}
