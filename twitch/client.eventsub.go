@@ -22,7 +22,7 @@ func (c *Client) connectWebsocket(userClient *helix.Client) {
 
 	received := make(chan []byte)
 	wsErr := make(chan error)
-	go func(recv chan<- []byte) {
+	readFromWS := func(connection *websocket.Conn, recv chan<- []byte) {
 		for {
 			messageType, messageData, err := connection.ReadMessage()
 			if err != nil {
@@ -36,7 +36,8 @@ func (c *Client) connectWebsocket(userClient *helix.Client) {
 
 			recv <- messageData
 		}
-	}(received)
+	}
+	go readFromWS(connection, received)
 
 	for {
 		// Wait for next message or closing/error
@@ -89,6 +90,7 @@ func (c *Client) connectWebsocket(userClient *helix.Client) {
 				break
 			} else {
 				_ = connection.Close()
+				go readFromWS(newConnection, received)
 				connection = newConnection
 			}
 		case "notification":
