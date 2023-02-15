@@ -385,7 +385,9 @@
       "tab-editor": "Editor",
       "tab-manage": "Gestisci",
       "title": "Estensioni",
-      "error-alert": "Dettagli errore per {{name}}"
+      "error-alert": "Dettagli errore per {{name}}",
+      "incompatible-body": "Questa estensione richiede {{APPNAME}} versione {{version}} o successive, al momento stai utilizzando {{appversion}} che potrebbe essere troppo vecchia e perciò senza alcune funzionalità richieste",
+      "incompatible-warning": "Questa estensione non è compatibile"
     }
   },
   "time": {
