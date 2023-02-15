@@ -28,7 +28,7 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 - Fixed issue where the LIVE stream preview would overlap dialog windows
 - Fixed leaked iterators on the backup procedure
 
-## [3.0.0]
+## [3.0.0] - 2023-01-09
 
 ### Added
 
