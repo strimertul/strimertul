@@ -90,9 +90,14 @@ func (p *PebbleDatabase) Restore(file io.Reader) error {
 
 func (p *PebbleDatabase) Backup(file io.Writer) error {
 	iter := p.db.NewSnapshot().NewIter(&pebble.IterOptions{})
+	defer iter.Close()
 	out := make(map[string]string)
 	for iter.First(); iter.Valid(); iter.Next() {
-		out[string(iter.Key())] = string(iter.Value())
+		val, err := iter.ValueAndErr()
+		if err != nil {
+			return err
+		}
+		out[string(iter.Key())] = string(val)
 	}
 	return json.NewEncoder(file).Encode(out)
 }
