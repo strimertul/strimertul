@@ -216,7 +216,7 @@ func newClient(config Config, db *database.LocalDBClient, server *http.Server, l
 				client.logger.Error("no users found, please authenticate in Twitch configuration -> Events")
 			} else {
 				client.User = users.Data.Users[0]
-				go client.connectWebsocket(userClient)
+				go client.eventSubLoop(userClient)
 			}
 		} else {
 			client.logger.Warn("twitch user not identified, this will break most features")
