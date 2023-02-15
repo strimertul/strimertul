@@ -145,6 +145,11 @@ type ExtensionListItemProps = {
 function ExtensionListItem(props: ExtensionListItemProps) {
   const { t } = useTranslation();
   const metadata = parseExtensionMetadata(props.entry.source);
+  const version = useAppSelector((state) => state.server.version?.release);
+  const isDev = version && version.startsWith('v0.0.0');
+  const showIncompatibleWarning =
+    !isDev && version && version < `v${metadata.apiversion}`;
+
   return (
     <ExtensionRow
       status={props.enabled && isRunning(props.status) ? 'enabled' : 'disabled'}
@@ -180,6 +185,24 @@ function ExtensionListItem(props: ExtensionListItemProps) {
               <ExtensionStatusNote color={colorByStatus(props.status)}>
                 {t(`pages.extensions.statuses.${props.status}`)}
               </ExtensionStatusNote>
+              {showIncompatibleWarning ? (
+                <Alert>
+                  <AlertTrigger asChild>
+                    <Button variation="warning" size="small">
+                      <ExclamationTriangleIcon />
+                    </Button>
+                  </AlertTrigger>
+                  <AlertContent
+                    title={t('pages.extensions.incompatible-warning')}
+                    showCancel={false}
+                  >
+                    {t('pages.extensions.incompatible-body', {
+                      version: metadata.apiversion,
+                      appversion: version,
+                    })}
+                  </AlertContent>
+                </Alert>
+              ) : null}
               {props.error ? (
                 <Alert>
                   <AlertTrigger asChild>

@@ -1,13 +1,12 @@
 import { styled } from '@stitches/react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 import { Link, useMatch, useResolvedPath } from 'react-router-dom';
 
 // @ts-expect-error Asset import
 import logo from '~/assets/icon-logo.svg';
 
-import { RootState } from '~/store';
+import { useAppSelector } from '~/store';
 import { APPNAME, APPREPO } from '../theme';
 import BrowserLink from './BrowserLink';
 import Scrollbar from './utils/Scrollbar';
@@ -160,17 +159,11 @@ export default function Sidebar({
   const { t } = useTranslation();
   const resolved = useResolvedPath('/about');
   const matchApp = useMatch({ path: resolved.pathname, end: true });
-  const client = useSelector((state: RootState) => state.api.client);
-  const [version, setVersion] = useState<string>(null);
+  const version = useAppSelector((state) => state.server.version?.release);
   const [lastVersion, setLastVersion] = useState<{ url: string; name: string }>(
     null,
   );
   const dev = version && version.startsWith('v0.0.0');
-
-  async function fetchVersion() {
-    const versionString = await client.getKey('stul-meta/version');
-    setVersion(versionString);
-  }
 
   async function fetchLastVersion() {
     try {
@@ -197,12 +190,6 @@ export default function Sidebar({
     void fetchLastVersion();
   }, []);
 
-  useEffect(() => {
-    if (client) {
-      void fetchVersion();
-    }
-  }, [client]);
-
   return (
     <Container>
       <Scrollbar vertical={true} viewport={{ maxHeight: '100vh' }}>
@@ -219,11 +206,14 @@ export default function Sidebar({
               {version && !dev ? version : t('debug.dev-build')}
             </VersionLabel>
           </AppLink>
-          {!dev && lastVersion && !version.startsWith(lastVersion.name) && (
-            <UpdateButton href={lastVersion.url}>
-              {t('menu.messages.update-available')}
-            </UpdateButton>
-          )}
+          {!dev &&
+            version &&
+            lastVersion &&
+            !version.startsWith(lastVersion.name) && (
+              <UpdateButton href={lastVersion.url}>
+                {t('menu.messages.update-available')}
+              </UpdateButton>
+            )}
         </Header>
         {sections.map(({ title: sectionTitle, links }) => (
           <MenuSection key={sectionTitle}>

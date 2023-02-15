@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"runtime/debug"
 	"strconv"
 
 	"github.com/strimertul/strimertul/docs"
@@ -142,4 +143,17 @@ func (a *App) GetLastLogs() []LogEntry {
 
 func (a *App) GetDocumentation() map[string]docs.KeyObject {
 	return docs.Keys
+}
+
+type VersionInfo struct {
+	Release   string           `json:"release"`
+	BuildInfo *debug.BuildInfo `json:"build"`
+}
+
+func (a *App) GetAppVersion() VersionInfo {
+	info, _ := debug.ReadBuildInfo()
+	return VersionInfo{
+		Release:   appVersion,
+		BuildInfo: info,
+	}
 }

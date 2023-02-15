@@ -12,6 +12,7 @@ export const blankTemplate = (slug: string) => `// ==Extension==
 // @version     1.0
 // @author      Put your name here!
 // @description A new extension for strimertul
+// @apiversion  3.1.0 
 // ==/Extension==
 `;
 

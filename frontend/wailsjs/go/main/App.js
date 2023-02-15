@@ -6,6 +6,14 @@ export function AuthenticateKVClient(arg1) {
   return window['go']['main']['App']['AuthenticateKVClient'](arg1);
 }
 
+export function GetAppVersion() {
+  return window['go']['main']['App']['GetAppVersion']();
+}
+
+export function GetDocumentation() {
+  return window['go']['main']['App']['GetDocumentation']();
+}
+
 export function GetKilovoltBind() {
   return window['go']['main']['App']['GetKilovoltBind']();
 }

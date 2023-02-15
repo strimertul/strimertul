@@ -332,7 +332,9 @@
         "error": "Error encountered",
         "terminated": "Stopped"
       },
-      "error-alert": "Error details for {{name}}"
+      "error-alert": "Error details for {{name}}",
+      "incompatible-body": "This extension requires {{APPNAME}} version {{version}} and up, you are currently running {{appversion}}, which may be too old and miss required features",
+      "incompatible-warning": "This extension is not compatible"
     }
   },
   "form-actions": {

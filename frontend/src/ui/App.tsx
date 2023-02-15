@@ -26,6 +26,7 @@ import { createWSClient, useAuthBypass } from '~/store/api/reducer';
 import { ConnectionStatus } from '~/store/api/types';
 import loggingReducer from '~/store/logging/reducer';
 import { initializeExtensions } from '~/store/extensions/reducer';
+import { initializeServerInfo } from '~/store/server/reducer';
 
 import LogViewer from './components/LogViewer';
 import Sidebar, { RouteSection } from './components/Sidebar';
@@ -164,6 +165,11 @@ export default function App(): JSX.Element {
       }),
     );
   };
+
+  // Fill application info
+  useEffect(() => {
+    void dispatch(initializeServerInfo());
+  });
 
   // Get application logs
   useEffect(() => {

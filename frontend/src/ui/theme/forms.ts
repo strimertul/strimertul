@@ -231,6 +231,19 @@ const button = {
           },
         },
       },
+      warning: {
+        border: '1px solid $yellow6',
+        backgroundColor: '$yellow4',
+        '&:not(:disabled)': {
+          '&:hover': {
+            backgroundColor: '$yellow5',
+            borderColor: '$yellow8',
+          },
+          '&:active': {
+            background: '$yellow6',
+          },
+        },
+      },
       danger: {
         border: '1px solid $red6',
         backgroundColor: '$red4',

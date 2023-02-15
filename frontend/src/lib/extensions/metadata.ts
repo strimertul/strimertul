@@ -6,10 +6,11 @@
 // ==/Extension==
 
 interface ExtensionMetadata {
-  name: string;
-  version: string;
-  author: string;
-  description: string;
+  name?: string;
+  version?: string;
+  author?: string;
+  description?: string;
+  apiversion: string;
 }
 
 export function parseExtensionMetadata(
@@ -40,6 +41,7 @@ export function parseExtensionMetadata(
     version: metadata.version,
     author: metadata.author,
     description: metadata.description,
+    apiversion: metadata.apiversion ?? '3.1.0',
   };
 }
 
