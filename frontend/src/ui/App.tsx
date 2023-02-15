@@ -169,7 +169,7 @@ export default function App(): JSX.Element {
   // Fill application info
   useEffect(() => {
     void dispatch(initializeServerInfo());
-  });
+  }, []);
 
   // Get application logs
   useEffect(() => {
