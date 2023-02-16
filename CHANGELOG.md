@@ -27,6 +27,7 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 - Fixed a crash due to Twitch returning corrupted responses to status polling
 - Fixed issue where the LIVE stream preview would overlap dialog windows
 - Fixed leaked iterators on the backup procedure
+- Fixed eventsub websocket reconnection not being handled properly
 
 ## [3.0.0] - 2023-01-09
 
