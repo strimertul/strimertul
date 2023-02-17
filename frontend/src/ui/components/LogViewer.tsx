@@ -191,6 +191,7 @@ const LogDetails = styled('div', {
   gridRow: '2',
   gridColumn: '2/4',
   display: 'flex',
+  flexWrap: 'wrap',
   gap: '1rem',
   fontSize: '0.8em',
   color: '$gray11',

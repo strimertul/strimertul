@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix/v2"
 	"go.uber.org/zap"
