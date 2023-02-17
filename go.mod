@@ -1,6 +1,6 @@
 module github.com/strimertul/strimertul
 
-go 1.19
+go 1.20
 
 require (
 	git.sr.ht/~hamcha/containers v0.3.2

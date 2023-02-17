@@ -28,6 +28,7 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 - Fixed issue where the LIVE stream preview would overlap dialog windows
 - Fixed leaked iterators on the backup procedure
 - Fixed eventsub websocket reconnection not being handled properly
+- Fixed bug where the interval in the loyalty configuration page would often not be set to the correct/current value
 
 ## [3.0.0] - 2023-01-09
 

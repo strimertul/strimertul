@@ -5,9 +5,8 @@ import (
 	"embed"
 	"fmt"
 	"log"
-	"math/rand"
+	_ "net/http/pprof"
 	"os"
-	"time"
 
 	"github.com/apenwarr/fixconsole"
 	jsoniter "github.com/json-iterator/go"
@@ -18,7 +17,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	_ "net/http/pprof"
 
 	"github.com/strimertul/strimertul/utils"
 )
@@ -79,9 +77,6 @@ func main() {
 			},
 		},
 		Before: func(ctx *cli.Context) error {
-			// Seed RNG
-			rand.Seed(time.Now().UnixNano())
-
 			// Initialize logger with global flags
 			level, err := zapcore.ParseLevel(ctx.String("log-level"))
 			if err != nil {
