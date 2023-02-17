@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { getInterval } from '~/lib/time';
 import { ComboBox, FlexRow, InputBox } from '../../theme';
@@ -35,19 +35,11 @@ function Interval({
 
   const timeUnits = units ?? [seconds, minutes, hours];
 
-  const [numInitialValue, multInitialValue] = getInterval(value);
-  const [num, setNum] = useState(numInitialValue);
-  const [mult, setMult] = useState(multInitialValue);
+  const [num, mult] = getInterval(value);
 
-  useEffect(() => {
-    const total = num * mult;
-    if (min && total < min) {
-      const [minNum, minMult] = getInterval(min);
-      setNum(minNum);
-      setMult(minMult);
-    }
-    onChange(Math.max(min ?? 0, total));
-  }, [num, mult]);
+  const change = (newNum: number, newMult: number) => {
+    onChange(Math.max(min ?? 0, newNum * newMult));
+  };
 
   return (
     <>
@@ -65,11 +57,11 @@ function Interval({
           }}
           value={num ?? ''}
           onChange={(ev) => {
-            const intNum = parseInt(ev.target.value, 10);
-            if (Number.isNaN(intNum)) {
+            const parsedNum = parseInt(ev.target.value, 10);
+            if (Number.isNaN(parsedNum)) {
               return;
             }
-            setNum(intNum);
+            change(parsedNum, mult);
           }}
           placeholder="#"
         />
@@ -78,11 +70,11 @@ function Interval({
           value={mult.toString() ?? ''}
           disabled={!active}
           onChange={(ev) => {
-            const intMult = parseInt(ev.target.value, 10);
-            if (Number.isNaN(intMult)) {
+            const parsedMult = parseInt(ev.target.value, 10);
+            if (Number.isNaN(parsedMult)) {
               return;
             }
-            setMult(intMult);
+            change(num, parsedMult);
           }}
         >
           {timeUnits.map((unit) => (
