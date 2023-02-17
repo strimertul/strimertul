@@ -32,12 +32,12 @@ jobs:
     runs-on: ${{ matrix.build.os }}
     steps:
       - uses: actions/checkout@v2
-      - uses: ashkeel/wails-build-action@07cf6afbe4d05bd4f5b5c189c938fc245e1f68dd
+      - uses: ashkeel/wails-build-action@bf2d6a3c440266e9bb8b3527a4b1db1896dccbab
         with:
           build-name: ${{ matrix.build.name }}
           build-platform: ${{ matrix.build.platform }}
           windows-nsis-installer: false
           macos-package-file-name: strimertul
           macos-package-type: dmg
-          go-version: 1.20
+          go-version: "1.20"
           draft: true

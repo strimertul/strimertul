@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: ashkeel/wails-build-action@8b31d0d320d1b4b4def7d9f3a8a141b257b17391
+      - uses: ashkeel/wails-build-action@bf2d6a3c440266e9bb8b3527a4b1db1896dccbab
         with:
           build-name: strimertul
           build-platform: linux/amd64
           package: false
-          go-version: 1.20
+          go-version: "1.20"
