@@ -16,6 +16,7 @@ type DataObject struct {
 	Key         *DataObject  `json:"key,omitempty"`
 	Element     *DataObject  `json:"element,omitempty"`
 	EnumValues  []string     `json:"enumValues,omitempty"`
+	IsPointer   bool         `json:"isPointer,omitempty"`
 }
 
 type KeyObject struct {
@@ -36,11 +37,12 @@ const (
 	KindUnknown Kind = "unknown"
 	KindArray   Kind = "array"
 	KindDict    Kind = "dictionary"
+	KindDate    Kind = "datetime"
 )
 
 func getKind(typ reflect.Kind) Kind {
 	switch typ {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uintptr:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		return KindInt
 	case reflect.Float32, reflect.Float64:
 		return KindFloat
@@ -60,6 +62,15 @@ func getKind(typ reflect.Kind) Kind {
 
 func parseType(typ reflect.Type) (out DataObject) {
 	out.Name = typ.Name()
+
+	// Check for common complex types
+	switch typ.String() {
+	case "time.Time":
+		out.Kind = KindDate
+		return
+	}
+
+	// Check for known enums
 	if enum, ok := Enums[out.Name]; ok {
 		out.Kind = KindEnum
 		for _, it := range enum.Values {
@@ -67,6 +78,13 @@ func parseType(typ reflect.Type) (out DataObject) {
 		}
 		return
 	}
+
+	// Dereference pointers
+	for typ.Kind() == reflect.Pointer {
+		out.IsPointer = true
+		typ = typ.Elem()
+	}
+
 	out.Kind = getKind(typ.Kind())
 	if out.Kind == KindArray || out.Kind == KindDict {
 		elem := parseType(typ.Elem())
