@@ -10,7 +10,7 @@ import (
 
 var Keys = interfaces.KeyMap{
 	ConfigKey: interfaces.KeyDef{
-		Description: "General configuration for the loyalty subsystem",
+		Description: "General configuration for the loyalty system",
 		Type:        reflect.TypeOf(Config{}),
 	},
 	RewardsKey: interfaces.KeyDef{
