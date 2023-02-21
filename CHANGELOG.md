@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [current]
 
+## [3.1.0] - 2023-02-21
+
 UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your user to make sure it has a necessary new permission for the loyalty system to work.
 
 ### Added
@@ -29,6 +31,8 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 - Fixed leaked iterators on the backup procedure
 - Fixed eventsub websocket reconnection not being handled properly
 - Fixed bug where the interval in the loyalty configuration page would often not be set to the correct/current value
+- Fixed bug where the loyalty config page had a wrong set interval on first load
+- Fixed the formatting of log data so long lines are still contained in the dialog instead of clipping offscreen
 
 ## [3.0.0] - 2023-01-09
 
@@ -177,7 +181,8 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 
 - Stulbe integration for alerts
 
-[current]: https://github.com/strimertul/strimertul/compare/v3.0.0...HEAD
+[current]: https://github.com/strimertul/strimertul/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/strimertul/strimertul/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/strimertul/strimertul/compare/v2.1.1...v3.0.0
 [2.1.1]: https://github.com/strimertul/strimertul/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/strimertul/strimertul/compare/v2.0.0...v2.1.0
