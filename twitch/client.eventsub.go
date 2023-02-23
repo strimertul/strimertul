@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/strimertul/strimertul/utils"
+
 	"github.com/gorilla/websocket"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix/v2"
@@ -30,7 +32,7 @@ func (c *Client) connectWebsocket(url string, userClient *helix.Client) (string,
 		c.logger.Error("could not connect to eventsub ws", zap.Error(err))
 		return "", err
 	}
-	defer connection.Close()
+	defer utils.Close(connection, c.logger)
 
 	received := make(chan []byte, 10)
 	wsErr := make(chan error, 1)
@@ -163,7 +165,7 @@ func (c *Client) addSubscriptionsForSession(userClient *helix.Client, session st
 			Condition: topicCondition(topic, c.User.ID),
 		})
 		if sub.Error != "" || sub.ErrorMessage != "" {
-			c.logger.Error("subscription error", zap.String("err", sub.Error), zap.String("message", sub.ErrorMessage))
+			c.logger.Error("subscription error", zap.String("topic", topic), zap.String("topic-version", version), zap.String("err", sub.Error), zap.String("message", sub.ErrorMessage))
 			return fmt.Errorf("%s: %s", sub.Error, sub.ErrorMessage)
 		}
 		if err != nil {
@@ -179,6 +181,11 @@ func topicCondition(topic string, id string) helix.EventSubCondition {
 	case "channel.raid":
 		return helix.EventSubCondition{
 			ToBroadcasterUserID: id,
+		}
+	case "channel.follow":
+		return helix.EventSubCondition{
+			BroadcasterUserID: id,
+			ModeratorUserID:   id,
 		}
 	default:
 		return helix.EventSubCondition{
@@ -218,7 +225,7 @@ type EventSubMetadata struct {
 
 var subscriptionVersions = map[string]string{
 	helix.EventSubTypeChannelUpdate:                             "1",
-	helix.EventSubTypeChannelFollow:                             "1",
+	helix.EventSubTypeChannelFollow:                             "2",
 	helix.EventSubTypeChannelSubscription:                       "1",
 	helix.EventSubTypeChannelSubscriptionGift:                   "1",
 	helix.EventSubTypeChannelSubscriptionMessage:                "1",

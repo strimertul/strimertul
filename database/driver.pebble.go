@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/strimertul/strimertul/utils"
+
 	"github.com/cockroachdb/pebble"
 	kv "github.com/strimertul/kilovolt/v9"
 	pebble_driver "github.com/strimertul/kv-pebble"
@@ -50,7 +52,7 @@ func (p *PebbleDatabase) Hub() *kv.Hub {
 func (p *PebbleDatabase) Close() error {
 	err := p.db.Close()
 	if err != nil {
-		return fmt.Errorf("Could not close database: %w", err)
+		return fmt.Errorf("could not close database: %w", err)
 	}
 	return nil
 }
@@ -89,8 +91,12 @@ func (p *PebbleDatabase) Restore(file io.Reader) error {
 }
 
 func (p *PebbleDatabase) Backup(file io.Writer) error {
-	iter := p.db.NewSnapshot().NewIter(&pebble.IterOptions{})
-	defer iter.Close()
+	snapshot := p.db.NewSnapshot()
+	defer utils.Close(snapshot, p.logger)
+
+	iter := snapshot.NewIter(&pebble.IterOptions{})
+	defer utils.Close(iter, p.logger)
+
 	out := make(map[string]string)
 	for iter.First(); iter.Valid(); iter.Next() {
 		val, err := iter.ValueAndErr()

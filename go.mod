@@ -20,7 +20,7 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
 
-replace github.com/nicklaw5/helix/v2 => github.com/ashkeel/helix/v2 v2.11.0-ws
+replace github.com/nicklaw5/helix/v2 => github.com/ashkeel/helix/v2 v2.20.0-ws
 
 require (
 	github.com/DataDog/zstd v1.5.2 // indirect

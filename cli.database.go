@@ -3,6 +3,8 @@ package main
 import (
 	"os"
 
+	"github.com/strimertul/strimertul/utils"
+
 	"github.com/strimertul/strimertul/database"
 
 	"github.com/urfave/cli/v2"
@@ -16,7 +18,7 @@ func cliImport(ctx *cli.Context) error {
 		if err != nil {
 			return fatalError(err, "could not open import file for reading")
 		}
-		defer file.Close()
+		defer utils.Close(file, logger)
 		inStream = file
 	}
 	var entries map[string]string
@@ -47,7 +49,7 @@ func cliRestore(ctx *cli.Context) error {
 		if err != nil {
 			return fatalError(err, "could not open import file for reading")
 		}
-		defer file.Close()
+		defer utils.Close(file, logger)
 		inStream = file
 	}
 
@@ -73,7 +75,7 @@ func cliExport(ctx *cli.Context) error {
 		if err != nil {
 			return fatalError(err, "could not open output file for writing")
 		}
-		defer file.Close()
+		defer utils.Close(file, logger)
 		outStream = file
 	}
 
