@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [current]
 
+## [3.1.1] - 2023-02-23
+
+UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your user to make sure it has a necessary new permission for event notifications to work (even from 3.1.0).
+
+### Fixed
+- Fixed issue where event notification would not work due to Twitch deprecating the `channel.follows` V1 topic
+- Fixed more database leaks
+
 ## [3.1.0] - 2023-02-21
 
 UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your user to make sure it has a necessary new permission for the loyalty system to work.
@@ -181,7 +189,8 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 
 - Stulbe integration for alerts
 
-[current]: https://github.com/strimertul/strimertul/compare/v3.1.0...HEAD
+[current]: https://github.com/strimertul/strimertul/compare/v3.1.1...HEAD
+[3.1.1]: https://github.com/strimertul/strimertul/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/strimertul/strimertul/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/strimertul/strimertul/compare/v2.1.1...v3.0.0
 [2.1.1]: https://github.com/strimertul/strimertul/compare/v2.1.0...v2.1.1
