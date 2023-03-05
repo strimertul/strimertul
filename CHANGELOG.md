@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [current]
 
+## [3.1.2] 2023-03-05
+
+### Fixed
+
+- Fixed some auth token shenanigans where a valid access token would not be generated when starting the app
+
 ## [3.1.1] - 2023-02-23
 
 UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your user to make sure it has a necessary new permission for event notifications to work (even from 3.1.0).
@@ -189,7 +195,8 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 
 - Stulbe integration for alerts
 
-[current]: https://github.com/strimertul/strimertul/compare/v3.1.1...HEAD
+[current]: https://github.com/strimertul/strimertul/compare/v3.1.2...HEAD
+[3.1.2]: https://github.com/strimertul/strimertul/compare/v3.1.1...v3.1.2
 [3.1.1]: https://github.com/strimertul/strimertul/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/strimertul/strimertul/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/strimertul/strimertul/compare/v2.1.1...v3.0.0
