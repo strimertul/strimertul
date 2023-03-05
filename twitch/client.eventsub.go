@@ -17,22 +17,23 @@ const websocketEndpoint = "wss://eventsub-beta.wss.twitch.tv/ws"
 func (c *Client) eventSubLoop(userClient *helix.Client) {
 	endpoint := websocketEndpoint
 	var err error
+	var connection *websocket.Conn
 	for endpoint != "" {
-		endpoint, err = c.connectWebsocket(endpoint, userClient)
+		endpoint, connection, err = c.connectWebsocket(endpoint, connection, userClient)
 		if err != nil {
 			c.logger.Error("eventsub ws read error", zap.Error(err))
 			break
 		}
 	}
+	utils.Close(connection, c.logger)
 }
 
-func (c *Client) connectWebsocket(url string, userClient *helix.Client) (string, error) {
+func (c *Client) connectWebsocket(url string, oldConnection *websocket.Conn, userClient *helix.Client) (string, *websocket.Conn, error) {
 	connection, _, err := websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
 		c.logger.Error("could not connect to eventsub ws", zap.Error(err))
-		return "", err
+		return "", nil, err
 	}
-	defer utils.Close(connection, c.logger)
 
 	received := make(chan []byte, 10)
 	wsErr := make(chan error, 1)
@@ -60,9 +61,9 @@ func (c *Client) connectWebsocket(url string, userClient *helix.Client) (string,
 		var messageData []byte
 		select {
 		case <-c.ctx.Done():
-			return "", nil
+			return "", nil, nil
 		case err = <-wsErr:
-			return "", err
+			return "", nil, err
 		case messageData = <-received:
 		}
 
@@ -84,6 +85,10 @@ func (c *Client) connectWebsocket(url string, userClient *helix.Client) (string,
 				break
 			}
 			c.logger.Info("eventsub ws connection established", zap.String("session-id", welcomeData.Session.Id))
+
+			if oldConnection != nil {
+				utils.Close(connection, c.logger)
+			}
 			// Add subscription to websocket session
 			err = c.addSubscriptionsForSession(userClient, welcomeData.Session.Id)
 			if err != nil {
@@ -99,7 +104,7 @@ func (c *Client) connectWebsocket(url string, userClient *helix.Client) (string,
 			}
 			c.logger.Info("eventsub ws connection reset requested", zap.String("session-id", reconnectData.Session.Id), zap.String("reconnect-url", reconnectData.Session.ReconnectUrl))
 
-			return reconnectData.Session.ReconnectUrl, nil
+			return reconnectData.Session.ReconnectUrl, connection, nil
 		case "notification":
 			go c.processEvent(wsMessage)
 		case "revocation":

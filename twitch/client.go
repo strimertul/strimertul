@@ -208,7 +208,7 @@ func newClient(config Config, db *database.LocalDBClient, server *http.Server, l
 		client.API = api
 		server.RegisterRoute(CallbackRoute, client)
 
-		if userClient, err := client.GetUserClient(); err == nil {
+		if userClient, err := client.GetUserClient(true); err == nil {
 			users, err := userClient.GetUsers(&helix.UsersParams{})
 			if err != nil {
 				client.logger.Error("failed looking up user", zap.Error(err))

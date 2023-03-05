@@ -84,7 +84,7 @@ func (m *Manager) SetupTwitch() {
 			cursor := ""
 			var users []string
 			for {
-				userClient, err := client.GetUserClient()
+				userClient, err := client.GetUserClient(false)
 				if err != nil {
 					m.logger.Error("could not get user api client for list of chatters", zap.Error(err))
 					return

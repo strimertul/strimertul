@@ -26,14 +26,14 @@ func (c *Client) GetAuthorizationURL() string {
 	})
 }
 
-func (c *Client) GetUserClient() (*helix.Client, error) {
+func (c *Client) GetUserClient(forceRefresh bool) (*helix.Client, error) {
 	var authResp AuthResponse
 	err := c.db.GetJSON(AuthKey, &authResp)
 	if err != nil {
 		return nil, err
 	}
 	// Handle token expiration
-	if time.Now().After(authResp.Time.Add(time.Duration(authResp.ExpiresIn) * time.Second)) {
+	if forceRefresh || time.Now().After(authResp.Time.Add(time.Duration(authResp.ExpiresIn)*time.Second)) {
 		// Refresh tokens
 		refreshed, err := c.API.RefreshUserAccessToken(authResp.RefreshToken)
 		if err != nil {
@@ -63,7 +63,7 @@ func (c *Client) GetLoggedUser() (helix.User, error) {
 		return c.User, nil
 	}
 
-	client, err := c.GetUserClient()
+	client, err := c.GetUserClient(false)
 	if err != nil {
 		return helix.User{}, fmt.Errorf("failed getting API client for user: %w", err)
 	}
