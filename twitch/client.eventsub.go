@@ -25,7 +25,9 @@ func (c *Client) eventSubLoop(userClient *helix.Client) {
 			break
 		}
 	}
-	utils.Close(connection, c.logger)
+	if connection != nil {
+		utils.Close(connection, c.logger)
+	}
 }
 
 func (c *Client) connectWebsocket(url string, oldConnection *websocket.Conn, userClient *helix.Client) (string, *websocket.Conn, error) {
@@ -87,7 +89,7 @@ func (c *Client) connectWebsocket(url string, oldConnection *websocket.Conn, use
 			c.logger.Info("eventsub ws connection established", zap.String("session-id", welcomeData.Session.Id))
 
 			if oldConnection != nil {
-				utils.Close(connection, c.logger)
+				utils.Close(oldConnection, c.logger)
 			}
 			// Add subscription to websocket session
 			err = c.addSubscriptionsForSession(userClient, welcomeData.Session.Id)

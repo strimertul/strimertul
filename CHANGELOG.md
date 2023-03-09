@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [current]
 
+### Changed
+
+- A new log file called `strimertul-panic.log` is now created for panic information. Please attach this (as well as `strimertul.log`) when reporting crashes!
+
+### Fixed
+
+- Fixed changing chat history breaking the database
+- Fixed panic on eventsub reconnections
+
 ## [3.1.2] 2023-03-05
 
 ### Fixed

@@ -186,7 +186,7 @@ function TwitchBotSettings() {
             dispatch(
               apiReducer.actions.twitchBotConfigChanged({
                 ...botConfig,
-                chat_history: ev.target.value,
+                chat_history: parseInt(ev.target.value, 10),
               }),
             )
           }
