@@ -34,6 +34,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var panicLog *os.File
+
 	app := &cli.App{
 		Name:    "strimertul",
 		Usage:   "the small broadcasting suite for Twitch",
@@ -83,12 +85,27 @@ func main() {
 				level = zapcore.InfoLevel
 			}
 			initLogger(level)
+
+			// Create file for panics
+			panicLog, err = os.OpenFile("strimertul-panic.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o666)
+			if err != nil {
+				logger.Warn("could not create panic log", zap.Error(err))
+			} else {
+				utils.RedirectStderr(panicLog)
+			}
+
+			zap.RedirectStdLog(logger)()
+
 			ctx.Context = context.WithValue(ctx.Context, utils.ContextLogger, logger)
 			return nil
 		},
 		After: func(ctx *cli.Context) error {
+			if panicLog != nil {
+				utils.Close(panicLog, logger)
+			}
+
 			_ = logger.Sync()
-			zap.RedirectStdLog(logger)()
+
 			return nil
 		},
 	}
