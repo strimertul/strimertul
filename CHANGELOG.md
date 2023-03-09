@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed changing chat history breaking the database
 - Fixed panic on eventsub reconnections
 
-## [3.1.2] 2023-03-05
+## [3.1.2] - 2023-03-05
 
 ### Fixed
 
