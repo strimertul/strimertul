@@ -34,7 +34,7 @@ function RewardQueue() {
   useUserPoints();
 
   const data = queue?.map((q) => ({ ...q, date: new Date(q.when) })) ?? [];
-  type Redeem = typeof data[0];
+  type Redeem = (typeof data)[0];
 
   const sortfn = (key: keyof Redeem) => (a: Redeem, b: Redeem) => {
     switch (key) {
@@ -161,7 +161,7 @@ function UserList() {
       username,
       ...data,
     }));
-  type UserEntry = typeof filtered[0];
+  type UserEntry = (typeof filtered)[0];
 
   const sortfn = (key: keyof UserEntry): SortFunction<UserEntry> => {
     switch (key) {
@@ -193,6 +193,7 @@ function UserList() {
                 void dispatch(
                   setUserPoints({
                     ...givePointDialog,
+                    user: givePointDialog.user.toLowerCase(),
                     relative: true,
                   }),
                 );
@@ -262,7 +263,7 @@ function UserList() {
               if ((e.target as HTMLFormElement).checkValidity()) {
                 void dispatch(
                   setUserPoints({
-                    user: currentEntry.username,
+                    user: currentEntry.username.toLowerCase(),
                     points: currentEntry.points,
                     relative: false,
                   }),
