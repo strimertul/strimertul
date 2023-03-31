@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [current]
 
+## [3.1.5] - 2023-03-31
+
+### Fixed
+
+- Updated wails so the window should not flash "connection refused" when opened
+- The compiled binary now has the proper version and update notices should work again
+
 ## [3.1.4] - 2023-03-31
 
 ### Fixed

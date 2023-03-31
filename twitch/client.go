@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"git.sr.ht/~hamcha/containers/sync"
-	lru "github.com/hashicorp/golang-lru"
+	lru "github.com/hashicorp/golang-lru/v2"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix/v2"
 	"go.uber.org/zap"
@@ -149,7 +149,7 @@ type Client struct {
 	API        *helix.Client
 	User       helix.User
 	logger     *zap.Logger
-	eventCache *lru.Cache
+	eventCache *lru.Cache[string, time.Time]
 	server     *http.Server
 	ctx        context.Context
 	cancel     context.CancelFunc
@@ -174,7 +174,7 @@ func (c *Client) ensureRoute() {
 }
 
 func newClient(config Config, db *database.LocalDBClient, server *http.Server, logger *zap.Logger) (*Client, error) {
-	eventCache, err := lru.New(128)
+	eventCache, err := lru.New[string, time.Time](128)
 	if err != nil {
 		return nil, fmt.Errorf("could not create LRU cache for events: %w", err)
 	}

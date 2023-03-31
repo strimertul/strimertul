@@ -78,7 +78,7 @@ export namespace main {
 	}
 	export class VersionInfo {
 	    release: string;
-	    // Go type: debug.BuildInfo
+	    // Go type: debug
 	    build?: any;
 	
 	    static createFrom(source: any = {}) {

@@ -32,7 +32,7 @@ jobs:
     runs-on: ${{ matrix.build.os }}
     steps:
       - uses: actions/checkout@v2
-      - uses: ashkeel/wails-build-action@bf2d6a3c440266e9bb8b3527a4b1db1896dccbab
+      - uses: ashkeel/wails-build-action@0faaf35c690d88c3463349c6bf0bbdc53af5e5a8
         with:
           build-name: ${{ matrix.build.name }}
           build-platform: ${{ matrix.build.platform }}
@@ -41,3 +41,4 @@ jobs:
           macos-package-type: dmg
           go-version: "1.20"
           draft: true
+          ldflags: "-X main.appVersion=${{ github.ref_name }}"

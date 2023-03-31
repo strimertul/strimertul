@@ -9,15 +9,15 @@ require (
 	github.com/cockroachdb/pebble v0.0.0-20230209222158-0568b5fd3d14
 	github.com/gempir/go-twitch-irc/v4 v4.0.0
 	github.com/gorilla/websocket v1.5.0
-	github.com/hashicorp/golang-lru v0.5.1
+	github.com/hashicorp/golang-lru/v2 v2.0.2
 	github.com/json-iterator/go v1.1.12
-	github.com/nicklaw5/helix/v2 v2.11.0
+	github.com/nicklaw5/helix/v2 v2.22.0
 	github.com/strimertul/kilovolt/v9 v9.1.0
 	github.com/strimertul/kv-pebble v1.2.1
-	github.com/urfave/cli/v2 v2.24.1
-	github.com/wailsapp/wails/v2 v2.3.1
+	github.com/urfave/cli/v2 v2.25.1
+	github.com/wailsapp/wails/v2 v2.4.1
 	go.uber.org/zap v1.24.0
-	gopkg.in/natefinch/lumberjack.v2 v2.0.0
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
 replace github.com/nicklaw5/helix/v2 => github.com/ashkeel/helix/v2 v2.20.0-ws
@@ -80,7 +80,7 @@ require (
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/exp v0.0.0-20230206171751-46f607a40771 // indirect
-	golang.org/x/net v0.5.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect

@@ -9,5 +9,11 @@
   "author": {
     "name": "Ash Keel",
     "email": "ash@nebula.cafe"
+  },
+  "info": {
+    "companyName": "strimertul contributors",
+    "productName": "strimertul",
+    "copyright": "Copyright (c) 2021-2023 strimertul contributors",
+    "productVersion": "0.0.0"
   }
 }
