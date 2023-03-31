@@ -221,7 +221,8 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 
 - Stulbe integration for alerts
 
-[current]: https://github.com/strimertul/strimertul/compare/v3.1.4...HEAD
+[current]: https://github.com/strimertul/strimertul/compare/v3.1.5...HEAD
+[3.1.5]: https://github.com/strimertul/strimertul/compare/v3.1.4...v3.1.5
 [3.1.4]: https://github.com/strimertul/strimertul/compare/v3.1.3...v3.1.4
 [3.1.3]: https://github.com/strimertul/strimertul/compare/v3.1.2...v3.1.3
 [3.1.2]: https://github.com/strimertul/strimertul/compare/v3.1.1...v3.1.2

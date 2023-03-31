@@ -32,6 +32,12 @@ jobs:
     runs-on: ${{ matrix.build.os }}
     steps:
       - uses: actions/checkout@v2
+      - name: Update wails.json version
+        uses: jossef/action-set-json-field@v2.1
+        with:
+          file: wails.json
+          field: info.productVersion
+          value: ${{ github.ref_name }}
       - uses: ashkeel/wails-build-action@0faaf35c690d88c3463349c6bf0bbdc53af5e5a8
         with:
           build-name: ${{ matrix.build.name }}
