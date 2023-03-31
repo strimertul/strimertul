@@ -64,33 +64,26 @@ type BotAlertsConfig struct {
 	} `json:"cheer"`
 }
 
-type templateCache struct {
-	follow struct {
-		messages map[int]*template.Template
-	}
-	subscription struct {
-		messages   map[int]*template.Template
-		variations map[int]map[int]*template.Template
-	}
-	gift struct {
-		messages   map[int]*template.Template
-		variations map[int]map[int]*template.Template
-	}
-	raid struct {
-		messages   map[int]*template.Template
-		variations map[int]map[int]*template.Template
-	}
-	cheer struct {
-		messages   map[int]*template.Template
-		variations map[int]map[int]*template.Template
-	}
-}
+type (
+	templateCache    map[string]*template.Template
+	templateCacheMap map[templateType]templateCache
+)
+
+type templateType string
+
+const (
+	templateTypeSubscription templateType = "subscription"
+	templateTypeFollow       templateType = "follow"
+	templateTypeRaid         templateType = "raid"
+	templateTypeCheer        templateType = "cheer"
+	templateTypeGift         templateType = "gift"
+)
 
 type BotAlertsModule struct {
 	Config BotAlertsConfig
 
 	bot       *Bot
-	templates templateCache
+	templates templateCacheMap
 
 	cancelAlertSub       database.CancelFunc
 	cancelTwitchEventSub database.CancelFunc
@@ -98,8 +91,7 @@ type BotAlertsModule struct {
 
 func SetupAlerts(bot *Bot) *BotAlertsModule {
 	mod := &BotAlertsModule{
-		bot:       bot,
-		templates: templateCache{},
+		bot: bot,
 	}
 
 	// Load config from database
@@ -147,7 +139,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 		}
 		// Assign random message
 		messageID := rand.Intn(len(mod.Config.Subscription.Messages))
-		tpl, ok := mod.templates.subscription.messages[messageID]
+		tpl, ok := mod.templates[templateTypeSubscription][mod.Config.Subscription.Messages[messageID]]
 		// If template is broken, write it as is (soft fail, plus we raise attention I guess?)
 		if !ok {
 			mod.bot.WriteMessage(mod.Config.Subscription.Messages[messageID])
@@ -155,27 +147,27 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 		}
 		// Check for variations, either by streak or gifted
 		if sub.IsGift {
-			for variationIndex, variation := range mod.Config.Subscription.Variations {
+			for _, variation := range mod.Config.Subscription.Variations {
 				if variation.IsGifted != nil && *variation.IsGifted {
+					// Get random template from variations
+					messageID = rand.Intn(len(variation.Messages))
 					// Make sure template is valid
-					if varTemplates, ok := mod.templates.subscription.variations[variationIndex]; ok {
-						if temp, ok := varTemplates[messageID]; ok {
-							tpl = temp
-							break
-						}
+					if temp, ok := mod.templates[templateTypeSubscription][variation.Messages[messageID]]; ok {
+						tpl = temp
+						break
 					}
 				}
 			}
 		} else if sub.DurationMonths > 0 {
 			minMonths := -1
-			for variationIndex, variation := range mod.Config.Subscription.Variations {
+			for _, variation := range mod.Config.Subscription.Variations {
 				if variation.MinStreak != nil && sub.DurationMonths >= *variation.MinStreak && sub.DurationMonths >= minMonths {
+					// Get random template from variations
+					messageID = rand.Intn(len(variation.Messages))
 					// Make sure template is valid
-					if varTemplates, ok := mod.templates.subscription.variations[variationIndex]; ok {
-						if temp, ok := varTemplates[messageID]; ok {
-							tpl = temp
-							minMonths = *variation.MinStreak
-						}
+					if temp, ok := mod.templates[templateTypeSubscription][variation.Messages[messageID]]; ok {
+						tpl = temp
+						minMonths = *variation.MinStreak
 					}
 				}
 			}
@@ -253,7 +245,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			if !mod.Config.Follow.Enabled {
 				return
 			}
-			// Parse as follow event
+			// Parse as a follow event
 			var followEv helix.EventSubChannelFollowEvent
 			err := json.Unmarshal(ev.Event, &followEv)
 			if err != nil {
@@ -263,7 +255,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			// Pick a random message
 			messageID := rand.Intn(len(mod.Config.Follow.Messages))
 			// Pick compiled template or fallback to plain text
-			if tpl, ok := mod.templates.follow.messages[messageID]; ok {
+			if tpl, ok := mod.templates[templateTypeFollow][mod.Config.Follow.Messages[messageID]]; ok {
 				writeTemplate(bot, tpl, &followEv)
 			} else {
 				bot.WriteMessage(mod.Config.Follow.Messages[messageID])
@@ -283,7 +275,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			}
 			// Pick a random message from base set
 			messageID := rand.Intn(len(mod.Config.Raid.Messages))
-			tpl, ok := mod.templates.raid.messages[messageID]
+			tpl, ok := mod.templates[templateTypeRaid][mod.Config.Raid.Messages[messageID]]
 			if !ok {
 				// Broken template!
 				mod.bot.WriteMessage(mod.Config.Raid.Messages[messageID])
@@ -292,14 +284,13 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			// If we have variations, loop through all the available variations and pick the one with the highest minimum viewers that are met
 			if len(mod.Config.Raid.Variations) > 0 {
 				minViewers := -1
-				for variationIndex, variation := range mod.Config.Raid.Variations {
+				for _, variation := range mod.Config.Raid.Variations {
 					if variation.MinViewers != nil && *variation.MinViewers > minViewers && raidEv.Viewers >= *variation.MinViewers {
+						messageID = rand.Intn(len(variation.Messages))
 						// Make sure the template is valid
-						if varTemplates, ok := mod.templates.raid.variations[variationIndex]; ok {
-							if temp, ok := varTemplates[messageID]; ok {
-								tpl = temp
-								minViewers = *variation.MinViewers
-							}
+						if temp, ok := mod.templates[templateTypeRaid][variation.Messages[messageID]]; ok {
+							tpl = temp
+							minViewers = *variation.MinViewers
 						}
 					}
 				}
@@ -320,7 +311,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			}
 			// Pick a random message from base set
 			messageID := rand.Intn(len(mod.Config.Cheer.Messages))
-			tpl, ok := mod.templates.cheer.messages[messageID]
+			tpl, ok := mod.templates[templateTypeCheer][mod.Config.Cheer.Messages[messageID]]
 			if !ok {
 				// Broken template!
 				mod.bot.WriteMessage(mod.Config.Raid.Messages[messageID])
@@ -329,14 +320,13 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			// If we have variations, loop through all the available variations and pick the one with the highest minimum amount that is met
 			if len(mod.Config.Cheer.Variations) > 0 {
 				minAmount := -1
-				for variationIndex, variation := range mod.Config.Cheer.Variations {
+				for _, variation := range mod.Config.Cheer.Variations {
 					if variation.MinAmount != nil && *variation.MinAmount > minAmount && cheerEv.Bits >= *variation.MinAmount {
+						messageID = rand.Intn(len(variation.Messages))
 						// Make sure the template is valid
-						if varTemplates, ok := mod.templates.cheer.variations[variationIndex]; ok {
-							if temp, ok := varTemplates[messageID]; ok {
-								tpl = temp
-								minAmount = *variation.MinAmount
-							}
+						if temp, ok := mod.templates[templateTypeCheer][variation.Messages[messageID]]; ok {
+							tpl = temp
+							minAmount = *variation.MinAmount
 						}
 					}
 				}
@@ -383,7 +373,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			}
 			// Pick a random message from base set
 			messageID := rand.Intn(len(mod.Config.GiftSub.Messages))
-			tpl, ok := mod.templates.gift.messages[messageID]
+			tpl, ok := mod.templates[templateTypeGift][mod.Config.GiftSub.Messages[messageID]]
 			if !ok {
 				// Broken template!
 				mod.bot.WriteMessage(mod.Config.GiftSub.Messages[messageID])
@@ -392,27 +382,25 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			// If we have variations, loop through all the available variations and pick the one with the highest minimum cumulative total that are met
 			if len(mod.Config.GiftSub.Variations) > 0 {
 				if giftEv.IsAnonymous {
-					for variationIndex, variation := range mod.Config.GiftSub.Variations {
+					for _, variation := range mod.Config.GiftSub.Variations {
 						if variation.IsAnonymous != nil && *variation.IsAnonymous {
+							messageID = rand.Intn(len(variation.Messages))
 							// Make sure template is valid
-							if varTemplates, ok := mod.templates.gift.variations[variationIndex]; ok {
-								if temp, ok := varTemplates[messageID]; ok {
-									tpl = temp
-									break
-								}
+							if temp, ok := mod.templates[templateTypeGift][variation.Messages[messageID]]; ok {
+								tpl = temp
+								break
 							}
 						}
 					}
 				} else if giftEv.CumulativeTotal > 0 {
 					minCumulative := -1
-					for variationIndex, variation := range mod.Config.GiftSub.Variations {
+					for _, variation := range mod.Config.GiftSub.Variations {
 						if variation.MinCumulative != nil && *variation.MinCumulative > minCumulative && giftEv.CumulativeTotal >= *variation.MinCumulative {
+							messageID = rand.Intn(len(variation.Messages))
 							// Make sure the template is valid
-							if varTemplates, ok := mod.templates.gift.variations[variationIndex]; ok {
-								if temp, ok := varTemplates[messageID]; ok {
-									tpl = temp
-									minCumulative = *variation.MinCumulative
-								}
+							if temp, ok := mod.templates[templateTypeGift][variation.Messages[messageID]]; ok {
+								tpl = temp
+								minCumulative = *variation.MinCumulative
 							}
 						}
 					}
@@ -432,63 +420,58 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 }
 
 func (m *BotAlertsModule) compileTemplates() {
-	for index, msg := range m.Config.Follow.Messages {
-		m.templates.follow.messages = make(map[int]*template.Template)
-		m.addTemplate(m.templates.follow.messages, index, msg)
+	m.templates = templateCacheMap{
+		templateTypeSubscription: make(templateCache),
+		templateTypeFollow:       make(templateCache),
+		templateTypeRaid:         make(templateCache),
+		templateTypeCheer:        make(templateCache),
+		templateTypeGift:         make(templateCache),
 	}
-	for index, msg := range m.Config.Subscription.Messages {
-		m.templates.subscription.messages = make(map[int]*template.Template)
-		m.addTemplate(m.templates.subscription.messages, index, msg)
+
+	for _, msg := range m.Config.Follow.Messages {
+		m.addTemplate(m.templates[templateTypeFollow], msg)
 	}
-	for varIndex, variation := range m.Config.Subscription.Variations {
-		m.templates.subscription.variations = make(map[int]map[int]*template.Template)
-		for index, msg := range variation.Messages {
-			m.templates.subscription.variations[varIndex] = make(map[int]*template.Template)
-			m.addTemplate(m.templates.subscription.variations[varIndex], index, msg)
+	for _, msg := range m.Config.Subscription.Messages {
+		m.addTemplate(m.templates[templateTypeSubscription], msg)
+	}
+	for _, variation := range m.Config.Subscription.Variations {
+		for _, msg := range variation.Messages {
+			m.addTemplate(m.templates[templateTypeSubscription], msg)
 		}
 	}
-	for index, msg := range m.Config.Raid.Messages {
-		m.templates.raid.messages = make(map[int]*template.Template)
-		m.addTemplate(m.templates.raid.messages, index, msg)
+	for _, msg := range m.Config.Raid.Messages {
+		m.addTemplate(m.templates[templateTypeRaid], msg)
 	}
-	for varIndex, variation := range m.Config.Raid.Variations {
-		m.templates.raid.variations = make(map[int]map[int]*template.Template)
-		for index, msg := range variation.Messages {
-			m.templates.raid.variations[varIndex] = make(map[int]*template.Template)
-			m.addTemplate(m.templates.raid.variations[varIndex], index, msg)
+	for _, variation := range m.Config.Raid.Variations {
+		for _, msg := range variation.Messages {
+			m.addTemplate(m.templates[templateTypeRaid], msg)
 		}
 	}
-	for index, msg := range m.Config.Cheer.Messages {
-		m.templates.cheer.messages = make(map[int]*template.Template)
-		m.addTemplate(m.templates.cheer.messages, index, msg)
+	for _, msg := range m.Config.Cheer.Messages {
+		m.addTemplate(m.templates[templateTypeCheer], msg)
 	}
-	for varIndex, variation := range m.Config.Cheer.Variations {
-		m.templates.cheer.variations = make(map[int]map[int]*template.Template)
-		for index, msg := range variation.Messages {
-			m.templates.cheer.variations[varIndex] = make(map[int]*template.Template)
-			m.addTemplate(m.templates.cheer.variations[varIndex], index, msg)
+	for _, variation := range m.Config.Cheer.Variations {
+		for _, msg := range variation.Messages {
+			m.addTemplate(m.templates[templateTypeCheer], msg)
 		}
 	}
-	for index, msg := range m.Config.GiftSub.Messages {
-		m.templates.gift.messages = make(map[int]*template.Template)
-		m.addTemplate(m.templates.gift.messages, index, msg)
+	for _, msg := range m.Config.GiftSub.Messages {
+		m.addTemplate(m.templates[templateTypeGift], msg)
 	}
-	for varIndex, variation := range m.Config.GiftSub.Variations {
-		m.templates.gift.variations = make(map[int]map[int]*template.Template)
-		for index, msg := range variation.Messages {
-			m.templates.gift.variations[varIndex] = make(map[int]*template.Template)
-			m.addTemplate(m.templates.gift.variations[varIndex], index, msg)
+	for _, variation := range m.Config.GiftSub.Variations {
+		for _, msg := range variation.Messages {
+			m.addTemplate(m.templates[templateTypeGift], msg)
 		}
 	}
 }
 
-func (m *BotAlertsModule) addTemplate(templateList map[int]*template.Template, id int, msg string) {
+func (m *BotAlertsModule) addTemplate(templateList templateCache, msg string) {
 	tpl, err := template.New("").Funcs(m.bot.customFunctions).Funcs(sprig.TxtFuncMap()).Parse(msg)
 	if err != nil {
 		m.bot.logger.Error("error compiling template", zap.Error(err))
 		return
 	}
-	templateList[id] = tpl
+	templateList[msg] = tpl
 }
 
 func (m *BotAlertsModule) Close() {
