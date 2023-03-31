@@ -33,16 +33,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Process version tag
-        id: semver
-        uses: Steffo99/actions-semver@v0.2.0
-        with:
-          string: ${{ github.ref_name }}
+        id: version
+        uses: ncipollo/semantic-version-action@v1
       - name: Update wails.json fileVersion
         uses: jossef/action-set-json-field@v2.1
         with:
           file: wails.json
           field: info.fileVersion
-          value: "${{ steps.version.outputs.core }}.0"
+          value: "${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.version.outputs.patch }}.${{ steps.version.outputs.micro_patch }}"
       - name: Update wails.json productVersion
         uses: jossef/action-set-json-field@v2.1
         with:
