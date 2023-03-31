@@ -114,7 +114,8 @@ func NewManager(db *database.LocalDBClient, twitchManager *twitch.Manager, logge
 		if err != nil {
 			return nil, err
 		}
-		loyalty.points.SetKey(k, entry)
+
+		loyalty.points.SetKey(k[len(PointsPrefix):], entry)
 	}
 
 	// SubscribePrefix for changes

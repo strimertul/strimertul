@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [current]
 
+### Fixed
+
+- The "Give points" dialog will now convert mixed case names to be lowercase instead of adding broken entries.
+- The loyalty points entry were assigned incorrectly upon startup, this has been fixed
+
 ## [3.1.3] - 2023-03-14
 
 ### Changed
