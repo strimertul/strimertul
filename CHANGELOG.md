@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [current]
 
+## [3.1.4] - 2023-03-31
+
 ### Fixed
 
 - The "Give points" dialog will now convert mixed case names to be lowercase instead of adding broken entries.
@@ -212,7 +214,8 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 
 - Stulbe integration for alerts
 
-[current]: https://github.com/strimertul/strimertul/compare/v3.1.3...HEAD
+[current]: https://github.com/strimertul/strimertul/compare/v3.1.4...HEAD
+[3.1.4]: https://github.com/strimertul/strimertul/compare/v3.1.3...v3.1.4
 [3.1.3]: https://github.com/strimertul/strimertul/compare/v3.1.2...v3.1.3
 [3.1.2]: https://github.com/strimertul/strimertul/compare/v3.1.1...v3.1.2
 [3.1.1]: https://github.com/strimertul/strimertul/compare/v3.1.0...v3.1.1
