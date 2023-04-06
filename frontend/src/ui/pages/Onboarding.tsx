@@ -716,6 +716,17 @@ export default function OnboardingPage() {
             <HeroTitle>{t('pages.onboarding.welcome-header')}</HeroTitle>
             <HeroContent>
               <TextBlock>{t('pages.onboarding.welcome-p1')}</TextBlock>
+              <TextBlock>
+                <Trans
+                  t={t}
+                  i18nKey={'pages.onboarding.welcome-guide'}
+                  components={{
+                    g: (
+                      <BrowserLink href="https://strimertul.stream/guide/getting-started/first-time-setup/" />
+                    ),
+                  }}
+                />
+              </TextBlock>
               <TextBlock css={{ color: '$gray11' }}>
                 {t('pages.onboarding.welcome-p2')}
               </TextBlock>

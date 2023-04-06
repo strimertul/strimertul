@@ -278,7 +278,10 @@
           "subscrition-gift_other": "<n>{{name}}</n> gifted <c>{{count}}</c> subscriptions <t>(Tier {{tier}})</t>"
         },
         "replay": "Replay event"
-      }
+      },
+      "quick-links": "Useful links",
+      "link-user-guide": "User guide",
+      "link-api": "API reference"
     },
     "onboarding": {
       "welcome-header": "Welcome to {{APPNAME}}",
@@ -303,7 +306,8 @@
       "done-p1": "That should be enough for now. You can always change any option later, including custom configurations not covered in this procedure (e.g. using a different Twitch account for the bot).",
       "done-p2": "If you have questions or issues, please reach out at any of these places:",
       "done-button": "Complete onboarding",
-      "done-p3": "Click the button below to finish the onboarding and go to {{APPNAME}}'s dashboard."
+      "done-p3": "Click the button below to finish the onboarding and go to {{APPNAME}}'s dashboard.",
+      "welcome-guide": "It might be a good idea to have the {{APPNAME}} user guide open in case you have trouble with any of the following steps, you can open it by <g>clicking here</g>."
     },
     "uiconfig": {
       "title": "User interface settings",

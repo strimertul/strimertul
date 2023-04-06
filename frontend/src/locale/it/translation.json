@@ -162,7 +162,10 @@
           "subscrition-gift_other": "<n>{{name}}</n> ha regalato <c>{{count}}</c> abbonamenti <t>(Livello {{tier}})</t>"
         },
         "replay": "Ripeti evento"
-      }
+      },
+      "link-api": "Documentazione API",
+      "link-user-guide": "Guida utente",
+      "quick-links": "Link utili"
     },
     "debug": {
       "big-ass-warning": "L'utilizzo di questa pagina può danneggiare gravemente il tuo database. \nSpero tu sappia cosa stai facendo!",
@@ -300,7 +303,8 @@
       "twitch-p1": "Per configurare Twitch dovrai creare un'applicazione sul portale per gli sviluppatori. Segui le istruzioni di seguito o fai clic sul pulsante in basso per saltare questo passaggio.",
       "twitch-ev-p1": "Ora che hai creato un'app, devi autenticarci il tuo account Twitch in modo che possiamo accedere a dati come il nome del tuo canale o eventi come nuovi follower o raid.",
       "done-p2": "In caso di domande o problemi, contattaci in uno di questi modi:",
-      "done-header": "È tutto pronto!"
+      "done-header": "È tutto pronto!",
+      "welcome-guide": "Sarebbe una buona idea tenere aperta la guida utente di {{APPNAME}} nel caso incontrassi difficoltà con uno dei seguenti passaggi, puoi aprirla <g>cliccando qui</g>."
     },
     "strimertul": {
       "credits-header": "Ringraziamenti",

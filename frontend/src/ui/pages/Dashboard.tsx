@@ -8,7 +8,6 @@ import {
 import { useLiveKey } from '~/lib/react';
 import { useAppSelector } from '~/store';
 import { PageContainer, SectionHeader, styled, TextBlock } from '../theme';
-import WIPNotice from '../components/utils/WIPNotice';
 import BrowserLink from '../components/BrowserLink';
 import Scrollbar from '../components/utils/Scrollbar';
 
@@ -101,6 +100,14 @@ const TwitchEventActions = styled('div', {
 const TwitchEventTime = styled('time', {
   color: '$gray10',
   fontSize: '13px',
+});
+
+const UsefulLinksMenu = styled('ul', {
+  margin: '0',
+  listStyleType: 'square',
+  li: {
+    padding: '3px',
+  },
 });
 
 const supportedMessages: EventSubNotificationType[] = [
@@ -411,9 +418,23 @@ function TwitchSection() {
 }
 
 export default function Dashboard(): React.ReactElement {
+  const { t } = useTranslation();
   return (
     <PageContainer>
       <TwitchSection />
+      <SectionHeader>{t('pages.dashboard.quick-links')}</SectionHeader>
+      <UsefulLinksMenu>
+        <li>
+          <BrowserLink href="https://strimertul.stream/guide/">
+            {t('pages.dashboard.link-user-guide')}
+          </BrowserLink>
+        </li>
+        <li>
+          <BrowserLink href="https://strimertul.stream/api/v31/">
+            {t('pages.dashboard.link-api')}
+          </BrowserLink>
+        </li>
+      </UsefulLinksMenu>
     </PageContainer>
   );
 }
