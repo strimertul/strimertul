@@ -234,11 +234,9 @@ function ExtensionListItem(props: ExtensionListItemProps) {
               size="small"
               onClick={() => props.onToggleEnable()}
             >
-              {t(
-                props.entry.options.enabled
-                  ? 'form-actions.disable'
-                  : 'form-actions.enable',
-              )}
+              {props.entry.options.enabled
+                ? t('form-actions.disable')
+                : t('form-actions.enable')}
             </Button>
             {props.enabled ? (
               <>
@@ -247,11 +245,9 @@ function ExtensionListItem(props: ExtensionListItemProps) {
                   size="small"
                   onClick={() => props.onToggleStatus()}
                 >
-                  {t(
-                    isRunning(props.status)
-                      ? 'form-actions.stop'
-                      : 'form-actions.start',
-                  )}
+                  {isRunning(props.status)
+                    ? t('form-actions.stop')
+                    : t('form-actions.start')}
                 </Button>
               </>
             ) : null}

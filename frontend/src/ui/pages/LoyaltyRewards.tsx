@@ -153,7 +153,9 @@ function RewardItem({
               size="small"
               onClick={() => (onToggle ? onToggle() : null)}
             >
-              {t(item.enabled ? 'form-actions.disable' : 'form-actions.enable')}
+              {item.enabled
+                ? t('form-actions.disable')
+                : t('form-actions.enable')}
             </Button>
             <Button
               styling="multi"
@@ -231,7 +233,9 @@ function GoalItem({
               size="small"
               onClick={() => (onToggle ? onToggle() : null)}
             >
-              {t(item.enabled ? 'form-actions.disable' : 'form-actions.enable')}
+              {item.enabled
+                ? t('form-actions.disable')
+                : t('form-actions.enable')}
             </Button>
             <Button
               styling="multi"
