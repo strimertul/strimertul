@@ -31,7 +31,7 @@ func initLogger(level zapcore.Level) {
 	fileLogger := zapcore.NewCore(
 		zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
 		zapcore.AddSync(&lumberjack.Logger{
-			Filename:   "strimertul.log",
+			Filename:   logFilename,
 			MaxSize:    500,
 			MaxBackups: 3,
 			MaxAge:     28,

@@ -56,6 +56,20 @@ export namespace helix {
 
 export namespace main {
 	
+	export class BackupInfo {
+	    filename: string;
+	    date: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new BackupInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.filename = source["filename"];
+	        this.date = source["date"];
+	    }
+	}
 	export class LogEntry {
 	    caller: string;
 	    time: string;

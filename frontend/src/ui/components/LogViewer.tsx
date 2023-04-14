@@ -108,6 +108,7 @@ const LevelToggle = styled(MultiToggleItem, {
 
 interface LogItemProps {
   data: ProcessedLogEntry;
+  expandDefault?: boolean;
 }
 
 const LogEntryContainer = styled('div', {
@@ -231,12 +232,12 @@ const LogDetailKey = styled('div', {
 });
 const LogDetailValue = styled('div', { flex: '1' });
 
-function LogItem({ data }: LogItemProps) {
+export function LogItem({ data, expandDefault }: LogItemProps) {
   const { t } = useTranslation();
   const levelStyle = isSupportedLevel(data.level) ? data.level : null;
   const details = Object.entries(data.data).filter(([key]) => key.length > 1);
   const [copied, setCopied] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(expandDefault ?? false);
   const copyToClipboard = async () => {
     await navigator.clipboard.writeText(JSON.stringify(data.data));
     setCopied(true);

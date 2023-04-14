@@ -10,6 +10,10 @@ export function GetAppVersion() {
   return window['go']['main']['App']['GetAppVersion']();
 }
 
+export function GetBackups() {
+  return window['go']['main']['App']['GetBackups']();
+}
+
 export function GetDocumentation() {
   return window['go']['main']['App']['GetDocumentation']();
 }
@@ -30,6 +34,14 @@ export function GetTwitchLoggedUser() {
   return window['go']['main']['App']['GetTwitchLoggedUser']();
 }
 
+export function IsFatalError() {
+  return window['go']['main']['App']['IsFatalError']();
+}
+
 export function IsServerReady() {
   return window['go']['main']['App']['IsServerReady']();
+}
+
+export function SendCrashReport(arg1, arg2) {
+  return window['go']['main']['App']['SendCrashReport'](arg1, arg2);
 }

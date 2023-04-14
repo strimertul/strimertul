@@ -339,6 +339,31 @@
       "error-alert": "Error details for {{name}}",
       "incompatible-body": "This extension requires {{APPNAME}} version {{version}} and up, you are currently running {{appversion}}, which may be too old and miss required features",
       "incompatible-warning": "This extension is not compatible"
+    },
+    "crash": {
+      "fatal-message": "A fatal error has occurred and strimertül has stopped working, check the details below:",
+      "action-header": "What to do?",
+      "action-submit-line": "Consider submitting this report using the Report button below so someone can look at it.",
+      "action-recover-line": "If this error happens every time you start the app or if you've been instructed to, click the Recovery button to restore the database to an earlier backup.",
+      "action-log-line": "Logs and other crash related info can be found in the log files <m>{{A}}</m> and <m>{{B}}</m>.",
+      "button-report": "Report this error",
+      "button-recovery": "Recovery options",
+      "app-log-header": "Application logs for this run",
+      "report": {
+        "button-send": "Send report",
+        "dialog-title": "Report this error",
+        "thanks-line": "Thanks for choosing to submit this error! If you want, please write below what you were trying to do or anything else that you think might help.",
+        "additional-label": "Additional info (optional)",
+        "text-placeholder": "What were you doing before this happened?",
+        "email-label": "Include email address (if you want to be contacted about this)",
+        "email-placeholder": "Write your email address here",
+        "transparency-line": "When clicking \"Send report\", the following info will be collected and sent:",
+        "transparency-files": "The contents of <m>{{A}}</m> and <m>{{B}}</m>",
+        "transparency-info": "Information about the error that triggered this crash",
+        "transparency-user": "The additional info below, if any was provided",
+        "error-message": "The crash report could not be submitted because of a remote error: {{error}}",
+        "post-report": "The error was successfully reported and has been assigned the following code: <m>{{code}}</m> If you haven't provided an email and want to follow up on this, use that code when opening an issue or reaching out."
+      }
     }
   },
   "form-actions": {

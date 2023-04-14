@@ -1,6 +1,6 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'import'],
+  plugins: ['react-refresh', '@typescript-eslint', 'import'],
   extends: [
     'airbnb-base',
     'plugin:@typescript-eslint/recommended',
@@ -28,6 +28,7 @@ module.exports = {
     '@typescript-eslint/no-unsafe-return': ['error'],
     '@typescript-eslint/switch-exhaustiveness-check': ['error'],
     '@typescript-eslint/no-floating-promises': ['error', { ignoreVoid: true }],
+    'react-refresh/only-export-components': 'warn'
   },
   settings: {
     'import/resolver': {

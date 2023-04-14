@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 import { keyframes } from '@stitches/react';
 import { Trans, useTranslation } from 'react-i18next';
-import {
-  DiscordLogoIcon,
-  EnvelopeClosedIcon,
-  GitHubLogoIcon,
-} from '@radix-ui/react-icons';
 import { useNavigate } from 'react-router-dom';
 
 // @ts-expect-error Asset import
@@ -13,6 +8,7 @@ import logo from '~/assets/icon-logo.svg';
 
 import { APPNAME, PageContainer, PageHeader, styled } from '../theme';
 import BrowserLink from '../components/BrowserLink';
+import Channels from '../components/utils/Channels';
 
 const gradientAnimation = keyframes({
   '0%': {
@@ -66,12 +62,16 @@ const SectionParagraph = styled('p', {
   lineHeight: '1.5',
   paddingBottom: '1rem',
 });
-const ChannelList = styled('ul', { listStyle: 'none', padding: 0, margin: 0 });
-const Channel = styled('li', {
+export const ChannelList = styled('ul', {
+  listStyle: 'none',
+  padding: 0,
+  margin: 0,
+});
+export const Channel = styled('li', {
   marginBottom: '1rem',
   fontSize: '1rem',
 });
-const ChannelLink = styled(BrowserLink, {
+export const ChannelLink = styled(BrowserLink, {
   textDecoration: 'none',
   color: '$teal11',
   display: 'inline-flex',
@@ -82,29 +82,6 @@ const ChannelLink = styled(BrowserLink, {
     textDecoration: 'underline',
   },
 });
-
-export const channels = (
-  <ChannelList>
-    <Channel>
-      <ChannelLink href="https://github.com/strimertul/strimertul/issues">
-        <GitHubLogoIcon width={24} height={24} />
-        github.com/strimertul/strimertul/issues
-      </ChannelLink>
-    </Channel>
-    <Channel>
-      <ChannelLink href="https://nebula.cafe/discord">
-        <DiscordLogoIcon width={24} height={24} />
-        nebula.cafe/discord
-      </ChannelLink>
-    </Channel>
-    <Channel>
-      <ChannelLink href="mailto:strimertul@nebula.cafe">
-        <EnvelopeClosedIcon width={24} height={24} />
-        strimertul@nebula.cafe
-      </ChannelLink>
-    </Channel>
-  </ChannelList>
-);
 
 export default function StrimertulPage(): React.ReactElement {
   const navigate = useNavigate();
@@ -145,7 +122,7 @@ export default function StrimertulPage(): React.ReactElement {
         <SectionParagraph css={{ paddingBottom: 0 }}>
           {t('pages.strimertul.need-help-p1')}
         </SectionParagraph>
-        {channels}
+        {Channels}
       </Section>
       <Section>
         <SectionHeader>{t('pages.strimertul.credits-header')}</SectionHeader>

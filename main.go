@@ -25,6 +25,12 @@ var json = jsoniter.ConfigFastest
 
 var appVersion = "v0.0.0-UNKNOWN"
 
+const (
+	crashReportURL = "https://crash.strimertul.stream/upload"
+	logFilename    = "strimertul.log"
+	panicFilename  = "strimertul-panic.log"
+)
+
 //go:embed frontend/dist
 var frontend embed.FS
 
@@ -85,9 +91,10 @@ func main() {
 				level = zapcore.InfoLevel
 			}
 			initLogger(level)
+			logger.Info("app started", zap.String("version", appVersion))
 
 			// Create file for panics
-			panicLog, err = os.OpenFile("strimertul-panic.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o666)
+			panicLog, err = os.OpenFile(panicFilename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o666)
 			if err != nil {
 				logger.Warn("could not create panic log", zap.Error(err))
 			} else {
@@ -155,13 +162,6 @@ func warnOnError(err error, text string, fields ...zap.Field) {
 	if err != nil {
 		fields = append(fields, zap.Error(err))
 		logger.Warn(text, fields...)
-	}
-}
-
-func failOnError(err error, text string, fields ...zap.Field) {
-	if err != nil {
-		fields = append(fields, zap.Error(err))
-		logger.Fatal(text, fields...)
 	}
 }
 

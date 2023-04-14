@@ -1,7 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"errors"
+	"fmt"
+	"io"
+	"mime/multipart"
+	nethttp "net/http"
+	"os"
 	"runtime/debug"
 	"strconv"
 
@@ -21,10 +28,12 @@ import (
 
 // App struct
 type App struct {
-	ctx       context.Context
-	cliParams *cli.Context
-	driver    database.DatabaseDriver
-	ready     *sync.RWSync[bool]
+	ctx           context.Context
+	cliParams     *cli.Context
+	driver        database.DatabaseDriver
+	ready         *sync.RWSync[bool]
+	isFatalError  *sync.RWSync[bool]
+	backupOptions database.BackupOptions
 
 	db             *database.LocalDBClient
 	twitchManager  *twitch.Manager
@@ -35,50 +44,79 @@ type App struct {
 // NewApp creates a new App application struct
 func NewApp(cliParams *cli.Context) *App {
 	return &App{
-		cliParams: cliParams,
-		ready:     sync.NewRWSync(false),
+		cliParams:    cliParams,
+		ready:        sync.NewRWSync(false),
+		isFatalError: sync.NewRWSync(false),
 	}
 }
 
 // startup is called when the app starts
 func (a *App) startup(ctx context.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			a.stop(ctx)
+			_ = logger.Sync()
+			switch v := r.(type) {
+			case error:
+				a.showFatalError(v, v.Error())
+			default:
+				a.showFatalError(errors.New(fmt.Sprint(v)), "Runtime error encountered")
+			}
+		}
+	}()
+
 	a.ctx = ctx
-
-	// Make KV hub
-	var err error
-	a.driver, err = database.GetDatabaseDriver(a.cliParams)
-	failOnError(err, "error opening database")
-
-	// Start database backup task
-	backupOpts := database.BackupOptions{
+	a.backupOptions = database.BackupOptions{
 		BackupDir:      a.cliParams.String("backup-dir"),
 		BackupInterval: a.cliParams.Int("backup-interval"),
 		MaxBackups:     a.cliParams.Int("max-backups"),
 	}
-	if backupOpts.BackupInterval > 0 {
-		go BackupTask(a.driver, backupOpts)
+
+	// Make KV hub
+	var err error
+	a.driver, err = database.GetDatabaseDriver(a.cliParams)
+	if err != nil {
+		a.showFatalError(err, "Error opening database")
+		return
+	}
+
+	// Start database backup task
+	if a.backupOptions.BackupInterval > 0 {
+		go BackupTask(a.driver, a.backupOptions)
 	}
 
 	hub := a.driver.Hub()
 	go hub.Run()
 
 	a.db, err = database.NewLocalClient(hub, logger)
-	failOnError(err, "failed to initialize database module")
+	if err != nil {
+		a.showFatalError(err, "Failed to initialize database module")
+		return
+	}
 
 	// Set meta keys
 	_ = a.db.PutKey("stul-meta/version", appVersion)
 
 	// Create logger and endpoints
 	a.httpServer, err = http.NewServer(a.db, logger)
-	failOnError(err, "could not initialize http server")
+	if err != nil {
+		a.showFatalError(err, "Could not initialize http server")
+		return
+	}
 
 	// Create twitch client
 	a.twitchManager, err = twitch.NewManager(a.db, a.httpServer, logger)
-	failOnError(err, "could not initialize twitch client")
+	if err != nil {
+		a.showFatalError(err, "Could not initialize twitch client")
+		return
+	}
 
 	// Initialize loyalty system
 	a.loyaltyManager, err = loyalty.NewManager(a.db, a.twitchManager, logger)
-	failOnError(err, "could not initialize loyalty manager")
+	if err != nil {
+		a.showFatalError(err, "Could not initialize loyalty manager")
+		return
+	}
 
 	a.ready.Set(true)
 	runtime.EventsEmit(ctx, "ready", true)
@@ -92,7 +130,10 @@ func (a *App) startup(ctx context.Context) {
 	}()
 
 	// Run HTTP server
-	failOnError(a.httpServer.Listen(), "HTTP server stopped")
+	if err := a.httpServer.Listen(); err != nil {
+		a.showFatalError(err, "HTTP server stopped")
+		return
+	}
 }
 
 func (a *App) stop(context.Context) {
@@ -122,6 +163,10 @@ func (a *App) IsServerReady() bool {
 	return a.ready.Get()
 }
 
+func (a *App) IsFatalError() bool {
+	return a.isFatalError.Get()
+}
+
 func (a *App) GetKilovoltBind() string {
 	if a.httpServer == nil {
 		return ""
@@ -145,6 +190,78 @@ func (a *App) GetDocumentation() map[string]docs.KeyObject {
 	return docs.Keys
 }
 
+func (a *App) SendCrashReport(errorData string, info string) (string, error) {
+	var b bytes.Buffer
+	w := multipart.NewWriter(&b)
+
+	// Add text fields
+	if err := w.WriteField("error", errorData); err != nil {
+		logger.Error("could not encode field error for crash report", zap.Error(err))
+	}
+	if len(info) > 0 {
+		if err := w.WriteField("info", info); err != nil {
+			logger.Error("could not encode field info for crash report", zap.Error(err))
+		}
+	}
+
+	// Add log files
+	_ = logger.Sync()
+	addFile(w, "log", logFilename)
+	addFile(w, "paniclog", panicFilename)
+
+	if err := w.Close(); err != nil {
+		logger.Error("could not prepare request for crash report", zap.Error(err))
+		return "", err
+	}
+
+	resp, err := nethttp.Post(crashReportURL, w.FormDataContentType(), &b)
+	if err != nil {
+		logger.Error("could not send crash report", zap.Error(err))
+		return "", err
+	}
+
+	// Check the response
+	if resp.StatusCode != nethttp.StatusOK {
+		byt, _ := io.ReadAll(resp.Body)
+		logger.Error("crash report server returned error", zap.String("status", resp.Status), zap.String("response", string(byt)))
+		return "", fmt.Errorf("crash report server returned error: %s - %s", resp.Status, string(byt))
+	}
+
+	byt, err := io.ReadAll(resp.Body)
+	return string(byt), err
+}
+
+type BackupInfo struct {
+	Filename string `json:"filename"`
+	Date     int64  `json:"date"`
+}
+
+func (a *App) GetBackups() (list []BackupInfo) {
+	files, err := os.ReadDir(a.backupOptions.BackupDir)
+	if err != nil {
+		logger.Error("could not read backup directory", zap.Error(err))
+		return nil
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		info, err := file.Info()
+		if err != nil {
+			logger.Error("could not get info for backup file", zap.Error(err))
+			continue
+		}
+
+		list = append(list, BackupInfo{
+			Filename: file.Name(),
+			Date:     info.ModTime().UnixMilli(),
+		})
+	}
+	return
+}
+
 type VersionInfo struct {
 	Release   string           `json:"release"`
 	BuildInfo *debug.BuildInfo `json:"build"`
@@ -155,5 +272,33 @@ func (a *App) GetAppVersion() VersionInfo {
 	return VersionInfo{
 		Release:   appVersion,
 		BuildInfo: info,
+	}
+}
+
+func (a *App) showFatalError(err error, text string, fields ...zap.Field) {
+	if err != nil {
+		fields = append(fields, zap.Error(err))
+		fields = append(fields, zap.String("Z", string(debug.Stack())))
+		logger.Error(text, fields...)
+		runtime.EventsEmit(a.ctx, "fatalError")
+		a.isFatalError.Set(true)
+	}
+}
+
+func addFile(m *multipart.Writer, field string, filename string) {
+	logfile, err := m.CreateFormFile(field, filename)
+	if err != nil {
+		logger.Error("could not encode field log for crash report", zap.Error(err))
+		return
+	}
+
+	file, err := os.Open(filename)
+	if err != nil {
+		logger.Error("could not open file for including in crash report", zap.Error(err), zap.String("file", filename))
+		return
+	}
+
+	if _, err = io.Copy(logfile, file); err != nil {
+		logger.Error("could not read from file for including in crash report", zap.Error(err), zap.String("file", filename))
 	}
 }

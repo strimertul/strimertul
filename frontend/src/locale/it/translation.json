@@ -392,6 +392,29 @@
       "error-alert": "Dettagli errore per {{name}}",
       "incompatible-body": "Questa estensione richiede {{APPNAME}} versione {{version}} o successive, al momento stai utilizzando {{appversion}} che potrebbe essere troppo vecchia e perciò senza alcune funzionalità richieste",
       "incompatible-warning": "Questa estensione non è compatibile"
+    },
+    "crash": {
+      "action-header": "Che fare?",
+      "action-recover-line": "Se questo errore si verifica ogni volta che avvii l'app o se ti è stato richiesto di farlo, fai clic sul pulsante Ripristino per recuperare il database da un backup precedente.",
+      "action-log-line": "I log e altre informazioni relative agli arresti anomali sono disponibili nei file di log <m>{{A}}</m> e <m>{{B}}</m>.",
+      "action-submit-line": "Puoi inviare una segnalazione di questo arresto anomalo utilizzando il pulsante Segnala in basso in modo che qualcuno possa esaminarla.",
+      "app-log-header": "Log applicazione per questa esecuzione",
+      "button-recovery": "Menù ripristino",
+      "button-report": "Segnala questo errore",
+      "fatal-message": "Si è verificato un errore irreversibile e strimertül ha smesso di funzionare, ecco i dettagli:",
+      "report": {
+        "additional-label": "Info aggiuntive (opzionale)",
+        "button-send": "Invia segnalazione",
+        "dialog-title": "Segnala questo errore",
+        "text-placeholder": "Cosa stavi facendo nell'applicazione?",
+        "thanks-line": "Grazie per aver scelto di segnalare questo errore! \nSe vuoi, scrivi qui sotto cosa stavi cercando di fare o qualsiasi altra cosa che pensi possa essere d'aiuto.",
+        "email-label": "Includi una email (se vuoi essere contattato in merito)",
+        "email-placeholder": "Scrivi qui il tuo indirizzo email",
+        "transparency-files": "I contenuti di <m>{{A}}</m> e <m>{{B}}</m>",
+        "transparency-info": "Informazioni sull'errore specifico che ha causato il crash",
+        "transparency-line": "Facendo clic su \"Invia segnalazione\", verranno raccolte e inviate i seguenti dati:",
+        "transparency-user": "Le informazioni aggiuntive di seguito, se fornite"
+      }
     }
   },
   "time": {

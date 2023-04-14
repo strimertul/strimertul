@@ -10,7 +10,7 @@ export interface ProcessedLogEntry {
   data: object;
 }
 
-function processEntry({
+export function processEntry({
   time,
   caller,
   level,

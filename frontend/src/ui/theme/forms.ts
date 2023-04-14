@@ -53,6 +53,7 @@ const inputStyles = {
   padding: '0.5rem',
   borderRadius: theme.borderRadius.form,
   backgroundColor: '$gray2',
+  transition: 'all 80ms',
   '&:hover': {
     borderColor: '$teal7',
   },
@@ -88,6 +89,7 @@ export const Textarea = styled('textarea', {
   padding: '0.5rem',
   borderRadius: theme.borderRadius.form,
   backgroundColor: '$gray2',
+  transition: 'all 80ms',
   '&:hover': {
     borderColor: '$teal7',
   },
@@ -332,7 +334,8 @@ export const Checkbox = styled(CheckboxPrimitive.Root, {
   alignItems: 'center',
   justifyContent: 'center',
   border: '1px solid $gray6',
-  backgroundColor: '$gray4',
+  backgroundColor: '$gray3',
+  transition: 'all 60ms',
   '&:hover': {
     borderColor: '$teal6',
     backgroundColor: '$gray5',

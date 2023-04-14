@@ -23,6 +23,7 @@ import AlertContent from '../components/AlertContent';
 import BrowserLink from '../components/BrowserLink';
 import DefinitionTable from '../components/DefinitionTable';
 import RevealLink from '../components/utils/RevealLink';
+import Channels from '../components/utils/Channels';
 
 import {
   Button,
@@ -39,7 +40,6 @@ import {
   TextBlock,
 } from '../theme';
 import { Alert } from '../theme/alert';
-import { channels } from './Strimertul';
 
 const Container = styled('div', {
   display: 'flex',
@@ -582,7 +582,7 @@ function DoneStep() {
       <SectionHeader>{t('pages.onboarding.done-header')}</SectionHeader>
       <TextBlock>{t('pages.onboarding.done-p1')}</TextBlock>
       <TextBlock>{t('pages.onboarding.done-p2')}</TextBlock>
-      {channels}
+      {Channels}
       <TextBlock>{t('pages.onboarding.done-p3')}</TextBlock>
       <Button variation={'primary'} onClick={() => done()}>
         {t('pages.onboarding.done-button')}

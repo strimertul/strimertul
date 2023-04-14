@@ -8,6 +8,8 @@ export function AuthenticateKVClient(arg1:string):Promise<void>;
 
 export function GetAppVersion():Promise<main.VersionInfo>;
 
+export function GetBackups():Promise<Array<main.BackupInfo>>;
+
 export function GetDocumentation():Promise<{[key: string]: docs.KeyObject}>;
 
 export function GetKilovoltBind():Promise<string>;
@@ -18,4 +20,8 @@ export function GetTwitchAuthURL():Promise<string>;
 
 export function GetTwitchLoggedUser():Promise<helix.User>;
 
+export function IsFatalError():Promise<boolean>;
+
 export function IsServerReady():Promise<boolean>;
+
+export function SendCrashReport(arg1:string,arg2:string):Promise<string>;

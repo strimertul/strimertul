@@ -50,6 +50,9 @@ func (p *PebbleDatabase) Hub() *kv.Hub {
 }
 
 func (p *PebbleDatabase) Close() error {
+	if p.hub != nil {
+		p.hub.Close()
+	}
 	err := p.db.Close()
 	if err != nil {
 		return fmt.Errorf("could not close database: %w", err)

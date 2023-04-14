@@ -11,7 +11,7 @@ import {
 } from '@radix-ui/react-icons';
 import { EventsOff, EventsOn } from '@wailsapp/runtime/runtime';
 import { useTranslation } from 'react-i18next';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 import {
