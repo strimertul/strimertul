@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [current]
 
+### Added
+
+- A new error page will appear if strimertul encounters a fatal error (previously this used to just crash). The error page contains both a way to send an error report with app logs and a way to restore the database to an earlier saved copy.
+- Added link to the user guide in the main page
+
 ## [3.1.5] - 2023-03-31
 
 ### Fixed
