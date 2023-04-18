@@ -55,7 +55,11 @@ func GetDatabaseDriver(ctx *cli.Context) (DatabaseDriver, error) {
 	case "badger":
 		return nil, cli.Exit("Badger is not supported anymore as a database driver", 64)
 	case "pebble":
-		return NewPebble(dbDirectory, logger)
+		db, err := NewPebble(dbDirectory, logger)
+		if err != nil {
+			return nil, cli.Exit(err.Error(), 64)
+		}
+		return db, nil
 	default:
 		return nil, cli.Exit(fmt.Sprintf("Unknown database driver: %s", name), 64)
 	}

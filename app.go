@@ -6,21 +6,22 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	nethttp "net/http"
 	"os"
 	"runtime/debug"
 	"strconv"
 
-	"github.com/strimertul/strimertul/docs"
-
 	"git.sr.ht/~hamcha/containers/sync"
 	"github.com/nicklaw5/helix/v2"
+	"github.com/postfinance/single"
 	"github.com/urfave/cli/v2"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.uber.org/zap"
 
 	"github.com/strimertul/strimertul/database"
+	"github.com/strimertul/strimertul/docs"
 	"github.com/strimertul/strimertul/http"
 	"github.com/strimertul/strimertul/loyalty"
 	"github.com/strimertul/strimertul/twitch"
@@ -29,6 +30,7 @@ import (
 // App struct
 type App struct {
 	ctx           context.Context
+	lock          *single.Single
 	cliParams     *cli.Context
 	driver        database.DatabaseDriver
 	ready         *sync.RWSync[bool]
@@ -52,6 +54,21 @@ func NewApp(cliParams *cli.Context) *App {
 
 // startup is called when the app starts
 func (a *App) startup(ctx context.Context) {
+	// Ensure only one copy of strimertul is running at all times
+	var err error
+	a.lock, err = single.New("strimertul")
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err = a.lock.Lock(); err != nil {
+		_, _ = runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
+			Type:    runtime.ErrorDialog,
+			Title:   "strimertul is already running",
+			Message: "Only one copy of strimertul can run at the same time, make sure to close other instances first",
+		})
+		log.Fatal(err)
+	}
+
 	defer func() {
 		if r := recover(); r != nil {
 			a.stop(ctx)
@@ -73,7 +90,6 @@ func (a *App) startup(ctx context.Context) {
 	}
 
 	// Make KV hub
-	var err error
 	a.driver, err = database.GetDatabaseDriver(a.cliParams)
 	if err != nil {
 		a.showFatalError(err, "Error opening database")
@@ -137,6 +153,9 @@ func (a *App) startup(ctx context.Context) {
 }
 
 func (a *App) stop(context.Context) {
+	if a.lock != nil {
+		warnOnError(a.lock.Unlock(), "could not remove lock file")
+	}
 	if a.loyaltyManager != nil {
 		warnOnError(a.loyaltyManager.Close(), "could not cleanly close loyalty manager")
 	}
@@ -229,37 +248,6 @@ func (a *App) SendCrashReport(errorData string, info string) (string, error) {
 
 	byt, err := io.ReadAll(resp.Body)
 	return string(byt), err
-}
-
-type BackupInfo struct {
-	Filename string `json:"filename"`
-	Date     int64  `json:"date"`
-}
-
-func (a *App) GetBackups() (list []BackupInfo) {
-	files, err := os.ReadDir(a.backupOptions.BackupDir)
-	if err != nil {
-		logger.Error("could not read backup directory", zap.Error(err))
-		return nil
-	}
-
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-
-		info, err := file.Info()
-		if err != nil {
-			logger.Error("could not get info for backup file", zap.Error(err))
-			continue
-		}
-
-		list = append(list, BackupInfo{
-			Filename: file.Name(),
-			Date:     info.ModTime().UnixMilli(),
-		})
-	}
-	return
 }
 
 type VersionInfo struct {

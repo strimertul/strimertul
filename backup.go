@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"time"
 
@@ -61,4 +62,63 @@ func BackupTask(driver database.DatabaseDriver, options database.BackupOptions) 
 			}
 		}
 	}
+}
+
+type BackupInfo struct {
+	Filename string `json:"filename"`
+	Date     int64  `json:"date"`
+	Size     int64  `json:"size"`
+}
+
+func (a *App) GetBackups() (list []BackupInfo) {
+	files, err := os.ReadDir(a.backupOptions.BackupDir)
+	if err != nil {
+		logger.Error("could not read backup directory", zap.Error(err))
+		return nil
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		info, err := file.Info()
+		if err != nil {
+			logger.Error("could not get info for backup file", zap.Error(err))
+			continue
+		}
+
+		list = append(list, BackupInfo{
+			Filename: file.Name(),
+			Date:     info.ModTime().UnixMilli(),
+			Size:     info.Size(),
+		})
+	}
+	return
+}
+
+func (a *App) RestoreBackup(backupName string) error {
+	path := filepath.Join(a.backupOptions.BackupDir, backupName)
+
+	file, err := os.Open(path)
+	if err != nil {
+		return fmt.Errorf("could not open import file for reading: %w", err)
+	}
+	defer utils.Close(file, logger)
+	inStream := file
+
+	if a.driver == nil {
+		a.driver, err = database.GetDatabaseDriver(a.cliParams)
+		if err != nil {
+			return fmt.Errorf("could not open database: %w", err)
+		}
+	}
+
+	err = a.driver.Restore(inStream)
+	if err != nil {
+		return fmt.Errorf("could not restore database: %w", err)
+	}
+
+	logger.Info("restored database from backup")
+	return nil
 }

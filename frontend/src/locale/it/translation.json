@@ -413,7 +413,22 @@
         "transparency-files": "I contenuti di <m>{{A}}</m> e <m>{{B}}</m>",
         "transparency-info": "Informazioni sull'errore specifico che ha causato il crash",
         "transparency-line": "Facendo clic su \"Invia segnalazione\", verranno raccolte e inviate i seguenti dati:",
-        "transparency-user": "Le informazioni aggiuntive di seguito, se fornite"
+        "transparency-user": "Le informazioni aggiuntive di seguito, se fornite",
+        "error-message": "Non è stato possibile inviare la segnalazione di errore a causa di un errore remoto: {{error}}",
+        "post-report": "L'errore è stato segnalato con successo ed è stato assegnato il seguente codice: <m>{{code}}</m> Se non hai fornito un'e-mail e vuoi contattarci in merito, usa quel codice quando apri una segnalazione o altro contatto."
+      },
+      "recovery": {
+        "restore-button": "Ripristina",
+        "restore-confirm-body": "Il ripristino di questo backup sovrascriverà il database attuale, questa operazione è irreversibile.",
+        "restore-confirm-title": "Conferma ripristino del database",
+        "restore-desc-1": "Ripristina il database utilizzando un backup creato precedentemente. \nQuesto sovrascriverà il database attuale con la copia salvata. \nQui di seguito è la lista di tutti i backup attualmente salvati.",
+        "restore-error": "Impossibile ripristinare il database a causa del seguente errore: {{error}}",
+        "restore-failed": "Ripristino non riuscito",
+        "restore-head": "Ripristina dal backup",
+        "text-head": "Queste azioni modificheranno irreversibilmente il database, assicurati che il database sia effettivamente danneggiato prima di procedere.",
+        "title": "Opzioni di ripristino",
+        "restore-succeeded-title": "Database ripristinato",
+        "restore-succeeded-body": "Il database è stato ripristinato dal backup scelto, chiudi e riapri {{APPNAME}}."
       }
     }
   },

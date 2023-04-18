@@ -59,6 +59,7 @@ export namespace main {
 	export class BackupInfo {
 	    filename: string;
 	    date: number;
+	    size: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new BackupInfo(source);
@@ -68,6 +69,7 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.filename = source["filename"];
 	        this.date = source["date"];
+	        this.size = source["size"];
 	    }
 	}
 	export class LogEntry {

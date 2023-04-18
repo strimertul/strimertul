@@ -2,11 +2,12 @@ import { CheckIcon } from '@radix-ui/react-icons';
 import {
   GetBackups,
   GetLastLogs,
+  RestoreBackup,
   SendCrashReport,
 } from '@wailsapp/go/main/App';
 import type { main } from '@wailsapp/go/models';
 import { EventsOff, EventsOn } from '@wailsapp/runtime';
-import { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { languages } from '~/locale/languages';
 import { ProcessedLogEntry, processEntry } from '~/store/logging/reducer';
@@ -33,7 +34,7 @@ import {
   TextBlock,
 } from '~/ui/theme';
 import AlertContent from './components/AlertContent';
-import { Alert, AlertDescription } from './theme/alert';
+import { Alert, AlertDescription, AlertTrigger } from './theme/alert';
 
 const Container = styled('div', {
   position: 'relative',
@@ -99,26 +100,34 @@ const LanguageItem = styled(MultiToggleItem, {
 });
 
 const BackupItem = styled('article', {
-  marginBottom: '0.4rem',
   backgroundColor: '$gray2',
-  margin: '0.5rem 0',
-  padding: '0.3rem 0.5rem',
-  borderLeft: '5px solid $teal8',
+  padding: '0.3rem 1rem 0.3rem 0.5rem',
   borderRadius: '0.25rem',
-  borderBottom: '1px solid $gray4',
+  borderBottom: '1px solid $gray5',
   transition: 'all 50ms',
   display: 'flex',
+  '&:nth-child(odd)': {
+    backgroundColor: '$gray3',
+  },
+  gap: '0.5rem',
 });
 
 const BackupDate = styled('div', {
-  flex: '1',
   display: 'flex',
+  alignItems: 'center',
+  flex: '1',
   gap: '0.5rem',
-  alignItems: 'baseline',
+  fontVariantNumeric: 'tabular-nums',
+});
+const BackupSize = styled('div', {
+  color: '$gray10',
+  alignItems: 'center',
+  display: 'flex',
 });
 const BackupActions = styled('div', {
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'flex-end',
   gap: '0.25rem',
 });
 
@@ -127,54 +136,160 @@ interface RecoveryDialogProps {
   onOpenChange: (state: boolean) => void;
 }
 
+// Returns a human-readable version of a byte size
+function hrsize(bytes: number): string {
+  const units = ['B', 'KiB', 'MiB', 'GiB'];
+  let fractBytes = bytes;
+  while (fractBytes >= 1024) {
+    fractBytes /= 1024;
+    units.shift();
+  }
+  return `${fractBytes.toFixed(2)} ${units[0]}`;
+}
+
 function RecoveryDialog({ open, onOpenChange }: RecoveryDialogProps) {
   const { t } = useTranslation();
   const [backups, setBackups] = useState<main.BackupInfo[]>([]);
+  const [restoreError, setRestoreError] = useState<string | null>(null);
+  const [restored, setRestored] = useState<'idle' | 'in-progress' | 'done'>(
+    'idle',
+  );
 
   useEffect(() => {
-    GetBackups().then((backupList) => {
+    void GetBackups().then((backupList) => {
       setBackups(backupList);
-      console.log(backupList);
     });
   }, []);
 
+  const restore = async (filename: string) => {
+    setRestored('in-progress');
+    try {
+      await RestoreBackup(filename);
+      setRestoreError(null);
+    } catch (err) {
+      setRestoreError(err as string);
+    }
+    setRestored('done');
+  };
+
+  if (restored === 'done' && restoreError == null) {
+    return (
+      <Alert
+        defaultOpen={true}
+        open={open}
+        onOpenChange={(state) => {
+          if (onOpenChange) onOpenChange(state);
+          setRestored('idle');
+        }}
+      >
+        <AlertContent
+          variation="default"
+          title={t('pages.crash.recovery.restore-succeeded-title')}
+          description={t('pages.crash.recovery.restore-succeeded-body')}
+          actionText={t('form-actions.ok')}
+          onAction={() => {
+            if (onOpenChange) onOpenChange(false);
+            setRestored('idle');
+          }}
+        />
+      </Alert>
+    );
+  }
+
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(state) => {
-        if (onOpenChange) onOpenChange(state);
-      }}
-    >
-      <DialogContent title={'Recovery options'} closeButton={true}>
-        <TextBlock>
-          These action will irreversibly modify your database, please make sure
-          your database is corrupted in the first place before proceeding.
-        </TextBlock>
-        <SectionHeader>Restore from backup</SectionHeader>
-        <TextBlock>
-          Restore a previously backed up database. This will overwrite your
-          current database with the saved copy. Check below for the list of
-          saved copies.
-        </TextBlock>
-        <Scrollbar
-          vertical={true}
-          viewport={{ maxHeight: 'calc(100vh - 450px)', minHeight: '100px' }}
+    <>
+      <Alert
+        defaultOpen={false}
+        open={!!restoreError}
+        onOpenChange={(val: boolean) => {
+          if (!val) setRestoreError(null);
+        }}
+      >
+        <AlertContent
+          variation="danger"
+          title={t('pages.crash.recovery.restore-failed')}
+          description={t('pages.crash.recovery.restore-error', {
+            error: restoreError ?? 'unknown error',
+          })}
+          actionText={t('form-actions.ok')}
+          onAction={() => {
+            setRestoreError(null);
+          }}
+        />
+      </Alert>
+      <Dialog
+        open={open}
+        onOpenChange={(state) => {
+          if (onOpenChange) onOpenChange(state);
+        }}
+      >
+        <DialogContent
+          title={t('pages.crash.recovery.title')}
+          closeButton={true}
         >
-          {backups
-            .sort((a, b) => b.date - a.date)
-            .map((backup) => (
-              <BackupItem key={backup.filename}>
-                <BackupDate title={backup.filename}>
-                  {new Date(backup.date).toLocaleString()}
-                </BackupDate>
-                <BackupActions>
-                  <Button size="small">Restore</Button>
-                </BackupActions>
-              </BackupItem>
-            ))}
-        </Scrollbar>
-      </DialogContent>
-    </Dialog>
+          <TextBlock>{t('pages.crash.recovery.text-head')}</TextBlock>
+          <SectionHeader>
+            {t('pages.crash.recovery.restore-head')}
+          </SectionHeader>
+          <TextBlock>{t('pages.crash.recovery.restore-desc-1')}</TextBlock>
+          <Scrollbar
+            vertical={true}
+            viewport={{ maxHeight: 'calc(100vh - 450px)', minHeight: '100px' }}
+          >
+            {backups
+              .sort((a, b) => b.date - a.date)
+              .map((backup) => {
+                const date = new Date(backup.date);
+
+                return (
+                  <BackupItem key={backup.filename}>
+                    <BackupDate title={backup.filename}>
+                      {date.toLocaleDateString([], {
+                        year: 'numeric',
+                        month: 'short',
+                        day: '2-digit',
+                      })}
+                      {' - '}
+                      {date.toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                      <BackupSize>{hrsize(backup.size)}</BackupSize>
+                    </BackupDate>
+                    <BackupActions>
+                      <Alert>
+                        <AlertTrigger asChild>
+                          <Button
+                            size="small"
+                            disabled={restored === 'in-progress'}
+                          >
+                            {t('pages.crash.recovery.restore-button')}
+                          </Button>
+                        </AlertTrigger>
+                        <AlertContent
+                          variation="danger"
+                          title={t(
+                            'pages.crash.recovery.restore-confirm-title',
+                          )}
+                          description={t(
+                            'pages.crash.recovery.restore-confirm-body',
+                          )}
+                          actionText={t('pages.crash.recovery.restore-button')}
+                          actionButtonProps={{ variation: 'danger' }}
+                          showCancel={true}
+                          onAction={() => {
+                            void restore(backup.filename);
+                          }}
+                        />
+                      </Alert>
+                    </BackupActions>
+                  </BackupItem>
+                );
+              })}
+          </Scrollbar>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -191,7 +306,7 @@ function ReportDialog({ open, onOpenChange, errorData }: ReportDialogProps) {
   const [contactInfo, setContactInfo] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [code, setCode] = useState('');
-  const [submissionError, setSubmissionError] = useState<Error>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   const waiting = submitted && code.length < 1;
 
@@ -244,7 +359,7 @@ function ReportDialog({ open, onOpenChange, errorData }: ReportDialogProps) {
         <AlertContent
           variation="danger"
           description={t('pages.crash.report.error-message', {
-            error: submissionError?.message ?? 'unknown server error',
+            error: submissionError,
           })}
           actionText={t('form-actions.ok')}
           onAction={() => {
@@ -276,7 +391,7 @@ function ReportDialog({ open, onOpenChange, errorData }: ReportDialogProps) {
                   setCode(submissionCode);
                 })
                 .catch((err) => {
-                  setSubmissionError(err as Error);
+                  setSubmissionError(err as string);
                 });
               setSubmitted(true);
             }}

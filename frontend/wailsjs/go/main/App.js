@@ -42,6 +42,10 @@ export function IsServerReady() {
   return window['go']['main']['App']['IsServerReady']();
 }
 
+export function RestoreBackup(arg1) {
+  return window['go']['main']['App']['RestoreBackup'](arg1);
+}
+
 export function SendCrashReport(arg1, arg2) {
   return window['go']['main']['App']['SendCrashReport'](arg1, arg2);
 }

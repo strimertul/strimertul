@@ -12,6 +12,7 @@ require (
 	github.com/hashicorp/golang-lru/v2 v2.0.2
 	github.com/json-iterator/go v1.1.12
 	github.com/nicklaw5/helix/v2 v2.22.0
+	github.com/postfinance/single v0.0.2
 	github.com/strimertul/kilovolt/v9 v9.1.0
 	github.com/strimertul/kv-pebble v1.2.1
 	github.com/urfave/cli/v2 v2.25.1
@@ -81,7 +82,7 @@ require (
 	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/exp v0.0.0-20230206171751-46f607a40771 // indirect
 	golang.org/x/net v0.7.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/sys v0.7.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )

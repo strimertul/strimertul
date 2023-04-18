@@ -24,4 +24,6 @@ export function IsFatalError():Promise<boolean>;
 
 export function IsServerReady():Promise<boolean>;
 
+export function RestoreBackup(arg1:string):Promise<void>;
+
 export function SendCrashReport(arg1:string,arg2:string):Promise<string>;

@@ -363,6 +363,19 @@
         "transparency-user": "The additional info below, if any was provided",
         "error-message": "The crash report could not be submitted because of a remote error: {{error}}",
         "post-report": "The error was successfully reported and has been assigned the following code: <m>{{code}}</m> If you haven't provided an email and want to follow up on this, use that code when opening an issue or reaching out."
+      },
+      "recovery": {
+        "restore-error": "The database could not be restored because of the following error: {{error}}",
+        "title": "Recovery options",
+        "text-head": "These action will irreversibly modify your database, please make sure your database is corrupted in the first place before proceeding.",
+        "restore-head": "Restore from backup",
+        "restore-desc-1": "Restore a previously backed up database. This will overwrite your current database with the saved copy. Check below for the list of saved copies.",
+        "restore-button": "Restore",
+        "restore-confirm-title": "Confirm database restore",
+        "restore-confirm-body": "Restoring this backup will overwrite your current database, this operation is irreversible.",
+        "restore-failed": "Restore failed",
+        "restore-succeeded-title": "Database restored",
+        "restore-succeeded-body": "The database was restored from the chosen backup, please close and re-open {{APPNAME}}."
       }
     }
   },
