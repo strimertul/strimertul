@@ -13,7 +13,7 @@ import (
 
 	"git.sr.ht/~hamcha/containers/sync"
 	jsoniter "github.com/json-iterator/go"
-	kv "github.com/strimertul/kilovolt/v9"
+	kv "github.com/strimertul/kilovolt/v10"
 	"go.uber.org/zap"
 
 	"github.com/strimertul/strimertul/database"

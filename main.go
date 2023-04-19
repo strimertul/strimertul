@@ -91,12 +91,11 @@ func main() {
 				level = zapcore.InfoLevel
 			}
 			initLogger(level)
-			logger.Info("app started", zap.String("version", appVersion))
 
 			// Create file for panics
 			panicLog, err = os.OpenFile(panicFilename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o666)
 			if err != nil {
-				logger.Warn("could not create panic log", zap.Error(err))
+				logger.Warn("Could not create panic log", zap.Error(err))
 			} else {
 				utils.RedirectStderr(panicLog)
 			}

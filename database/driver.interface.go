@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	kv "github.com/strimertul/kilovolt/v9"
+	kv "github.com/strimertul/kilovolt/v10"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
 

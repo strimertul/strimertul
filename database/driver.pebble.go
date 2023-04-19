@@ -9,7 +9,7 @@ import (
 	"github.com/strimertul/strimertul/utils"
 
 	"github.com/cockroachdb/pebble"
-	kv "github.com/strimertul/kilovolt/v9"
+	kv "github.com/strimertul/kilovolt/v10"
 	pebble_driver "github.com/strimertul/kv-pebble"
 	"go.uber.org/zap"
 )

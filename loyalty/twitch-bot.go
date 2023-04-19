@@ -18,7 +18,7 @@ import (
 func (m *Manager) SetupTwitch() {
 	bot := m.twitchManager.Client().Bot
 	if bot == nil {
-		m.logger.Warn("bot is offline or not configured, could not setup commands")
+		m.logger.Warn("Twitch bot is offline or not configured, could not setup commands")
 		return
 	}
 
@@ -86,7 +86,7 @@ func (m *Manager) SetupTwitch() {
 			for {
 				userClient, err := client.GetUserClient(false)
 				if err != nil {
-					m.logger.Error("could not get user api client for list of chatters", zap.Error(err))
+					m.logger.Error("Could not get user api client for list of chatters", zap.Error(err))
 					return
 				}
 				res, err := userClient.GetChannelChatChatters(&helix.GetChatChattersParams{
@@ -96,7 +96,7 @@ func (m *Manager) SetupTwitch() {
 					After:         cursor,
 				})
 				if err != nil {
-					m.logger.Error("could not retrieve list of chatters", zap.Error(err))
+					m.logger.Error("Could not retrieve list of chatters", zap.Error(err))
 					return
 				}
 				for _, user := range res.Data.Chatters {
@@ -132,13 +132,13 @@ func (m *Manager) SetupTwitch() {
 			if len(users) > 0 {
 				err := m.GivePoints(pointsToGive)
 				if err != nil {
-					m.logger.Error("error giving points to user", zap.Error(err))
+					m.logger.Error("Error awarding loyalty points to user", zap.Error(err))
 				}
 			}
 		}
 	}()
 
-	m.logger.Info("loyalty twitch setup completed")
+	m.logger.Info("Loyalty system integration with Twitch is ready")
 }
 
 func (m *Manager) StopTwitch() {

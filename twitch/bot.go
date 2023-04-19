@@ -96,7 +96,7 @@ func newBot(api *Client, config BotConfig) *Bot {
 
 		// Ignore messages for a while or twitch will get mad!
 		if message.Time.Before(bot.lastMessage.Get().Add(time.Second * 2)) {
-			bot.logger.Debug("message received too soon, ignoring")
+			bot.logger.Debug("Message received too soon, ignoring")
 			return
 		}
 
@@ -140,7 +140,7 @@ func newBot(api *Client, config BotConfig) *Bot {
 
 		err := bot.api.db.PutJSON(ChatEventKey, message)
 		if err != nil {
-			bot.logger.Warn("could not save chat message to key", zap.String("key", ChatEventKey), zap.Error(err))
+			bot.logger.Warn("Could not save chat message to key", zap.String("key", ChatEventKey), zap.Error(err))
 		}
 		if bot.Config.ChatHistory > 0 {
 			history := bot.chatHistory.Get()
@@ -150,7 +150,7 @@ func newBot(api *Client, config BotConfig) *Bot {
 			bot.chatHistory.Set(append(history, message))
 			err = bot.api.db.PutJSON(ChatHistoryKey, bot.chatHistory.Get())
 			if err != nil {
-				bot.logger.Warn("could not save message to chat history", zap.Error(err))
+				bot.logger.Warn("Could not save message to chat history", zap.Error(err))
 			}
 		}
 
@@ -161,17 +161,17 @@ func newBot(api *Client, config BotConfig) *Bot {
 
 	client.OnUserJoinMessage(func(message irc.UserJoinMessage) {
 		if strings.ToLower(message.User) == bot.username {
-			bot.logger.Info("joined channel", zap.String("channel", message.Channel))
+			bot.logger.Info("Twitch bot joined channel", zap.String("channel", message.Channel))
 		} else {
-			bot.logger.Debug("user joined channel", zap.String("channel", message.Channel), zap.String("username", message.User))
+			bot.logger.Debug("User joined channel", zap.String("channel", message.Channel), zap.String("username", message.User))
 		}
 	})
 
 	client.OnUserPartMessage(func(message irc.UserPartMessage) {
 		if strings.ToLower(message.User) == bot.username {
-			bot.logger.Info("left channel", zap.String("channel", message.Channel))
+			bot.logger.Info("Twitch bot left channel", zap.String("channel", message.Channel))
 		} else {
-			bot.logger.Debug("user left channel", zap.String("channel", message.Channel), zap.String("username", message.User))
+			bot.logger.Debug("User left channel", zap.String("channel", message.Channel), zap.String("username", message.User))
 		}
 	})
 
@@ -189,22 +189,22 @@ func newBot(api *Client, config BotConfig) *Bot {
 		if errors.Is(err, database.ErrEmptyKey) {
 			customCommands = make(map[string]BotCustomCommand)
 		} else {
-			bot.logger.Error("failed to load custom commands", zap.Error(err))
+			bot.logger.Error("Failed to load custom commands", zap.Error(err))
 		}
 	}
 	bot.customCommands.Set(customCommands)
 
 	err = bot.updateTemplates()
 	if err != nil {
-		bot.logger.Error("failed to parse custom commands", zap.Error(err))
+		bot.logger.Error("Failed to parse custom commands", zap.Error(err))
 	}
 	err, bot.cancelUpdateSub = api.db.SubscribeKey(CustomCommandsKey, bot.updateCommands)
 	if err != nil {
-		bot.logger.Error("could not set-up bot command reload subscription", zap.Error(err))
+		bot.logger.Error("Could not set-up bot command reload subscription", zap.Error(err))
 	}
 	err, bot.cancelWriteRPCSub = api.db.SubscribeKey(WriteMessageRPC, bot.handleWriteMessageRPC)
 	if err != nil {
-		bot.logger.Error("could not set-up bot command reload subscription", zap.Error(err))
+		bot.logger.Error("Could not set-up bot command reload subscription", zap.Error(err))
 	}
 
 	return bot
@@ -229,12 +229,12 @@ func (b *Bot) Close() error {
 func (b *Bot) updateCommands(value string) {
 	err := utils.LoadJSONToWrapped[map[string]BotCustomCommand](value, b.customCommands)
 	if err != nil {
-		b.logger.Error("failed to decode new custom commands", zap.Error(err))
+		b.logger.Error("Failed to decode new custom commands", zap.Error(err))
 		return
 	}
 	// Recreate templates
 	if err := b.updateTemplates(); err != nil {
-		b.logger.Error("failed to update custom commands templates", zap.Error(err))
+		b.logger.Error("Failed to update custom commands templates", zap.Error(err))
 		return
 	}
 }
@@ -258,7 +258,11 @@ func (b *Bot) updateTemplates() error {
 func (b *Bot) Connect() {
 	err := b.Client.Connect()
 	if err != nil {
-		b.logger.Error("bot connection ended", zap.Error(err))
+		if errors.Is(err, irc.ErrClientDisconnected) {
+			b.logger.Info("Twitch bot connection terminated", zap.Error(err))
+		} else {
+			b.logger.Error("Twitch bot connection terminated unexpectedly", zap.Error(err))
+		}
 	}
 }
 

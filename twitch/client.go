@@ -229,7 +229,7 @@ func newClient(config Config, db *database.LocalDBClient, server *http.Server, l
 }
 
 func (c *Client) runStatusPoll() {
-	c.logger.Info("status poll started")
+	c.logger.Info("Started polling for stream status")
 	for {
 		// Make sure we're configured and connected properly first
 		if !c.Config.Get().Enabled || c.Bot == nil || c.Bot.Config.Channel == "" {

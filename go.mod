@@ -6,15 +6,15 @@ require (
 	git.sr.ht/~hamcha/containers v0.3.2
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
-	github.com/cockroachdb/pebble v0.0.0-20230209222158-0568b5fd3d14
+	github.com/cockroachdb/pebble v0.0.0-20230418161327-101876aa7088
 	github.com/gempir/go-twitch-irc/v4 v4.0.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/hashicorp/golang-lru/v2 v2.0.2
 	github.com/json-iterator/go v1.1.12
 	github.com/nicklaw5/helix/v2 v2.22.0
 	github.com/postfinance/single v0.0.2
-	github.com/strimertul/kilovolt/v9 v9.1.0
-	github.com/strimertul/kv-pebble v1.2.1
+	github.com/strimertul/kilovolt/v10 v10.0.0
+	github.com/strimertul/kv-pebble v1.2.2
 	github.com/urfave/cli/v2 v2.25.1
 	github.com/wailsapp/wails/v2 v2.4.1
 	go.uber.org/zap v1.24.0

@@ -21,8 +21,7 @@ func (c *Client) eventSubLoop(userClient *helix.Client) {
 	for endpoint != "" {
 		endpoint, connection, err = c.connectWebsocket(endpoint, connection, userClient)
 		if err != nil {
-			c.logger.Error("eventsub ws read error", zap.Error(err))
-			break
+			c.logger.Error("EventSub websocket read error", zap.Error(err))
 		}
 	}
 	if connection != nil {
@@ -33,7 +32,7 @@ func (c *Client) eventSubLoop(userClient *helix.Client) {
 func (c *Client) connectWebsocket(url string, oldConnection *websocket.Conn, userClient *helix.Client) (string, *websocket.Conn, error) {
 	connection, _, err := websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
-		c.logger.Error("could not connect to eventsub ws", zap.Error(err))
+		c.logger.Error("Could not establish a connection to the EventSub websocket", zap.Error(err))
 		return "", nil, err
 	}
 
@@ -65,14 +64,14 @@ func (c *Client) connectWebsocket(url string, oldConnection *websocket.Conn, use
 		case <-c.ctx.Done():
 			return "", nil, nil
 		case err = <-wsErr:
-			return "", nil, err
+			return url, nil, err // Return the endpoint so we can reconnect
 		case messageData = <-received:
 		}
 
 		var wsMessage EventSubWebsocketMessage
 		err = json.Unmarshal(messageData, &wsMessage)
 		if err != nil {
-			c.logger.Error("eventsub ws decode error", zap.Error(err))
+			c.logger.Error("Error decoding EventSub message", zap.Error(err))
 			continue
 		}
 
@@ -83,10 +82,10 @@ func (c *Client) connectWebsocket(url string, oldConnection *websocket.Conn, use
 			var welcomeData WelcomeMessagePayload
 			err = json.Unmarshal(wsMessage.Payload, &welcomeData)
 			if err != nil {
-				c.logger.Error("eventsub ws decode error", zap.String("message-type", wsMessage.Metadata.MessageType), zap.Error(err))
+				c.logger.Error("Error decoding EventSub message", zap.String("message-type", wsMessage.Metadata.MessageType), zap.Error(err))
 				break
 			}
-			c.logger.Info("eventsub ws connection established", zap.String("session-id", welcomeData.Session.Id))
+			c.logger.Info("Connection to EventSub websocket established", zap.String("session-id", welcomeData.Session.Id))
 
 			if oldConnection != nil {
 				utils.Close(oldConnection, c.logger)
@@ -94,17 +93,17 @@ func (c *Client) connectWebsocket(url string, oldConnection *websocket.Conn, use
 			// Add subscription to websocket session
 			err = c.addSubscriptionsForSession(userClient, welcomeData.Session.Id)
 			if err != nil {
-				c.logger.Error("could not add subscriptions", zap.Error(err))
+				c.logger.Error("Could not add subscriptions", zap.Error(err))
 				break
 			}
 		case "session_reconnect":
 			var reconnectData WelcomeMessagePayload
 			err = json.Unmarshal(wsMessage.Payload, &reconnectData)
 			if err != nil {
-				c.logger.Error("eventsub ws decode error", zap.String("message-type", wsMessage.Metadata.MessageType), zap.Error(err))
+				c.logger.Error("Error decoding EventSub message", zap.String("message-type", wsMessage.Metadata.MessageType), zap.Error(err))
 				break
 			}
-			c.logger.Info("eventsub ws connection reset requested", zap.String("session-id", reconnectData.Session.Id), zap.String("reconnect-url", reconnectData.Session.ReconnectUrl))
+			c.logger.Info("EventSub websocket requested a reconnection", zap.String("session-id", reconnectData.Session.Id), zap.String("reconnect-url", reconnectData.Session.ReconnectUrl))
 
 			return reconnectData.Session.ReconnectUrl, connection, nil
 		case "notification":
@@ -129,13 +128,13 @@ func (c *Client) processEvent(message EventSubWebsocketMessage) {
 	var notificationData NotificationMessagePayload
 	err := json.Unmarshal(message.Payload, &notificationData)
 	if err != nil {
-		c.logger.Error("eventsub ws decode error", zap.String("message-type", message.Metadata.MessageType), zap.Error(err))
+		c.logger.Error("Error decoding EventSub message", zap.String("message-type", message.Metadata.MessageType), zap.Error(err))
 	}
 	notificationData.Date = time.Now()
 
 	err = c.db.PutJSON(EventSubEventKey, notificationData)
 	if err != nil {
-		c.logger.Error("error saving event to db", zap.String("key", EventSubEventKey), zap.Error(err))
+		c.logger.Error("Error storing event to database", zap.String("key", EventSubEventKey), zap.Error(err))
 	}
 
 	var archive []NotificationMessagePayload
@@ -149,7 +148,7 @@ func (c *Client) processEvent(message EventSubWebsocketMessage) {
 	}
 	err = c.db.PutJSON(EventSubHistoryKey, archive)
 	if err != nil {
-		c.logger.Error("error saving event to db", zap.String("key", EventSubHistoryKey), zap.Error(err))
+		c.logger.Error("Error storing event to database", zap.String("key", EventSubHistoryKey), zap.Error(err))
 	}
 }
 
@@ -172,7 +171,7 @@ func (c *Client) addSubscriptionsForSession(userClient *helix.Client, session st
 			Condition: topicCondition(topic, c.User.ID),
 		})
 		if sub.Error != "" || sub.ErrorMessage != "" {
-			c.logger.Error("subscription error", zap.String("topic", topic), zap.String("topic-version", version), zap.String("err", sub.Error), zap.String("message", sub.ErrorMessage))
+			c.logger.Error("EventSub Subscription error", zap.String("topic", topic), zap.String("topic-version", version), zap.String("err", sub.Error), zap.String("message", sub.ErrorMessage))
 			return fmt.Errorf("%s: %s", sub.Error, sub.ErrorMessage)
 		}
 		if err != nil {
