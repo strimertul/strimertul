@@ -13,6 +13,8 @@ import (
 	"runtime/debug"
 	"strconv"
 
+	kv "github.com/strimertul/kilovolt/v10"
+
 	"git.sr.ht/~hamcha/containers/sync"
 	"github.com/nicklaw5/helix/v2"
 	"github.com/postfinance/single"
@@ -82,6 +84,8 @@ func (a *App) startup(ctx context.Context) {
 		}
 	}()
 
+	logger.Info("Started", zap.String("version", appVersion))
+
 	a.ctx = ctx
 	a.backupOptions = database.BackupOptions{
 		BackupDir:      a.cliParams.String("backup-dir"),
@@ -103,6 +107,7 @@ func (a *App) startup(ctx context.Context) {
 
 	hub := a.driver.Hub()
 	go hub.Run()
+	hub.UseInteractiveAuth(a.interactiveAuth)
 
 	a.db, err = database.NewLocalClient(hub, logger)
 	if err != nil {
@@ -136,7 +141,7 @@ func (a *App) startup(ctx context.Context) {
 
 	a.ready.Set(true)
 	runtime.EventsEmit(ctx, "ready", true)
-	logger.Info("app is ready")
+	logger.Info("Strimertul is ready")
 
 	// Start redirecting logs to UI
 	go func() {
@@ -261,6 +266,22 @@ func (a *App) GetAppVersion() VersionInfo {
 		Release:   appVersion,
 		BuildInfo: info,
 	}
+}
+
+func (a *App) interactiveAuth(client kv.Client, message map[string]interface{}) bool {
+	callbackID := fmt.Sprintf("auth-callback-%d", client.UID())
+	authResult := make(chan bool)
+	runtime.EventsOnce(a.ctx, callbackID, func(optional ...any) {
+		if len(optional) == 0 {
+			authResult <- false
+			return
+		}
+		val, _ := optional[0].(bool)
+		authResult <- val
+	})
+	runtime.EventsEmit(a.ctx, "interactiveAuth", client.UID(), message, callbackID)
+
+	return <-authResult
 }
 
 func (a *App) showFatalError(err error, text string, fields ...zap.Field) {

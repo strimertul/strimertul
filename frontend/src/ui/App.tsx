@@ -31,7 +31,6 @@ import { initializeServerInfo } from '~/store/server/reducer';
 import LogViewer from './components/LogViewer';
 import Sidebar, { RouteSection } from './components/Sidebar';
 import Scrollbar from './components/utils/Scrollbar';
-import AuthDialog from './pages/AuthDialog';
 import TwitchBotCommandsPage from './pages/BotCommands';
 import TwitchBotTimersPage from './pages/BotTimers';
 import ChatAlertsPage from './pages/ChatAlerts';
@@ -48,6 +47,7 @@ import UISettingsPage from './pages/UISettingsPage';
 import ExtensionsPage from './pages/Extensions';
 import { styled } from './theme';
 import Loading from './components/Loading';
+import InteractiveAuthDialog from './components/InteractiveAuthDialog';
 
 const sections: RouteSection[] = [
   {
@@ -225,18 +225,18 @@ export default function App(): JSX.Element {
     }
   }, [ready, uiConfig]);
 
-  if (connected === ConnectionStatus.NotConnected) {
+  if (
+    connected === ConnectionStatus.NotConnected ||
+    connected === ConnectionStatus.AuthenticationNeeded
+  ) {
     return <Loading size="fullscreen" message={t('special.loading')} />;
-  }
-
-  if (connected === ConnectionStatus.AuthenticationNeeded) {
-    return <AuthDialog />;
   }
 
   const showSidebar = location.pathname !== '/setup';
 
   return (
     <Container>
+      <InteractiveAuthDialog />
       <LogViewer />
       {showSidebar ? <Sidebar sections={sections} /> : null}
       <Scrollbar
