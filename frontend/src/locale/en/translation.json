@@ -5,7 +5,7 @@
   "menu": {
     "sections": {
       "monitor": "Monitor",
-      "strimertul": "strimertul",
+      "strimertul": "{{APPNAME}}",
       "twitch": "Twitch",
       "loyalty": "Loyalty system"
     },
@@ -144,13 +144,6 @@
       "timer-messages": "Messages",
       "no-timers": "There are no timers configured",
       "name-already-in-use": "Timer name already in use"
-    },
-    "auth": {
-      "title": "Authentication required",
-      "desc": "The installation of {{APPNAME}} you are trying to reach is protected with a password. Please write the password below to access the control panel.",
-      "no-pwd-note": " If the database has no password (for example, it was recently changed from having one to none), leave the field empty.",
-      "password": "Password",
-      "submit": "Authenticate"
     },
     "alerts": {
       "title": "Chat alerts",
@@ -377,6 +370,16 @@
         "restore-succeeded-title": "Database restored",
         "restore-succeeded-body": "The database was restored from the chosen backup, please close and re-open {{APPNAME}}."
       }
+    },
+    "interactive-auth": {
+      "title": "An application is trying to access {{APPNAME}}",
+      "unknown-name": "Unknown application",
+      "desc-1": "An application wants access to {{APPNAME}}. Allowing this will make the application capable of interacting and controlling {{APPNAME}}. This includes accessing sensible data stored in the database.",
+      "warn-1": "Only accept if you know and trust the application.",
+      "info-present": "The application identified itself as following:",
+      "verification-code": "As an additional security measure, also verify that the application shows this matching code:",
+      "allow": "Allow",
+      "deny": "Deny"
     }
   },
   "form-actions": {

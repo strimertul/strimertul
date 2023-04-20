@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { EventsEmit, EventsOff, EventsOn } from '@wailsapp/runtime';
 import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons';
+import { useTranslation } from 'react-i18next';
 import DialogContent from './DialogContent';
 import {
   Button,
@@ -72,7 +73,7 @@ const AppCode = styled('div', {
 
 function parseAppInfo(message: Record<string, unknown>): AppInfo {
   const info: AppInfo = {
-    name: 'Unknown application',
+    name: '',
     author: '',
     verificationCode: '',
     url: '',
@@ -89,6 +90,7 @@ function parseAppInfo(message: Record<string, unknown>): AppInfo {
 }
 
 export default function InteractiveAuthDialog() {
+  const { t } = useTranslation();
   const [requests, setRequests] = useState<AuthRequest[]>([]);
 
   useEffect(() => {
@@ -115,24 +117,18 @@ export default function InteractiveAuthDialog() {
     <>
       {requests.map(({ uid, info, callbackID }) => (
         <Dialog open={true} key={uid}>
-          <DialogContent title="An application is trying to access strimertül">
+          <DialogContent title={t('pages.interactive-auth.title')}>
             <DialogDescription css={{ color: '$teal12' }}>
-              <TextBlock>
-                An application wants access to strimertül. Allowing this will
-                make the application capable of interacting and controlling
-                strimertül. This includes accessing sensible data stored in the
-                database.
-              </TextBlock>
+              <TextBlock>{t('pages.interactive-auth.desc-1')}</TextBlock>
               <TextBlock css={{ fontWeight: 'bold', color: '$red11' }}>
-                Only accept if you know and trust the application.
+                {t('pages.interactive-auth.warn-1')}
               </TextBlock>
-              <TextBlock>
-                The application provided the following info for easier
-                identification:
-              </TextBlock>
+              <TextBlock>{t('pages.interactive-auth.info-present')}</TextBlock>
               <AppCard>
                 {info.icon && <AppIcon src={info.icon} />}
-                <AppName>{info.name}</AppName>
+                <AppName>
+                  {info.name || t('pages.interactive-auth.unknown-name')}
+                </AppName>
                 {info.author && <AppInfo>{info.author}</AppInfo>}
                 {info.url && (
                   <AppInfo>
@@ -143,8 +139,7 @@ export default function InteractiveAuthDialog() {
               {info.verificationCode && (
                 <>
                   <TextBlock>
-                    As an additional security measure, also verify that the
-                    application shows this matching code:
+                    {t('pages.interactive-auth.verification-code')}
                   </TextBlock>
                   <AppCode>{info.verificationCode}</AppCode>
                 </>
@@ -156,14 +151,14 @@ export default function InteractiveAuthDialog() {
                 onClick={() => answerAuthRequest(callbackID, true)}
               >
                 <CheckCircledIcon />
-                Allow
+                {t('pages.interactive-auth.allow')}
               </Button>
               <Button
                 variation="danger"
                 onClick={() => answerAuthRequest(callbackID, false)}
               >
                 <CrossCircledIcon />
-                Deny
+                {t('pages.interactive-auth.deny')}
               </Button>
             </DialogActions>
           </DialogContent>

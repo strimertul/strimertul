@@ -88,13 +88,6 @@
     }
   },
   "pages": {
-    "auth": {
-      "title": "Autenticazione richiesta",
-      "desc": "Questa installazione di {{APPNAME}} è protetta da password. Inserisci la password per accedere al pannello di controllo.",
-      "no-pwd-note": " Se il database non ha password (per esempio, è stata di recente rimossa), lascia il campo vuoto.",
-      "password": "Password",
-      "submit": "Autentica"
-    },
     "botcommands": {
       "remove-command-title": "Rimuovere il comando {{name}}?",
       "command-name": "Nome comando",
@@ -430,6 +423,16 @@
         "restore-succeeded-title": "Database ripristinato",
         "restore-succeeded-body": "Il database è stato ripristinato dal backup scelto, chiudi e riapri {{APPNAME}}."
       }
+    },
+    "interactive-auth": {
+      "allow": "Consenti",
+      "deny": "Nega",
+      "title": "Un'applicazione sta tentando di accedere a {{APPNAME}}",
+      "unknown-name": "Applicazione sconosciuta",
+      "verification-code": "Come ulteriore misura di sicurezza, verifica anche che l'applicazione mostri questo codice:",
+      "warn-1": "Consenti solo se conosci e ti fidi dell'applicazione.",
+      "desc-1": "Un'applicazione vuole accedere a {{APPNAME}}. \nConsentire ciò renderà l'applicazione in grado di interagire e controllare {{APPNAME}}. \nCiò include l'accesso a dati sensibili contenuti nel database.",
+      "info-present": "L'applicazione si identifica come di seguito:"
     }
   },
   "time": {
