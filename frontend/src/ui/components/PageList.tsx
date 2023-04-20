@@ -156,4 +156,5 @@ function PageList({
   );
 }
 
-export default React.memo(PageList);
+const PurePageList = React.memo(PageList);
+export default PurePageList;

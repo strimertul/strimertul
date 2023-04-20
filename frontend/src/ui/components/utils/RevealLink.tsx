@@ -28,4 +28,5 @@ function RevealLink({ value, setter }: RevealLinkProps) {
   );
 }
 
-export default React.memo(RevealLink);
+const PureRevealLink = React.memo(RevealLink);
+export default PureRevealLink;

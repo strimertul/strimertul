@@ -91,4 +91,5 @@ function MultiInput({
   );
 }
 
-export default React.memo(MultiInput);
+const PureMultiInput = React.memo(MultiInput);
+export default PureMultiInput;

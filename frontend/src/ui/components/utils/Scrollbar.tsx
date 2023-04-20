@@ -61,4 +61,5 @@ function Scrollbar({
   );
 }
 
-export default React.memo(Scrollbar);
+const PureScrollbar = React.memo(Scrollbar);
+export default PureScrollbar;

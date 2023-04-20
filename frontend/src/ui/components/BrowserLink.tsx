@@ -19,4 +19,5 @@ function BrowserLink(props: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
   );
 }
 
-export default React.memo(BrowserLink);
+const PureBrowserLink = React.memo(BrowserLink);
+export default PureBrowserLink;

@@ -1,16 +1,12 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { getInterval } from '~/lib/time';
 import { ComboBox, FlexRow, InputBox } from '../../theme';
+import { seconds, minutes, hours } from './units';
 
 export interface TimeUnit {
   multiplier: number;
   unit: string;
 }
-
-export const seconds = { multiplier: 1, unit: 'time.seconds' };
-export const minutes = { multiplier: 60, unit: 'time.minutes' };
-export const hours = { multiplier: 3600, unit: 'time.hours' };
 
 export interface IntervalProps {
   active: boolean;
@@ -22,7 +18,7 @@ export interface IntervalProps {
   onChange?: (value: number) => void;
 }
 
-function Interval({
+export default function Interval({
   id,
   active,
   value,
@@ -87,5 +83,3 @@ function Interval({
     </>
   );
 }
-
-export default React.memo(Interval);

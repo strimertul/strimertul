@@ -60,7 +60,7 @@ const RadioIndicator = styled(Indicator, {
   },
 });
 
-export default function RadioGroup(props: RadioGroupProps & RootProps) {
+function RadioGroup(props: RadioGroupProps & RootProps) {
   return (
     <RadioRoot {...props}>
       {props.values.map(({ id, label }) => (
@@ -74,3 +74,6 @@ export default function RadioGroup(props: RadioGroupProps & RootProps) {
     </RadioRoot>
   );
 }
+
+const PureRadioGroup = React.memo(RadioGroup);
+export default PureRadioGroup;

@@ -429,4 +429,5 @@ function LogViewer() {
   );
 }
 
-export default React.memo(LogViewer);
+const PureLogViewer = React.memo(LogViewer);
+export default PureLogViewer;

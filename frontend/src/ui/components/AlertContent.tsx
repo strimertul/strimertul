@@ -71,4 +71,5 @@ function AlertContent({
   );
 }
 
-export default React.memo(AlertContent);
+const PureAlertContent = React.memo(AlertContent);
+export default PureAlertContent;

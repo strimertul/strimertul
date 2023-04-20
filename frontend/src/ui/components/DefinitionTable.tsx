@@ -37,4 +37,5 @@ function DefinitionTable({ entries }: DefinitionTableProps) {
   );
 }
 
-export default React.memo(DefinitionTable);
+const PureDefinitionTable = React.memo(DefinitionTable);
+export default PureDefinitionTable;

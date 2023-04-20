@@ -45,4 +45,5 @@ function DialogContent({
   );
 }
 
-export default React.memo(DialogContent);
+const PureDialogContent = React.memo(DialogContent);
+export default PureDialogContent;

@@ -33,4 +33,5 @@ function WIP(): React.ReactElement {
   );
 }
 
-export default React.memo(WIP);
+const PureWIP = React.memo(WIP);
+export default PureWIP;

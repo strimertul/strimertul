@@ -22,4 +22,5 @@ function PasswordField(
   );
 }
 
-export default React.memo(PasswordField);
+const PurePasswordField = React.memo(PasswordField);
+export default PurePasswordField;

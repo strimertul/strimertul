@@ -31,4 +31,5 @@ function SaveButton(
   }
 }
 
-export default React.memo(SaveButton);
+const PureSaveButton = React.memo(SaveButton);
+export default PureSaveButton;
