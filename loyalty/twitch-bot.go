@@ -232,7 +232,7 @@ func (m *Manager) cmdRedeemReward(bot *twitch.Bot, message irc.PrivateMessage) {
 			bot.Client.Say(message.Channel, fmt.Sprintf("%s: That reward is in cooldown (available in %s)", message.User.DisplayName,
 				time.Until(nextAvailable).Truncate(time.Second)))
 		default:
-			m.logger.Error("error while performing redeem", zap.Error(err))
+			m.logger.Error("Error while performing redeem", zap.Error(err))
 		}
 		return
 	}
@@ -332,7 +332,7 @@ func (m *Manager) cmdContributeGoal(bot *twitch.Bot, message irc.PrivateMessage)
 	// Add points to goal
 	points, err := m.PerformContribution(selectedGoal, message.User.Name, points)
 	if err != nil {
-		m.logger.Error("error while contributing to goal", zap.Error(err))
+		m.logger.Error("Error while contributing to goal", zap.Error(err))
 		return
 	}
 	if points == 0 {

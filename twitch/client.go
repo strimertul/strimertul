@@ -61,44 +61,44 @@ func NewManager(db *database.LocalDBClient, server *http.Server, logger *zap.Log
 	err, cancelConfigSub := db.SubscribeKey(ConfigKey, func(value string) {
 		var newConfig Config
 		if err := json.UnmarshalFromString(value, &newConfig); err != nil {
-			logger.Error("failed to unmarshal config", zap.Error(err))
+			logger.Error("Failed to decode Twitch integration config", zap.Error(err))
 			return
 		}
 
 		var updatedClient *Client
 		updatedClient, err = newClient(newConfig, db, server, logger)
 		if err != nil {
-			logger.Error("could not create twitch client with new config, keeping old", zap.Error(err))
+			logger.Error("Could not create twitch client with new config, keeping old", zap.Error(err))
 			return
 		}
 
 		err = manager.client.Close()
 		if err != nil {
-			logger.Warn("twitch client could not close cleanly", zap.Error(err))
+			logger.Warn("Twitch client could not close cleanly", zap.Error(err))
 		}
 
 		// New client works, replace old
 		updatedClient.Merge(manager.client)
 		manager.client = updatedClient
 
-		logger.Info("reloaded/updated Twitch client")
+		logger.Info("Reloaded/updated Twitch integration")
 	})
 	if err != nil {
-		logger.Error("could not setup twitch config reload subscription", zap.Error(err))
+		logger.Error("Could not setup twitch config reload subscription", zap.Error(err))
 	}
 
 	// Listen for bot config changes
 	err, cancelBotSub := db.SubscribeKey(BotConfigKey, func(value string) {
 		var newBotConfig BotConfig
 		if err := json.UnmarshalFromString(value, &newBotConfig); err != nil {
-			logger.Error("failed to unmarshal Config", zap.Error(err))
+			logger.Error("Failed to decode bot config", zap.Error(err))
 			return
 		}
 
 		if manager.client.Bot != nil {
 			err = manager.client.Bot.Close()
 			if err != nil {
-				manager.client.logger.Warn("failed to disconnect old bot from Twitch IRC", zap.Error(err))
+				manager.client.logger.Warn("Failed to disconnect old bot from Twitch IRC", zap.Error(err))
 			}
 		}
 
@@ -113,7 +113,7 @@ func NewManager(db *database.LocalDBClient, server *http.Server, logger *zap.Log
 		manager.client.logger.Info("reloaded/restarted Twitch bot")
 	})
 	if err != nil {
-		client.logger.Error("could not setup twitch bot config reload subscription", zap.Error(err))
+		client.logger.Error("Could not setup twitch bot config reload subscription", zap.Error(err))
 	}
 
 	manager.cancelSubs = func() {
@@ -211,15 +211,15 @@ func newClient(config Config, db *database.LocalDBClient, server *http.Server, l
 		if userClient, err := client.GetUserClient(true); err == nil {
 			users, err := userClient.GetUsers(&helix.UsersParams{})
 			if err != nil {
-				client.logger.Error("failed looking up user", zap.Error(err))
+				client.logger.Error("Failed looking up user", zap.Error(err))
 			} else if len(users.Data.Users) < 1 {
-				client.logger.Error("no users found, please authenticate in Twitch configuration -> Events")
+				client.logger.Error("No users found, please authenticate in Twitch configuration -> Events")
 			} else {
 				client.User = users.Data.Users[0]
 				go client.eventSubLoop(userClient)
 			}
 		} else {
-			client.logger.Warn("twitch user not identified, this will break most features")
+			client.logger.Warn("Twitch user not identified, this will break most features")
 		}
 
 		go client.runStatusPoll()

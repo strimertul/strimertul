@@ -93,7 +93,7 @@ func (b *Bot) setupFunctions() {
 			counter += 1
 			err := b.api.db.PutKey(counterKey, strconv.Itoa(counter))
 			if err != nil {
-				b.logger.Error("error saving key", zap.Error(err), zap.String("key", counterKey))
+				b.logger.Error("Error saving key", zap.Error(err), zap.String("key", counterKey))
 			}
 			return counter
 		},

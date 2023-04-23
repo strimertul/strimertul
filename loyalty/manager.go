@@ -19,6 +19,7 @@ import (
 var json = jsoniter.ConfigFastest
 
 var (
+	ErrRedeemNotFound     = errors.New("redeem not found")
 	ErrRedeemInCooldown   = errors.New("redeem is on cooldown")
 	ErrGoalNotFound       = errors.New("goal not found")
 	ErrGoalAlreadyReached = errors.New("goal already reached")
@@ -121,7 +122,7 @@ func NewManager(db *database.LocalDBClient, twitchManager *twitch.Manager, logge
 	// SubscribePrefix for changes
 	err, loyalty.cancelSub = db.SubscribePrefix(loyalty.update, "loyalty/")
 	if err != nil {
-		logger.Error("could not setup loyalty reload subscription", zap.Error(err))
+		logger.Error("Could not setup loyalty reload subscription", zap.Error(err))
 	}
 
 	loyalty.SetBanList(config.BanList)
@@ -189,9 +190,9 @@ func (m *Manager) update(key, value string) {
 		}
 	}
 	if err != nil {
-		m.logger.Error("subscribe error: invalid JSON received on key", zap.Error(err), zap.String("key", key))
+		m.logger.Error("Subscribe error: invalid JSON received on key", zap.Error(err), zap.String("key", key))
 	} else {
-		m.logger.Debug("updated key", zap.String("key", key))
+		m.logger.Debug("Updated key", zap.String("key", key))
 	}
 }
 
@@ -293,7 +294,7 @@ func (m *Manager) RemoveRedeem(redeem Redeem) error {
 		}
 	}
 
-	return errors.New("redeem not found")
+	return ErrRedeemNotFound
 }
 
 func (m *Manager) SaveGoals() error {

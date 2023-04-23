@@ -62,30 +62,30 @@ func SetupTimers(bot *Bot) *BotTimerModule {
 	// Load config from database
 	err := bot.api.db.GetJSON(BotTimersKey, &mod.Config)
 	if err != nil {
-		bot.logger.Debug("config load error", zap.Error(err))
+		bot.logger.Debug("Config load error", zap.Error(err))
 		mod.Config = BotTimersConfig{
 			Timers: make(map[string]BotTimer),
 		}
 		// Save empty config
 		err = bot.api.db.PutJSON(BotTimersKey, mod.Config)
 		if err != nil {
-			bot.logger.Warn("could not save default config for bot timers", zap.Error(err))
+			bot.logger.Warn("Could not save default config for bot timers", zap.Error(err))
 		}
 	}
 
 	err, mod.cancelTimerSub = bot.api.db.SubscribeKey(BotTimersKey, func(value string) {
 		err := json.UnmarshalFromString(value, &mod.Config)
 		if err != nil {
-			bot.logger.Debug("error reloading timer config", zap.Error(err))
+			bot.logger.Debug("Error reloading timer config", zap.Error(err))
 		} else {
-			bot.logger.Info("reloaded timer config")
+			bot.logger.Info("Reloaded timer config")
 		}
 	})
 	if err != nil {
-		bot.logger.Error("could not set-up timer reload subscription", zap.Error(err))
+		bot.logger.Error("Could not set-up timer reload subscription", zap.Error(err))
 	}
 
-	bot.logger.Debug("loaded timers", zap.Int("timers", len(mod.Config.Timers)))
+	bot.logger.Debug("Loaded timers", zap.Int("timers", len(mod.Config.Timers)))
 
 	// Start goroutine for clearing message counters and running timers
 	go mod.runTimers()
@@ -103,7 +103,7 @@ func (m *BotTimerModule) runTimers() {
 
 		err := m.bot.api.db.PutJSON(ChatActivityKey, m.messages.Get())
 		if err != nil {
-			m.bot.logger.Warn("error saving chat activity", zap.Error(err))
+			m.bot.logger.Warn("Error saving chat activity", zap.Error(err))
 		}
 
 		// Calculate activity

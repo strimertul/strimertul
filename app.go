@@ -159,20 +159,20 @@ func (a *App) startup(ctx context.Context) {
 
 func (a *App) stop(context.Context) {
 	if a.lock != nil {
-		warnOnError(a.lock.Unlock(), "could not remove lock file")
+		warnOnError(a.lock.Unlock(), "Could not remove lock file")
 	}
 	if a.loyaltyManager != nil {
-		warnOnError(a.loyaltyManager.Close(), "could not cleanly close loyalty manager")
+		warnOnError(a.loyaltyManager.Close(), "Could not cleanly close loyalty manager")
 	}
 	if a.twitchManager != nil {
-		warnOnError(a.twitchManager.Close(), "could not cleanly close twitch client")
+		warnOnError(a.twitchManager.Close(), "Could not cleanly close twitch client")
 	}
 	if a.httpServer != nil {
-		warnOnError(a.httpServer.Close(), "could not cleanly close HTTP server")
+		warnOnError(a.httpServer.Close(), "Could not cleanly close HTTP server")
 	}
-	warnOnError(a.db.Close(), "could not cleanly close database")
+	warnOnError(a.db.Close(), "Could not cleanly close database")
 
-	warnOnError(a.driver.Close(), "could not close driver")
+	warnOnError(a.driver.Close(), "Could not close driver")
 }
 
 func (a *App) AuthenticateKVClient(id string) {
@@ -180,7 +180,7 @@ func (a *App) AuthenticateKVClient(id string) {
 	if err != nil {
 		return
 	}
-	warnOnError(a.driver.Hub().SetAuthenticated(idInt, true), "could not mark session as authenticated", zap.String("session-id", id))
+	warnOnError(a.driver.Hub().SetAuthenticated(idInt, true), "Could not mark session as authenticated", zap.String("session-id", id))
 }
 
 func (a *App) IsServerReady() bool {
@@ -220,11 +220,11 @@ func (a *App) SendCrashReport(errorData string, info string) (string, error) {
 
 	// Add text fields
 	if err := w.WriteField("error", errorData); err != nil {
-		logger.Error("could not encode field error for crash report", zap.Error(err))
+		logger.Error("Could not encode field error for crash report", zap.Error(err))
 	}
 	if len(info) > 0 {
 		if err := w.WriteField("info", info); err != nil {
-			logger.Error("could not encode field info for crash report", zap.Error(err))
+			logger.Error("Could not encode field info for crash report", zap.Error(err))
 		}
 	}
 
@@ -234,20 +234,20 @@ func (a *App) SendCrashReport(errorData string, info string) (string, error) {
 	addFile(w, "paniclog", panicFilename)
 
 	if err := w.Close(); err != nil {
-		logger.Error("could not prepare request for crash report", zap.Error(err))
+		logger.Error("Could not prepare request for crash report", zap.Error(err))
 		return "", err
 	}
 
 	resp, err := nethttp.Post(crashReportURL, w.FormDataContentType(), &b)
 	if err != nil {
-		logger.Error("could not send crash report", zap.Error(err))
+		logger.Error("Could not send crash report", zap.Error(err))
 		return "", err
 	}
 
 	// Check the response
 	if resp.StatusCode != nethttp.StatusOK {
 		byt, _ := io.ReadAll(resp.Body)
-		logger.Error("crash report server returned error", zap.String("status", resp.Status), zap.String("response", string(byt)))
+		logger.Error("Crash report server returned error", zap.String("status", resp.Status), zap.String("response", string(byt)))
 		return "", fmt.Errorf("crash report server returned error: %s - %s", resp.Status, string(byt))
 	}
 
@@ -297,17 +297,17 @@ func (a *App) showFatalError(err error, text string, fields ...zap.Field) {
 func addFile(m *multipart.Writer, field string, filename string) {
 	logfile, err := m.CreateFormFile(field, filename)
 	if err != nil {
-		logger.Error("could not encode field log for crash report", zap.Error(err))
+		logger.Error("Could not encode field log for crash report", zap.Error(err))
 		return
 	}
 
 	file, err := os.Open(filename)
 	if err != nil {
-		logger.Error("could not open file for including in crash report", zap.Error(err), zap.String("file", filename))
+		logger.Error("Could not open file for including in crash report", zap.Error(err), zap.String("file", filename))
 		return
 	}
 
 	if _, err = io.Copy(logfile, file); err != nil {
-		logger.Error("could not read from file for including in crash report", zap.Error(err), zap.String("file", filename))
+		logger.Error("Could not read from file for including in crash report", zap.Error(err), zap.String("file", filename))
 	}
 }

@@ -37,7 +37,7 @@ func cliImport(ctx *cli.Context) error {
 		return fatalError(err, "import failed")
 	}
 
-	logger.Info("imported database from file")
+	logger.Info("Imported database from file")
 	return nil
 }
 
@@ -63,7 +63,7 @@ func cliRestore(ctx *cli.Context) error {
 		return fatalError(err, "restore failed")
 	}
 
-	logger.Info("restored database from backup")
+	logger.Info("Restored database from backup")
 	return nil
 }
 
@@ -89,6 +89,6 @@ func cliExport(ctx *cli.Context) error {
 		return fatalError(err, "export failed")
 	}
 
-	logger.Info("exported database")
+	logger.Info("Exported database")
 	return nil
 }

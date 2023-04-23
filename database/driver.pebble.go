@@ -79,14 +79,14 @@ func (p *PebbleDatabase) Restore(file io.Reader) error {
 	in := make(map[string]string)
 	err := json.NewDecoder(file).Decode(&in)
 	if err != nil {
-		return fmt.Errorf("Could not decode backup: %w", err)
+		return fmt.Errorf("could not decode backup: %w", err)
 	}
 
 	b := p.db.NewBatch()
 	for k, v := range in {
 		err = b.Set([]byte(k), []byte(v), nil)
 		if err != nil {
-			return fmt.Errorf("Could not set key %s: %w", k, err)
+			return fmt.Errorf("could not set key %s: %w", k, err)
 		}
 	}
 

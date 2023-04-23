@@ -97,12 +97,12 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 	// Load config from database
 	err := bot.api.db.GetJSON(BotAlertsKey, &mod.Config)
 	if err != nil {
-		bot.logger.Debug("config load error", zap.Error(err))
+		bot.logger.Debug("Config load error", zap.Error(err))
 		mod.Config = BotAlertsConfig{}
 		// Save empty config
 		err = bot.api.db.PutJSON(BotAlertsKey, mod.Config)
 		if err != nil {
-			bot.logger.Warn("could not save default config for bot alerts", zap.Error(err))
+			bot.logger.Warn("Could not save default config for bot alerts", zap.Error(err))
 		}
 	}
 
@@ -111,14 +111,14 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 	err, mod.cancelAlertSub = bot.api.db.SubscribeKey(BotAlertsKey, func(value string) {
 		err := json.UnmarshalFromString(value, &mod.Config)
 		if err != nil {
-			bot.logger.Debug("error reloading timer config", zap.Error(err))
+			bot.logger.Debug("Error reloading timer config", zap.Error(err))
 		} else {
-			bot.logger.Info("reloaded alert config")
+			bot.logger.Info("Reloaded alert config")
 		}
 		mod.compileTemplates()
 	})
 	if err != nil {
-		bot.logger.Error("could not set-up bot alert reload subscription", zap.Error(err))
+		bot.logger.Error("Could not set-up bot alert reload subscription", zap.Error(err))
 	}
 
 	// Subscriptions are handled with a slight delay as info come from different events and must be aggregated
@@ -236,7 +236,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 		var ev eventSubNotification
 		err := json.UnmarshalFromString(value, &ev)
 		if err != nil {
-			bot.logger.Debug("error parsing webhook payload", zap.Error(err))
+			bot.logger.Debug("Error parsing webhook payload", zap.Error(err))
 			return
 		}
 		switch ev.Subscription.Type {
@@ -249,7 +249,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			var followEv helix.EventSubChannelFollowEvent
 			err := json.Unmarshal(ev.Event, &followEv)
 			if err != nil {
-				bot.logger.Debug("error parsing follow event", zap.Error(err))
+				bot.logger.Debug("Error parsing follow event", zap.Error(err))
 				return
 			}
 			// Pick a random message
@@ -270,7 +270,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			var raidEv helix.EventSubChannelRaidEvent
 			err := json.Unmarshal(ev.Event, &raidEv)
 			if err != nil {
-				bot.logger.Debug("error parsing raid event", zap.Error(err))
+				bot.logger.Debug("Error parsing raid event", zap.Error(err))
 				return
 			}
 			// Pick a random message from base set
@@ -306,7 +306,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			var cheerEv helix.EventSubChannelCheerEvent
 			err := json.Unmarshal(ev.Event, &cheerEv)
 			if err != nil {
-				bot.logger.Debug("error parsing cheer event", zap.Error(err))
+				bot.logger.Debug("Error parsing cheer event", zap.Error(err))
 				return
 			}
 			// Pick a random message from base set
@@ -342,7 +342,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			var subEv helix.EventSubChannelSubscribeEvent
 			err := json.Unmarshal(ev.Event, &subEv)
 			if err != nil {
-				bot.logger.Debug("error parsing sub event", zap.Error(err))
+				bot.logger.Debug("Error parsing new subscription event", zap.Error(err))
 				return
 			}
 			addPendingSub(subEv)
@@ -355,7 +355,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			var subEv helix.EventSubChannelSubscriptionMessageEvent
 			err := json.Unmarshal(ev.Event, &subEv)
 			if err != nil {
-				bot.logger.Debug("error parsing sub event", zap.Error(err))
+				bot.logger.Debug("Error parsing returning subscription event", zap.Error(err))
 				return
 			}
 			addPendingSub(subEv)
@@ -368,7 +368,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			var giftEv helix.EventSubChannelSubscriptionGiftEvent
 			err := json.Unmarshal(ev.Event, &giftEv)
 			if err != nil {
-				bot.logger.Debug("error parsing raid event", zap.Error(err))
+				bot.logger.Debug("Error parsing subscription gifted event", zap.Error(err))
 				return
 			}
 			// Pick a random message from base set
@@ -411,10 +411,10 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 		}
 	})
 	if err != nil {
-		bot.logger.Error("could not setup twitch alert subscription", zap.Error(err))
+		bot.logger.Error("Could not setup twitch alert subscription", zap.Error(err))
 	}
 
-	bot.logger.Debug("loaded bot alerts")
+	bot.logger.Debug("Loaded bot alerts")
 
 	return mod
 }
@@ -468,7 +468,7 @@ func (m *BotAlertsModule) compileTemplates() {
 func (m *BotAlertsModule) addTemplate(templateList templateCache, msg string) {
 	tpl, err := template.New("").Funcs(m.bot.customFunctions).Funcs(sprig.TxtFuncMap()).Parse(msg)
 	if err != nil {
-		m.bot.logger.Error("error compiling template", zap.Error(err))
+		m.bot.logger.Error("Error compiling alert template", zap.Error(err))
 		return
 	}
 	templateList[msg] = tpl
@@ -488,7 +488,7 @@ func writeTemplate(bot *Bot, tpl *template.Template, data interface{}) {
 	var buf bytes.Buffer
 	err := tpl.Execute(&buf, data)
 	if err != nil {
-		bot.logger.Error("error executing template for alert", zap.Error(err))
+		bot.logger.Error("Error executing template for bot alert", zap.Error(err))
 		return
 	}
 	bot.WriteMessage(buf.String())
