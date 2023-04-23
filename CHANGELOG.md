@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A lot of log messages now are better formatted and more informative
 - EventSub connections will auto restart if they drop for unexpected reasons (network hiccups and unexpected closes)
 
+### Fixed
+
+- The UPDATE AVAILABLE banner in prerelease builds now works properly by only appearing when a newer prerelease (or stable) version is available to download.
+
 ## [3.1.5] - 2023-03-31
 
 ### Fixed
