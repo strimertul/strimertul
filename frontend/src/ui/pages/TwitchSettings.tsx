@@ -181,7 +181,7 @@ function TwitchBotSettings() {
           id="bot-chat-history"
           required={active}
           disabled={disabled}
-          value={botConfig?.chat_history ?? ''}
+          defaultValue={botConfig?.chat_history}
           onChange={(ev) =>
             dispatch(
               apiReducer.actions.twitchBotConfigChanged({

@@ -454,7 +454,7 @@ function RewardsPage() {
                 id="reward-cost"
                 type="number"
                 required
-                value={dialogReward?.reward?.price ?? '0'}
+                defaultValue={dialogReward?.reward?.price}
                 onChange={(e) => {
                   setDialogReward({
                     ...dialogReward,
@@ -780,7 +780,7 @@ function GoalsPage() {
                 id="goal-cost"
                 type="number"
                 required
-                value={dialogGoal?.goal?.total ?? '0'}
+                defaultValue={dialogGoal?.goal?.total}
                 onChange={(e) => {
                   setDialogGoal({
                     ...dialogGoal,

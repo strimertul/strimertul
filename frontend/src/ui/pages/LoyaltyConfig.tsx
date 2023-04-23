@@ -104,7 +104,7 @@ export default function LoyaltySettingsPage(): React.ReactElement {
               id="reward"
               placeholder={'0'}
               css={{ maxWidth: '5rem' }}
-              value={config?.points?.amount ?? '0'}
+              defaultValue={config?.points?.amount}
               disabled={!active || busy}
               required={true}
               onChange={(e) => {
@@ -153,7 +153,7 @@ export default function LoyaltySettingsPage(): React.ReactElement {
             type="number"
             id="bonus"
             placeholder={'0'}
-            value={config?.points?.activity_bonus ?? '0'}
+            defaultValue={config?.points?.activity_bonus}
             disabled={!active || busy}
             required={true}
             onChange={(e) => {

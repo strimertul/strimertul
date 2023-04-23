@@ -277,7 +277,7 @@ function TimerDialog({
           <FlexRow align="left" spacing={1}>
             <InputBox
               id="timer-activity"
-              value={minActivity}
+              defaultValue={minActivity}
               type="number"
               css={{
                 width: '5rem',
