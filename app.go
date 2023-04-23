@@ -268,7 +268,7 @@ func (a *App) GetAppVersion() VersionInfo {
 	}
 }
 
-func (a *App) interactiveAuth(client kv.Client, message map[string]interface{}) bool {
+func (a *App) interactiveAuth(client kv.Client, message map[string]any) bool {
 	callbackID := fmt.Sprintf("auth-callback-%d", client.UID())
 	authResult := make(chan bool)
 	runtime.EventsOnce(a.ctx, callbackID, func(optional ...any) {

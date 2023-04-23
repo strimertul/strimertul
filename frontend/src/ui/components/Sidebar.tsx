@@ -153,6 +153,39 @@ function SidebarLink({ route: { title, url, icon } }: { route: Route }) {
   );
 }
 
+function parseVersion(semanticVersion: string) {
+  const [version, prerelease] = semanticVersion.split('-', 2);
+  const [major, minor, patch] = version.split('.').map((x) => parseInt(x, 10));
+  return { major, minor, patch, prerelease };
+}
+
+function hasLatestOrBeta(current: string, latest: string): boolean {
+  // If current version has no prerelease tag, just do a string check
+  if (!current.includes('-', 6)) {
+    return current.startsWith(latest);
+  }
+
+  // Split MAJOR/MINOR/PATCH and check each
+  const parsedCurrent = parseVersion(current);
+  const parsedLatest = parseVersion(latest);
+
+  if (
+    parsedCurrent.major > parsedLatest.major ||
+    parsedCurrent.minor > parsedLatest.minor ||
+    parsedCurrent.patch > parsedLatest.patch
+  ) {
+    return true;
+  }
+
+  // If latest has no prerelease, we assume stable
+  if (!parsedLatest.prerelease) {
+    return true;
+  }
+
+  // Sort by prerelease (this breaks with high numbers but hopefully we won't get to alpha.10)
+  return parsedCurrent.prerelease > parsedLatest.prerelease;
+}
+
 export default function Sidebar({
   sections,
 }: SidebarProps): React.ReactElement {
@@ -164,22 +197,40 @@ export default function Sidebar({
     null,
   );
   const dev = version && version.startsWith('v0.0.0');
+  const prerelease = !dev && version.includes('-', 6);
 
   async function fetchLastVersion() {
     try {
-      const req = await fetch(
-        `https://api.github.com/repos/${APPREPO}/releases/latest`,
-        {
-          headers: {
-            Accept: 'application/vnd.github.v3+json',
+      // For prerelease builds, use the list endpoint to get the latest prerelease
+      if (prerelease) {
+        const req = await fetch(
+          `https://api.github.com/repos/${APPREPO}/releases`,
+          {
+            headers: {
+              Accept: 'application/vnd.github.v3+json',
+            },
           },
-        },
-      );
-      const data = (await req.json()) as { html_url: string; name: string };
-      setLastVersion({
-        url: data.html_url,
-        name: data.name,
-      });
+        );
+        const data = (await req.json()) as { html_url: string; name: string }[];
+        setLastVersion({
+          url: data[0].html_url,
+          name: data[0].name,
+        });
+      } else {
+        const req = await fetch(
+          `https://api.github.com/repos/${APPREPO}/releases/latest`,
+          {
+            headers: {
+              Accept: 'application/vnd.github.v3+json',
+            },
+          },
+        );
+        const data = (await req.json()) as { html_url: string; name: string };
+        setLastVersion({
+          url: data.html_url,
+          name: data.name,
+        });
+      }
     } catch (e) {
       // TODO Report error nicely
       console.warn('Failed checking upstream for latest version', e);
@@ -209,7 +260,7 @@ export default function Sidebar({
           {!dev &&
             version &&
             lastVersion &&
-            !version.startsWith(lastVersion.name) && (
+            !hasLatestOrBeta(version, lastVersion.name) && (
               <UpdateButton href={lastVersion.url}>
                 {t('menu.messages.update-available')}
               </UpdateButton>

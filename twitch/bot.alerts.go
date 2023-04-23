@@ -174,7 +174,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 		}
 		writeTemplate(bot, tpl, sub)
 	}
-	addPendingSub := func(ev interface{}) {
+	addPendingSub := func(ev any) {
 		switch sub := ev.(type) {
 		case helix.EventSubChannelSubscribeEvent:
 			pendingMux.Lock()

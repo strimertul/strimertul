@@ -64,7 +64,7 @@ func (mod *LocalDBClient) Close() error {
 }
 
 func (mod *LocalDBClient) GetKey(key string) (string, error) {
-	res, err := mod.makeRequest(kv.CmdReadKey, map[string]interface{}{"key": key})
+	res, err := mod.makeRequest(kv.CmdReadKey, map[string]any{"key": key})
 	if err != nil {
 		return "", err
 	}
@@ -72,14 +72,14 @@ func (mod *LocalDBClient) GetKey(key string) (string, error) {
 }
 
 func (mod *LocalDBClient) PutKey(key string, data string) error {
-	_, err := mod.makeRequest(kv.CmdWriteKey, map[string]interface{}{"key": key, "data": data})
+	_, err := mod.makeRequest(kv.CmdWriteKey, map[string]any{"key": key, "data": data})
 	return err
 }
 
 func (mod *LocalDBClient) SubscribePrefix(fn kv.SubscriptionCallback, prefixes ...string) (err error, cancelFn CancelFunc) {
 	var ids []int64
 	for _, prefix := range prefixes {
-		_, err = mod.makeRequest(kv.CmdSubscribePrefix, map[string]interface{}{"prefix": prefix})
+		_, err = mod.makeRequest(kv.CmdSubscribePrefix, map[string]any{"prefix": prefix})
 		if err != nil {
 			return err, nil
 		}
@@ -93,7 +93,7 @@ func (mod *LocalDBClient) SubscribePrefix(fn kv.SubscriptionCallback, prefixes .
 }
 
 func (mod *LocalDBClient) SubscribeKey(key string, fn func(string)) (err error, cancelFn CancelFunc) {
-	_, err = mod.makeRequest(kv.CmdSubscribeKey, map[string]interface{}{"key": key})
+	_, err = mod.makeRequest(kv.CmdSubscribeKey, map[string]any{"key": key})
 	if err != nil {
 		return err, nil
 	}
@@ -108,7 +108,7 @@ func (mod *LocalDBClient) SubscribeKey(key string, fn func(string)) (err error, 
 	}
 }
 
-func (mod *LocalDBClient) GetJSON(key string, dst interface{}) error {
+func (mod *LocalDBClient) GetJSON(key string, dst any) error {
 	res, err := mod.GetKey(key)
 	if err != nil {
 		return err
@@ -120,19 +120,19 @@ func (mod *LocalDBClient) GetJSON(key string, dst interface{}) error {
 }
 
 func (mod *LocalDBClient) GetAll(prefix string) (map[string]string, error) {
-	res, err := mod.makeRequest(kv.CmdReadPrefix, map[string]interface{}{"prefix": prefix})
+	res, err := mod.makeRequest(kv.CmdReadPrefix, map[string]any{"prefix": prefix})
 	if err != nil {
 		return nil, err
 	}
 
 	out := make(map[string]string)
-	for key, value := range res.Data.(map[string]interface{}) {
+	for key, value := range res.Data.(map[string]any) {
 		out[key] = value.(string)
 	}
 	return out, nil
 }
 
-func (mod *LocalDBClient) PutJSON(key string, data interface{}) error {
+func (mod *LocalDBClient) PutJSON(key string, data any) error {
 	byt, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -141,8 +141,8 @@ func (mod *LocalDBClient) PutJSON(key string, data interface{}) error {
 	return mod.PutKey(key, string(byt))
 }
 
-func (mod *LocalDBClient) PutJSONBulk(kvs map[string]interface{}) error {
-	encoded := make(map[string]interface{})
+func (mod *LocalDBClient) PutJSONBulk(kvs map[string]any) error {
+	encoded := make(map[string]any)
 	for k, v := range kvs {
 		byt, err := json.Marshal(v)
 		if err != nil {
@@ -160,13 +160,13 @@ func (mod *LocalDBClient) RemoveKey(key string) error {
 	return mod.PutKey(key, "")
 }
 
-func (mod *LocalDBClient) makeRequest(cmd string, data map[string]interface{}) (kv.Response, error) {
+func (mod *LocalDBClient) makeRequest(cmd string, data map[string]any) (kv.Response, error) {
 	req, chn := mod.client.MakeRequest(cmd, data)
 	mod.hub.SendMessage(req)
 	return getResponse(<-chn)
 }
 
-func getResponse(response interface{}) (kv.Response, error) {
+func getResponse(response any) (kv.Response, error) {
 	switch c := response.(type) {
 	case kv.Response:
 		return c, nil

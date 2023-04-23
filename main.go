@@ -147,7 +147,7 @@ func cliMain(ctx *cli.Context) error {
 			}
 			return dialog != "Yes"
 		},
-		Bind: []interface{}{
+		Bind: []any{
 			app,
 		},
 	})
