@@ -46,3 +46,11 @@ export const TextBlock = styled('p', {
     },
   },
 });
+
+export const NoneText = styled('div', {
+  color: '$gray9',
+  fontSize: '1.2em',
+  textAlign: 'center',
+  fontStyle: 'italic',
+  paddingTop: '1rem',
+});

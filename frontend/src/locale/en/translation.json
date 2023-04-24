@@ -228,7 +228,7 @@
       "edit-reward": "Edit reward",
       "remove-reward-title": "Remove reward \"{{name}}\"?",
       "no-rewards": "There are no loyalty rewards, why not start with an Hydrate or Stretch?",
-      "no-goals": "There are no goals configured",
+      "no-goals": "There are no community goals configured",
       "create-goal": "Create goal",
       "edit-goal": "Edit goal",
       "goal-id": "Goal ID",

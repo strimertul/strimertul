@@ -21,6 +21,7 @@ import {
   InputBox,
   Label,
   MultiButton,
+  NoneText,
   PageContainer,
   PageHeader,
   PageTitle,
@@ -90,13 +91,6 @@ const TimerText = styled('div', {
   '&:last-child': {
     marginBottom: '-0.5rem',
   },
-});
-const NoneText = styled('div', {
-  color: '$gray9',
-  fontSize: '1.2em',
-  textAlign: 'center',
-  fontStyle: 'italic',
-  paddingTop: '1rem',
 });
 
 function humanTime(t: TFunction<'translation'>, secs: number): string {

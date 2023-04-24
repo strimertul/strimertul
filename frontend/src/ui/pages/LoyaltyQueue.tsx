@@ -14,6 +14,7 @@ import {
   FlexRow,
   InputBox,
   Label,
+  NoneText,
   PageContainer,
   PageHeader,
   PageTitle,
@@ -137,7 +138,7 @@ function RewardQueue() {
             </TableRow>
           )}
         />
-      )) || <TextBlock>{t('pages.loyalty-queue.no-redeems')}</TextBlock>}
+      )) || <NoneText>{t('pages.loyalty-queue.no-redeems')}</NoneText>}
     </>
   );
 }
@@ -371,7 +372,7 @@ function UserList() {
             </TableRow>
           )}
         />
-      )) || <TextBlock>{t('pages.loyalty-queue.no-users')}</TextBlock>}
+      )) || <NoneText>{t('pages.loyalty-queue.no-users')}</NoneText>}
     </>
   );
 }

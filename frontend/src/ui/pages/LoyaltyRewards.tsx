@@ -21,6 +21,7 @@ import {
   InputBox,
   Label,
   MultiButton,
+  NoneText,
   PageContainer,
   PageHeader,
   PageTitle,
@@ -102,13 +103,6 @@ const RewardIcon = styled('div', {
   borderRadius: '0.25rem',
   display: 'flex',
   alignItems: 'center',
-});
-const NoneText = styled('div', {
-  color: '$gray9',
-  fontSize: '1.2em',
-  textAlign: 'center',
-  fontStyle: 'italic',
-  paddingTop: '1rem',
 });
 
 interface RewardItemProps {
@@ -573,7 +567,7 @@ function RewardsPage() {
         </FlexRow>
       </Field>
       <RewardList>
-        {rewards ? (
+        {rewards && rewards.length > 0 ? (
           rewards
             ?.filter(
               (r) =>
@@ -619,10 +613,6 @@ function GoalsPage() {
     new: boolean;
     goal: LoyaltyGoal;
   }>({ open: false, new: false, goal: null });
-  const [_requiredInfo, setRequiredInfo] = useState({
-    enabled: false,
-    text: '',
-  });
   const filterLC = filter.toLowerCase();
 
   const deleteGoal = (id: string): void => {
@@ -813,10 +803,6 @@ function GoalsPage() {
           <Button
             variation="primary"
             onClick={() => {
-              setRequiredInfo({
-                enabled: false,
-                text: '',
-              });
               setDialogGoal({
                 open: true,
                 new: true,
@@ -844,7 +830,7 @@ function GoalsPage() {
         </FlexRow>
       </Field>
       <GoalList>
-        {goals ? (
+        {goals && goals.length > 0 ? (
           goals
             ?.filter(
               (r) =>

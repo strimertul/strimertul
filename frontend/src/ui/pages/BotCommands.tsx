@@ -23,6 +23,7 @@ import {
   InputBox,
   Label,
   MultiButton,
+  NoneText,
   PageContainer,
   PageHeader,
   PageTitle,
@@ -94,14 +95,6 @@ const ACLIndicator = styled('span', {
   fontFamily: 'Space Mono',
   fontSize: '10pt',
   marginRight: '0.5rem',
-});
-
-const NoneText = styled('div', {
-  color: '$gray9',
-  fontSize: '1.2em',
-  textAlign: 'center',
-  fontStyle: 'italic',
-  paddingTop: '1rem',
 });
 
 interface CommandItemProps {
