@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - The UPDATE AVAILABLE banner in prerelease builds now works properly by only appearing when a newer prerelease (or stable) version is available to download.
+- Numeric input boxes in the UI should now be less of a pain to use
 
 ## [3.1.5] - 2023-03-31
 

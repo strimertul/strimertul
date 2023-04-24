@@ -110,7 +110,7 @@ func NewManager(db *database.LocalDBClient, server *http.Server, logger *zap.Log
 			manager.client.Bot = nil
 		}
 
-		manager.client.logger.Info("reloaded/restarted Twitch bot")
+		manager.client.logger.Info("Reloaded/restarted Twitch bot")
 	})
 	if err != nil {
 		client.logger.Error("Could not setup twitch bot config reload subscription", zap.Error(err))

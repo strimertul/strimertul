@@ -162,7 +162,6 @@ function TwitchBotSettings() {
         />
         <FieldNote>
           <Trans i18nKey="pages.twitch-settings.bot-oauth-note">
-            {' '}
             <BrowserLink href="https://twitchapps.com/tmi/">
               https://twitchapps.com/tmi/
             </BrowserLink>
