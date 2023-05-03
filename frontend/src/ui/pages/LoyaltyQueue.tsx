@@ -104,6 +104,7 @@ function RewardQueue() {
         <DataTable
           sort={sortfn}
           data={data}
+          keyFunction={(d) => `${d.when.toString()}/${d.username}`}
           columns={[
             {
               key: 'when',
@@ -350,6 +351,7 @@ function UserList() {
         <DataTable
           sort={sortfn}
           data={filtered}
+          keyFunction={(entry) => entry.username}
           columns={[
             {
               key: 'username',

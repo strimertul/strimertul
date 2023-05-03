@@ -28,6 +28,7 @@ export interface DataTableProps<T> {
   defaultSort: SortingOrder<T>;
   rowComponent: (data: { data: T }) => ReactElement;
   sort: (key: keyof T) => SortFunction<T>;
+  keyFunction: (data: T) => string;
 }
 
 const Sortable = styled('div', {
@@ -46,6 +47,7 @@ export function DataTable<T>({
   defaultSort,
   sort,
   rowComponent,
+  keyFunction,
 }: DataTableProps<T>): React.ReactElement {
   const [entriesPerPage, setEntriesPerPage] = useState(15);
   const [page, setPage] = useState(0);
@@ -119,7 +121,7 @@ export function DataTable<T>({
         </thead>
         <tbody>
           {paged.map((entry) => (
-            <RowComponent data={entry} />
+            <RowComponent key={keyFunction(entry)} data={entry} />
           ))}
         </tbody>
       </Table>
