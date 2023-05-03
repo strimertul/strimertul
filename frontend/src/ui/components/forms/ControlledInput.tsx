@@ -16,7 +16,9 @@ const ControlledInput = (
 
   useEffect(() => {
     const input = ref.current;
-    if (input) input.setSelectionRange(cursor, cursor);
+    if (input) {
+      input.setSelectionRange(cursor, cursor);
+    }
   }, [ref, cursor, value]);
 
   return (
@@ -25,7 +27,9 @@ const ControlledInput = (
       value={value}
       onChange={(e) => {
         setCursor(e.target.selectionStart);
-        if (onChange) onChange(e);
+        if (onChange) {
+          onChange(e);
+        }
       }}
       {...rest}
     />

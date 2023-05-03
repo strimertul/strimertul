@@ -4,6 +4,7 @@ import { useModule, useUserPoints } from '~/lib/react';
 import { SortFunction } from '~/lib/types';
 import { useAppDispatch } from '~/store';
 import { modules, removeRedeem, setUserPoints } from '~/store/api/reducer';
+import { LoyaltyRedeem } from '~/store/api/types';
 import { DataTable } from '../components/DataTable';
 import DialogContent from '../components/DialogContent';
 import {
@@ -26,10 +27,54 @@ import {
 } from '../theme';
 import { TableCell, TableRow } from '../theme/table';
 
+function RewardQueueRow({ data }: { data: LoyaltyRedeem & { date: Date } }) {
+  const dispatch = useAppDispatch();
+  const { t } = useTranslation();
+
+  return (
+    <TableRow key={`${data.when.toString()}${data.username}`}>
+      <TableCell css={{ width: '22%', fontSize: '0.8rem' }}>
+        {data.date.toLocaleString()}
+      </TableCell>
+      <TableCell css={{ width: '10%' }}>{data.username}</TableCell>
+      <TableCell css={{ width: '18%' }}>{data.reward?.name}</TableCell>
+      <TableCell css={{ width: '40%' }}>{data.request_text}</TableCell>
+      <TableCell>
+        <FlexRow spacing="1">
+          <Button
+            size="small"
+            onClick={() => {
+              void dispatch(removeRedeem(data));
+            }}
+          >
+            {t('pages.loyalty-queue.accept')}
+          </Button>
+          <Button
+            size="small"
+            onClick={() => {
+              // Give points back to the viewer
+              void dispatch(
+                setUserPoints({
+                  user: data.username,
+                  points: data.reward.price,
+                  relative: true,
+                }),
+              );
+              // Take the redeem off the list
+              void dispatch(removeRedeem(data));
+            }}
+          >
+            {t('pages.loyalty-queue.refund')}
+          </Button>
+        </FlexRow>
+      </TableCell>
+    </TableRow>
+  );
+}
+
 function RewardQueue() {
   const { t } = useTranslation();
   const [queue] = useModule(modules.loyaltyRedeemQueue);
-  const dispatch = useAppDispatch();
 
   // Big hack but this is required or refunds break
   useUserPoints();
@@ -98,45 +143,7 @@ function RewardQueue() {
             },
           ]}
           defaultSort={{ key: 'when', order: 'desc' }}
-          view={(entry) => (
-            <TableRow key={`${entry.when.toString()}${entry.username}`}>
-              <TableCell css={{ width: '22%', fontSize: '0.8rem' }}>
-                {entry.date.toLocaleString()}
-              </TableCell>
-              <TableCell css={{ width: '10%' }}>{entry.username}</TableCell>
-              <TableCell css={{ width: '18%' }}>{entry.reward?.name}</TableCell>
-              <TableCell css={{ width: '40%' }}>{entry.request_text}</TableCell>
-              <TableCell>
-                <FlexRow spacing="1">
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      void dispatch(removeRedeem(entry));
-                    }}
-                  >
-                    {t('pages.loyalty-queue.accept')}
-                  </Button>
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      // Give points back to the viewer
-                      void dispatch(
-                        setUserPoints({
-                          user: entry.username,
-                          points: entry.reward.price,
-                          relative: true,
-                        }),
-                      );
-                      // Take the redeem off the list
-                      void dispatch(removeRedeem(entry));
-                    }}
-                  >
-                    {t('pages.loyalty-queue.refund')}
-                  </Button>
-                </FlexRow>
-              </TableCell>
-            </TableRow>
-          )}
+          rowComponent={RewardQueueRow}
         />
       )) || <NoneText>{t('pages.loyalty-queue.no-redeems')}</NoneText>}
     </>
@@ -174,6 +181,18 @@ function UserList() {
       }
     }
   };
+
+  const UserListRow = ({ data }: { data: UserEntry }) => (
+    <TableRow key={data.username}>
+      <TableCell css={{ width: '100%' }}>{data.username}</TableCell>
+      <TableCell>{data.points}</TableCell>
+      <TableCell>
+        <Button onClick={() => setCurrentEntry(data)} size="small">
+          {t('form-actions.edit')}
+        </Button>
+      </TableCell>
+    </TableRow>
+  );
 
   return (
     <>
@@ -360,17 +379,7 @@ function UserList() {
             },
           ]}
           defaultSort={{ key: 'points', order: 'desc' }}
-          view={(entry) => (
-            <TableRow key={entry.username}>
-              <TableCell css={{ width: '100%' }}>{entry.username}</TableCell>
-              <TableCell>{entry.points}</TableCell>
-              <TableCell>
-                <Button onClick={() => setCurrentEntry(entry)} size="small">
-                  {t('form-actions.edit')}
-                </Button>
-              </TableCell>
-            </TableRow>
-          )}
+          rowComponent={UserListRow}
         />
       )) || <NoneText>{t('pages.loyalty-queue.no-users')}</NoneText>}
     </>

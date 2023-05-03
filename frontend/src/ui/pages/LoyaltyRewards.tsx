@@ -361,7 +361,7 @@ function RewardsPage() {
                       id:
                         e.target.value
                           ?.toLowerCase()
-                          .replace(/[^a-zA-Z0-9]/gi, '-') ?? '',
+                          .replace(/[^a-z0-9]/gi, '-') ?? '',
                     },
                   });
                   if (
@@ -685,7 +685,7 @@ function GoalsPage() {
                       id:
                         e.target.value
                           ?.toLowerCase()
-                          .replace(/[^a-zA-Z0-9]/gi, '-') ?? '',
+                          .replace(/[^a-z0-9]/gi, '-') ?? '',
                     },
                   });
                   if (

@@ -277,7 +277,7 @@ export function LogItem({ data, expandDefault }: LogItemProps) {
       {details.length > 0 && showDetails ? (
         <LogDetails level={levelStyle}>
           {details.map(([key, value]) => (
-            <LogDetailItem>
+            <LogDetailItem key={key}>
               <LogDetailKey level={levelStyle}>{key}</LogDetailKey>
               <LogDetailValue>{JSON.stringify(value)}</LogDetailValue>
             </LogDetailItem>

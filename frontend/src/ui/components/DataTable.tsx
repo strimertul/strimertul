@@ -1,5 +1,5 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
-import React, { useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 import { SortFunction } from '~/lib/types';
 import { styled } from '../theme';
 import { Table, TableHeader } from '../theme/table';
@@ -26,7 +26,7 @@ export interface DataTableProps<T> {
       }
   ))[];
   defaultSort: SortingOrder<T>;
-  view: (data: T) => React.ReactNode;
+  rowComponent: (data: { data: T }) => ReactElement;
   sort: (key: keyof T) => SortFunction<T>;
 }
 
@@ -45,7 +45,7 @@ export function DataTable<T>({
   columns,
   defaultSort,
   sort,
-  view,
+  rowComponent,
 }: DataTableProps<T>): React.ReactElement {
   const [entriesPerPage, setEntriesPerPage] = useState(15);
   const [page, setPage] = useState(0);
@@ -83,6 +83,8 @@ export function DataTable<T>({
   const paged = sortedEntries.slice(offset, offset + entriesPerPage);
   const totalPages = Math.floor(sortedEntries.length / entriesPerPage);
 
+  const RowComponent = rowComponent;
+
   return (
     <>
       <PageList
@@ -115,7 +117,11 @@ export function DataTable<T>({
             ))}
           </tr>
         </thead>
-        <tbody>{paged.map(view)}</tbody>
+        <tbody>
+          {paged.map((entry) => (
+            <RowComponent data={entry} />
+          ))}
+        </tbody>
       </Table>
       <PageList
         current={page + 1}

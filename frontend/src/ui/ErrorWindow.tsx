@@ -178,7 +178,9 @@ function RecoveryDialog({ open, onOpenChange }: RecoveryDialogProps) {
         defaultOpen={true}
         open={open}
         onOpenChange={(state) => {
-          if (onOpenChange) onOpenChange(state);
+          if (onOpenChange) {
+            onOpenChange(state);
+          }
           setRestored('idle');
         }}
       >
@@ -188,7 +190,9 @@ function RecoveryDialog({ open, onOpenChange }: RecoveryDialogProps) {
           description={t('pages.crash.recovery.restore-succeeded-body')}
           actionText={t('form-actions.ok')}
           onAction={() => {
-            if (onOpenChange) onOpenChange(false);
+            if (onOpenChange) {
+              onOpenChange(false);
+            }
             setRestored('idle');
           }}
         />
@@ -202,7 +206,9 @@ function RecoveryDialog({ open, onOpenChange }: RecoveryDialogProps) {
         defaultOpen={false}
         open={!!restoreError}
         onOpenChange={(val: boolean) => {
-          if (!val) setRestoreError(null);
+          if (!val) {
+            setRestoreError(null);
+          }
         }}
       >
         <AlertContent
@@ -220,7 +226,9 @@ function RecoveryDialog({ open, onOpenChange }: RecoveryDialogProps) {
       <Dialog
         open={open}
         onOpenChange={(state) => {
-          if (onOpenChange) onOpenChange(state);
+          if (onOpenChange) {
+            onOpenChange(state);
+          }
         }}
       >
         <DialogContent
@@ -315,7 +323,9 @@ function ReportDialog({ open, onOpenChange, errorData }: ReportDialogProps) {
       <Alert
         open={open}
         onOpenChange={(state) => {
-          if (onOpenChange) onOpenChange(state);
+          if (onOpenChange) {
+            onOpenChange(state);
+          }
         }}
       >
         <AlertContent
@@ -353,7 +363,9 @@ function ReportDialog({ open, onOpenChange, errorData }: ReportDialogProps) {
         defaultOpen={false}
         open={!!submissionError}
         onOpenChange={(val: boolean) => {
-          if (!val) setSubmissionError(null);
+          if (!val) {
+            setSubmissionError(null);
+          }
         }}
       >
         <AlertContent
@@ -370,7 +382,9 @@ function ReportDialog({ open, onOpenChange, errorData }: ReportDialogProps) {
       <Dialog
         open={open}
         onOpenChange={(state) => {
-          if (onOpenChange) onOpenChange(state);
+          if (onOpenChange) {
+            onOpenChange(state);
+          }
         }}
       >
         <DialogContent

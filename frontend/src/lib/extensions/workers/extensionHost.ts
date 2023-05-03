@@ -39,8 +39,10 @@ function log(level: string) {
 }
 
 function start() {
-  if (!extFn || !kv || extensionStatus !== ExtensionStatus.Ready)
+  if (!extFn || !kv || extensionStatus !== ExtensionStatus.Ready) {
     throw new Error('extension not ready');
+  }
+
   void extFn(kv)
     .then(() => {
       setStatus(ExtensionStatus.Finished);
@@ -51,6 +53,7 @@ function start() {
         error,
       });
     });
+
   setStatus(ExtensionStatus.Running);
 }
 
