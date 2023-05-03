@@ -59,11 +59,10 @@ onmessage = async (ev: MessageEvent<ExtensionHostCommand>) => {
   switch (cmd.kind) {
     case 'arguments': {
       // Create Kilovolt instance
-      kv = new Kilovolt(
-        cmd.dependencies.kilovolt.address,
-        cmd.dependencies.kilovolt.password,
-      );
-      await kv.wait();
+      kv = new Kilovolt(cmd.dependencies.kilovolt.address, {
+        password: cmd.dependencies.kilovolt.password,
+      });
+      await kv.connect();
 
       try {
         // Transpile TS into JS
