@@ -105,11 +105,13 @@ export const createWSClient = createAsyncThunk(
       await delay(1000);
     }
     // Connect to websocket
-    const client = new KilovoltWS(options.address, options.password);
+    const client = new KilovoltWS(options.address, {
+      password: options.password,
+    });
     client.on('error', (err: CustomEvent<kvError>) => {
       void dispatch(kvErrorReceived(err.detail));
     });
-    await client.wait();
+    await client.connect();
     await dispatch(setupClientReconnect(client));
     return client;
   },

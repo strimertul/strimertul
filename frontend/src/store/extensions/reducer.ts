@@ -8,7 +8,7 @@ import {
   ExtensionStatus,
   LogMessage,
 } from '~/lib/extensions/types';
-import { RootState } from '..';
+import { ThunkConfig } from '..';
 import { HTTPConfig } from '../api/types';
 import loggingReducer from '../logging/reducer';
 
@@ -114,75 +114,71 @@ const extensionsReducer = createSlice({
 
 const extensionPrefix = 'ui/extensions/installed/';
 
-export const createExtensionInstance = createAsyncThunk(
-  'extensions/new-instance',
-  (
-    payload: {
-      entry: ExtensionEntry;
-      dependencies: ExtensionDependencies;
-      runOptions?: ExtensionRunOptions;
-    },
-    { dispatch },
-  ) => {
-    const ext = new Extension(
-      payload.entry,
-      payload.dependencies,
-      payload.runOptions,
-    );
-    ext.addEventListener('log', (ev: CustomEvent<LogMessage>) => {
-      dispatch(
-        loggingReducer.actions.uiLogEvent({
-          time: new Date(),
-          caller: `extensionHost/${payload.entry.name}`,
-          level: ev.detail.level,
-          message: ev.detail.message,
-          data: { extension: payload.entry.name },
-        }),
-      );
-    });
-    ext.addEventListener(
-      'statusChanged',
-      (ev: CustomEvent<ExtensionStatus>) => {
-        dispatch(
-          extensionsReducer.actions.extensionStatusChanged({
-            name: payload.entry.name,
-            status: ev.detail,
-          }),
-        );
-      },
-    );
-    dispatch(extensionsReducer.actions.extensionAdded(payload.entry));
-    dispatch(extensionsReducer.actions.extensionInstanceAdded(ext));
+export const createExtensionInstance = createAsyncThunk<
+  void,
+  {
+    entry: ExtensionEntry;
+    dependencies: ExtensionDependencies;
+    runOptions?: ExtensionRunOptions;
   },
-);
+  ThunkConfig
+>('extensions/new-instance', (payload, { dispatch }) => {
+  const ext = new Extension(
+    payload.entry,
+    payload.dependencies,
+    payload.runOptions,
+  );
+  ext.addEventListener('log', (ev: CustomEvent<LogMessage>) => {
+    dispatch(
+      loggingReducer.actions.uiLogEvent({
+        time: new Date(),
+        caller: `extensionHost/${payload.entry.name}`,
+        level: ev.detail.level,
+        message: ev.detail.message,
+        data: { extension: payload.entry.name },
+      }),
+    );
+  });
+  ext.addEventListener('statusChanged', (ev: CustomEvent<ExtensionStatus>) => {
+    dispatch(
+      extensionsReducer.actions.extensionStatusChanged({
+        name: payload.entry.name,
+        status: ev.detail,
+      }),
+    );
+  });
+  dispatch(extensionsReducer.actions.extensionAdded(payload.entry));
+  dispatch(extensionsReducer.actions.extensionInstanceAdded(ext));
+});
 
-export const refreshExtensionInstance = createAsyncThunk(
-  'extensions/refresh-instance',
-  async (payload: ExtensionEntry, { dispatch, getState }) => {
-    const { extensions } = getState() as RootState;
-    if (payload.options.enabled) {
-      await dispatch(
-        createExtensionInstance({
-          entry: payload,
-          dependencies: extensions.dependencies,
-        }),
-      );
-    } else {
-      // If running, terminate running instance
-      if (payload.name in extensions.running) {
-        extensions.running[payload.name]?.dispose();
-      }
-
-      dispatch(extensionsReducer.actions.extensionAdded(payload));
+export const refreshExtensionInstance = createAsyncThunk<
+  void,
+  ExtensionEntry,
+  ThunkConfig
+>('extensions/refresh-instance', async (payload, { dispatch, getState }) => {
+  const { extensions } = getState();
+  if (payload.options.enabled) {
+    await dispatch(
+      createExtensionInstance({
+        entry: payload,
+        dependencies: extensions.dependencies,
+      }),
+    );
+  } else {
+    // If running, terminate running instance
+    if (payload.name in extensions.running) {
+      extensions.running[payload.name]?.dispose();
     }
-  },
-);
 
-export const initializeExtensions = createAsyncThunk(
+    dispatch(extensionsReducer.actions.extensionAdded(payload));
+  }
+});
+
+export const initializeExtensions = createAsyncThunk<void, void, ThunkConfig>(
   'extensions/initialize',
-  async (_: void, { getState, dispatch }) => {
+  async (_, { getState, dispatch }) => {
     // Get kv client
-    const { api } = getState() as RootState;
+    const { api } = getState();
 
     // Get kilovolt endpoint/credentials
     const httpConfig = await api.client.getJSON<HTTPConfig>('http/config');
@@ -235,10 +231,10 @@ export const initializeExtensions = createAsyncThunk(
   },
 );
 
-export const startExtension = createAsyncThunk(
+export const startExtension = createAsyncThunk<void, string, ThunkConfig>(
   'extensions/start',
-  async (name: string, { getState, dispatch }) => {
-    const { extensions } = getState() as RootState;
+  async (name, { getState, dispatch }) => {
+    const { extensions } = getState();
 
     // If terminated, re-create extension
     if (extensions.running[name].status === ExtensionStatus.Terminated) {
@@ -256,22 +252,23 @@ export const startExtension = createAsyncThunk(
   },
 );
 
-export const stopExtension = createAsyncThunk(
+export const stopExtension = createAsyncThunk<void, string, ThunkConfig>(
   'extensions/stop',
-  (name: string, { getState }) => {
-    const { extensions } = getState() as RootState;
+  (name, { getState }) => {
+    const { extensions } = getState();
     extensions.running[name].stop();
   },
 );
 
-export const saveExtension = createAsyncThunk(
-  'extensions/save',
-  async (entry: ExtensionEntry, { getState }) => {
-    // Get kv client
-    const { api } = getState() as RootState;
-    await api.client.putJSON(extensionPrefix + entry.name, entry);
-  },
-);
+export const saveExtension = createAsyncThunk<
+  void,
+  ExtensionEntry,
+  ThunkConfig
+>('extensions/save', async (entry, { getState }) => {
+  // Get kv client
+  const { api } = getState();
+  await api.client.putJSON(extensionPrefix + entry.name, entry);
+});
 
 export const isUnsaved = (ext: ExtensionsState) =>
   ext.editorCurrentFile in ext.unsaved &&
@@ -283,10 +280,10 @@ export const currentFile = (ext: ExtensionsState) =>
     ? ext.unsaved[ext.editorCurrentFile]
     : ext.installed[ext.editorCurrentFile]?.source;
 
-export const saveCurrentExtension = createAsyncThunk(
+export const saveCurrentExtension = createAsyncThunk<void, void, ThunkConfig>(
   'extensions/save-current',
-  async (_: void, { getState, dispatch }) => {
-    const { extensions } = getState() as RootState;
+  async (_, { getState, dispatch }) => {
+    const { extensions } = getState();
     if (!isUnsaved(extensions)) {
       return;
     }
@@ -303,39 +300,40 @@ export const saveCurrentExtension = createAsyncThunk(
   },
 );
 
-export const removeExtension = createAsyncThunk(
+export const removeExtension = createAsyncThunk<void, string, ThunkConfig>(
   'extensions/remove',
-  async (name: string, { getState }) => {
+  async (name, { getState }) => {
     // Get kv client
-    const { api } = getState() as RootState;
+    const { api } = getState();
     await api.client.deleteKey(extensionPrefix + name);
   },
 );
 
-export const renameExtension = createAsyncThunk(
-  'extensions/rename',
-  async (payload: { from: string; to: string }, { getState, dispatch }) => {
-    const { extensions } = getState() as RootState;
+export const renameExtension = createAsyncThunk<
+  void,
+  { from: string; to: string },
+  ThunkConfig
+>('extensions/rename', async (payload, { getState, dispatch }) => {
+  const { extensions } = getState();
 
-    // Save old entries
-    const unsaved = extensions.unsaved[payload.from];
-    const entry = extensions.installed[payload.from];
+  // Save old entries
+  const unsaved = extensions.unsaved[payload.from];
+  const entry = extensions.installed[payload.from];
 
-    // Remove and re-add under new name
-    await dispatch(removeExtension(payload.from));
-    await dispatch(
-      saveExtension({
-        ...entry,
-        name: payload.to,
-      }),
-    );
+  // Remove and re-add under new name
+  await dispatch(removeExtension(payload.from));
+  await dispatch(
+    saveExtension({
+      ...entry,
+      name: payload.to,
+    }),
+  );
 
-    // Set unsaved and current file
-    dispatch(extensionsReducer.actions.editorSelectedFile(payload.to));
-    if (unsaved) {
-      dispatch(extensionsReducer.actions.extensionSourceChanged(unsaved));
-    }
-  },
-);
+  // Set unsaved and current file
+  dispatch(extensionsReducer.actions.editorSelectedFile(payload.to));
+  if (unsaved) {
+    dispatch(extensionsReducer.actions.extensionSourceChanged(unsaved));
+  }
+});
 
 export default extensionsReducer;
