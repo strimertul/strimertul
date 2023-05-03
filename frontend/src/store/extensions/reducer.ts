@@ -200,7 +200,7 @@ export const initializeExtensions = createAsyncThunk(
     await api.client.subscribePrefix(extensionPrefix, (newValue, newKey) => {
       const name = newKey.substring(extensionPrefix.length);
       // Check for deleted
-      if (!newValue || newValue === '') {
+      if (!newValue) {
         void dispatch(extensionsReducer.actions.extensionRemoved(name));
         return;
       }
