@@ -9,7 +9,7 @@ import {
   Dispatch,
   PayloadAction,
 } from '@reduxjs/toolkit';
-import KilovoltWS from '@strimertul/kilovolt-client';
+import KilovoltWS, { KilovoltMessage } from '@strimertul/kilovolt-client';
 import type { kvError } from '@strimertul/kilovolt-client/types/messages';
 import { AuthenticateKVClient, IsServerReady } from '@wailsapp/go/main/App';
 import { delay } from '~/lib/time';
@@ -20,44 +20,38 @@ import {
   LoyaltyRedeem,
   LoyaltyStorage,
 } from './types';
+import { ThunkConfig } from '..';
+
+type ThunkAPIState = { api: APIState };
 
 interface AppThunkAPI {
   dispatch: Dispatch;
-  getState: () => unknown;
-}
-
-function makeGetterThunk<T>(key: string) {
-  return async (_: void, { getState }: AppThunkAPI) => {
-    const { api } = getState() as { api: APIState };
-    return api.client.getJSON<T>(key);
-  };
-}
-
-function makeSetterThunk<T>(
-  key: string,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  getter: AsyncThunk<T, void, {}>,
-) {
-  return async (data: T, { getState, dispatch }: AppThunkAPI) => {
-    const { api } = getState() as { api: APIState };
-    const result = await api.client.putJSON(key, data);
-    if ('ok' in result) {
-      if (result.ok) {
-        // Re-load value from KV
-        // Need to do type fuckery to avoid cyclic redundancy
-        // (unless there's a better way that I'm missing)
-        void dispatch(getter() as unknown as AnyAction);
-      }
-    }
-    return result;
-  };
+  getState: () => ThunkAPIState;
 }
 
 function makeGetSetThunks<T>(key: string) {
-  const getter = createAsyncThunk(`api/get/${key}`, makeGetterThunk<T>(key));
-  const setter = createAsyncThunk(
+  const getter = createAsyncThunk<T, void, { state: ThunkAPIState }>(
+    `api/get/${key}`,
+    async (_, { getState }) => {
+      const { api } = getState();
+      return api.client.getJSON<T>(key);
+    },
+  );
+  const setter = createAsyncThunk<KilovoltMessage, T, { state: ThunkAPIState }>(
     `api/set/${key}`,
-    makeSetterThunk<T>(key, getter),
+    async (data: T, { getState, dispatch }: AppThunkAPI) => {
+      const { api } = getState();
+      const result = await api.client.putJSON(key, data);
+      if ('ok' in result) {
+        if (result.ok) {
+          // Re-load value from KV
+          // Need to do type fuckery to avoid cyclic redundancy
+          // (unless there's a better way that I'm missing)
+          void dispatch(getter() as unknown as AnyAction);
+        }
+      }
+      return result;
+    },
   );
   return { getter, setter };
 }
@@ -117,39 +111,34 @@ export const createWSClient = createAsyncThunk(
   },
 );
 
-export const getUserPoints = createAsyncThunk(
-  'api/getUserPoints',
-  async (_: void, { getState }) => {
-    const { api } = getState() as { api: APIState };
-    const keys = await api.client.getKeysByPrefix(loyaltyPointsPrefix);
-    const userpoints: LoyaltyStorage = {};
-    Object.entries(keys).forEach(([k, v]) => {
-      userpoints[k.substring(loyaltyPointsPrefix.length)] = JSON.parse(
-        v,
-      ) as LoyaltyPointsEntry;
-    });
-    return userpoints;
-  },
-);
+export const getUserPoints = createAsyncThunk<
+  LoyaltyStorage,
+  void,
+  ThunkConfig
+>('api/getUserPoints', async (_, { getState }) => {
+  const { api } = getState();
+  const keys = await api.client.getKeysByPrefix(loyaltyPointsPrefix);
+  const userpoints: LoyaltyStorage = {};
+  Object.entries(keys).forEach(([k, v]) => {
+    userpoints[k.substring(loyaltyPointsPrefix.length)] = JSON.parse(
+      v,
+    ) as LoyaltyPointsEntry;
+  });
+  return userpoints;
+});
 
-export const setUserPoints = createAsyncThunk(
-  'api/setUserPoints',
-  async (
-    {
-      user,
-      points,
-      relative,
-    }: { user: string; points: number; relative: boolean },
-    { getState },
-  ) => {
-    const { api } = getState() as { api: APIState };
-    const entry: LoyaltyPointsEntry = { points };
-    if (relative) {
-      entry.points += api.loyalty.users[user]?.points ?? 0;
-    }
-    return api.client.putJSON(loyaltyPointsPrefix + user, entry);
-  },
-);
+export const setUserPoints = createAsyncThunk<
+  KilovoltMessage,
+  { user: string; points: number; relative: boolean },
+  ThunkConfig
+>('api/setUserPoints', async ({ user, points, relative }, { getState }) => {
+  const { api } = getState();
+  const entry: LoyaltyPointsEntry = { points };
+  if (relative) {
+    entry.points += api.loyalty.users[user]?.points ?? 0;
+  }
+  return api.client.putJSON(loyaltyPointsPrefix + user, entry);
+});
 
 export const modules = {
   httpConfig: makeModule(
@@ -242,21 +231,23 @@ export const modules = {
   ),
 };
 
-export const createRedeem = createAsyncThunk(
-  'api/createRedeem',
-  async (redeem: LoyaltyRedeem, { getState }) => {
-    const { api } = getState() as { api: APIState };
-    return api.client.putJSON(loyaltyCreateRedeemKey, redeem);
-  },
-);
+export const createRedeem = createAsyncThunk<
+  KilovoltMessage,
+  LoyaltyRedeem,
+  ThunkConfig
+>('api/createRedeem', async (redeem: LoyaltyRedeem, { getState }) => {
+  const { api } = getState();
+  return api.client.putJSON(loyaltyCreateRedeemKey, redeem);
+});
 
-export const removeRedeem = createAsyncThunk(
-  'api/removeRedeem',
-  async (redeem: LoyaltyRedeem, { getState }) => {
-    const { api } = getState() as { api: APIState };
-    return api.client.putJSON(loyaltyRemoveRedeemKey, redeem);
-  },
-);
+export const removeRedeem = createAsyncThunk<
+  KilovoltMessage,
+  LoyaltyRedeem,
+  ThunkConfig
+>('api/removeRedeem', async (redeem: LoyaltyRedeem, { getState }) => {
+  const { api } = getState();
+  return api.client.putJSON(loyaltyRemoveRedeemKey, redeem);
+});
 
 const moduleChangeReducers = Object.fromEntries(
   Object.entries(modules).map(([key, mod]) => [
@@ -419,10 +410,10 @@ kvErrorReceived = createAsyncThunk(
   },
 );
 
-export const useAuthBypass = createAsyncThunk(
+export const useAuthBypass = createAsyncThunk<void, void, ThunkConfig>(
   'api/authBypass',
   async (_: void, { getState, dispatch }) => {
-    const { api } = getState() as { api: APIState };
+    const { api } = getState();
     const response = await api.client.send({ command: '_uid' });
     if ('ok' in response && response.ok && 'data' in response) {
       const uid = response.data;
