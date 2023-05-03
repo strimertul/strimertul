@@ -156,8 +156,8 @@ func (mod *LocalDBClient) PutJSONBulk(kvs map[string]any) error {
 }
 
 func (mod *LocalDBClient) RemoveKey(key string) error {
-	// TODO
-	return mod.PutKey(key, "")
+	_, err := mod.makeRequest(kv.CmdRemoveKey, map[string]any{"key": key})
+	return err
 }
 
 func (mod *LocalDBClient) makeRequest(cmd string, data map[string]any) (kv.Response, error) {
