@@ -15,6 +15,13 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	commandRedeem     = "!redeem"
+	commandGoals      = "!goals"
+	commandBalance    = "!balance"
+	commandContribute = "!contribute"
+)
+
 func (m *Manager) SetupTwitch() {
 	bot := m.twitchManager.Client().Bot
 	if bot == nil {
@@ -23,30 +30,30 @@ func (m *Manager) SetupTwitch() {
 	}
 
 	// Add loyalty-based commands
-	bot.RegisterCommand("!redeem", twitch.BotCommand{
+	bot.RegisterCommand(commandRedeem, twitch.BotCommand{
 		Description: "Redeem a reward with loyalty points",
-		Usage:       "!redeem <reward-id> [request text]",
+		Usage:       fmt.Sprintf("%s <reward-id> [request text]", commandRedeem),
 		AccessLevel: twitch.ALTEveryone,
 		Handler:     m.cmdRedeemReward,
 		Enabled:     true,
 	})
-	bot.RegisterCommand("!balance", twitch.BotCommand{
+	bot.RegisterCommand(commandBalance, twitch.BotCommand{
 		Description: "See your current point balance",
-		Usage:       "!balance",
+		Usage:       commandBalance,
 		AccessLevel: twitch.ALTEveryone,
 		Handler:     m.cmdBalance,
 		Enabled:     true,
 	})
-	bot.RegisterCommand("!goals", twitch.BotCommand{
+	bot.RegisterCommand(commandGoals, twitch.BotCommand{
 		Description: "Check currently active community goals",
-		Usage:       "!goals",
+		Usage:       commandGoals,
 		AccessLevel: twitch.ALTEveryone,
 		Handler:     m.cmdGoalList,
 		Enabled:     true,
 	})
-	bot.RegisterCommand("!contribute", twitch.BotCommand{
+	bot.RegisterCommand(commandContribute, twitch.BotCommand{
 		Description: "Contribute points to a community goal",
-		Usage:       "!contribute <points> [<goal-id>]",
+		Usage:       fmt.Sprintf("%s <points> [<goal-id>]", commandContribute),
 		AccessLevel: twitch.ALTEveryone,
 		Handler:     m.cmdContributeGoal,
 		Enabled:     true,
@@ -144,10 +151,10 @@ func (m *Manager) SetupTwitch() {
 func (m *Manager) StopTwitch() {
 	bot := m.twitchManager.Client().Bot
 	if bot != nil {
-		bot.RemoveCommand("!redeem")
-		bot.RemoveCommand("!balance")
-		bot.RemoveCommand("!goals")
-		bot.RemoveCommand("!contribute")
+		bot.RemoveCommand(commandRedeem)
+		bot.RemoveCommand(commandBalance)
+		bot.RemoveCommand(commandGoals)
+		bot.RemoveCommand(commandContribute)
 
 		// Remove message handler
 		bot.OnMessage.Unsubscribe(m)

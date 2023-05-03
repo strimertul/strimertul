@@ -30,35 +30,42 @@ func BackupTask(driver database.DatabaseDriver, options database.BackupOptions) 
 	ticker := time.NewTicker(time.Duration(options.BackupInterval) * time.Minute)
 	defer ticker.Stop()
 	for range ticker.C {
-		// Run backup procedure
-		file, err := os.Create(fmt.Sprintf("%s/%s.db", options.BackupDir, time.Now().Format("20060102-150405")))
-		if err != nil {
-			logger.Error("Could not create backup file", zap.Error(err))
-			continue
-		}
-		err = driver.Backup(file)
-		if err != nil {
-			logger.Error("Could not backup database", zap.Error(err))
-		}
-		_ = file.Close()
-		logger.Info("Database backup created", zap.String("backup-file", file.Name()))
-		// Remove old backups
-		files, err := os.ReadDir(options.BackupDir)
-		if err != nil {
-			logger.Error("Could not read backup directory", zap.Error(err))
-			continue
-		}
-		// If maxBackups is set, remove older backups when we reach the limit
-		if options.MaxBackups > 0 && len(files) > options.MaxBackups {
-			// Sort by date
-			sort.Sort(utils.ByDate(files))
-			// Get files to remove
-			toRemove := files[:len(files)-options.MaxBackups]
-			for _, file := range toRemove {
-				err = os.Remove(fmt.Sprintf("%s/%s", options.BackupDir, file.Name()))
-				if err != nil {
-					logger.Error("Could not remove backup file", zap.Error(err))
-				}
+		performBackup(driver, options)
+	}
+}
+
+func performBackup(driver database.DatabaseDriver, options database.BackupOptions) {
+	// Run backup procedure
+	file, err := os.Create(fmt.Sprintf("%s/%s.db", options.BackupDir, time.Now().Format("20060102-150405")))
+	if err != nil {
+		logger.Error("Could not create backup file", zap.Error(err))
+		return
+	}
+
+	err = driver.Backup(file)
+	if err != nil {
+		logger.Error("Could not backup database", zap.Error(err))
+	}
+	_ = file.Close()
+	logger.Info("Database backup created", zap.String("backup-file", file.Name()))
+
+	// Remove old backups
+	files, err := os.ReadDir(options.BackupDir)
+	if err != nil {
+		logger.Error("Could not read backup directory", zap.Error(err))
+		return
+	}
+
+	// If maxBackups is set, remove older backups when we reach the limit
+	if options.MaxBackups > 0 && len(files) > options.MaxBackups {
+		// Sort by date
+		sort.Sort(utils.ByDate(files))
+		// Get files to remove
+		toRemove := files[:len(files)-options.MaxBackups]
+		for _, file := range toRemove {
+			err = os.Remove(fmt.Sprintf("%s/%s", options.BackupDir, file.Name()))
+			if err != nil {
+				logger.Error("Could not remove backup file", zap.Error(err))
 			}
 		}
 	}

@@ -87,17 +87,49 @@ func (a *App) startup(ctx context.Context) {
 	logger.Info("Started", zap.String("version", appVersion))
 
 	a.ctx = ctx
+
 	a.backupOptions = database.BackupOptions{
 		BackupDir:      a.cliParams.String("backup-dir"),
 		BackupInterval: a.cliParams.Int("backup-interval"),
 		MaxBackups:     a.cliParams.Int("max-backups"),
 	}
 
+	// Initialize database
+	if err = a.initializeDatabase(); err != nil {
+		a.showFatalError(err, "Failed to initialize database")
+		return
+	}
+
+	// Initialize components
+	if err = a.initializeComponents(); err != nil {
+		a.showFatalError(err, "Failed to initialize required component")
+		return
+	}
+
+	// Set meta keys
+	_ = a.db.PutKey("stul-meta/version", appVersion)
+
+	a.ready.Set(true)
+	runtime.EventsEmit(ctx, "ready", true)
+	logger.Info("Strimertul is ready")
+
+	// Start redirecting logs to UI
+	go a.forwardLogs()
+
+	// Run HTTP server
+	if err := a.httpServer.Listen(); err != nil {
+		a.showFatalError(err, "HTTP server stopped")
+		return
+	}
+}
+
+func (a *App) initializeDatabase() error {
+	var err error
+
 	// Make KV hub
 	a.driver, err = database.GetDatabaseDriver(a.cliParams)
 	if err != nil {
-		a.showFatalError(err, "Error opening database")
-		return
+		return fmt.Errorf("could not get database driver: %w", err)
 	}
 
 	// Start database backup task
@@ -111,49 +143,39 @@ func (a *App) startup(ctx context.Context) {
 
 	a.db, err = database.NewLocalClient(hub, logger)
 	if err != nil {
-		a.showFatalError(err, "Failed to initialize database module")
-		return
+		return fmt.Errorf("could not initialize database client: %w", err)
 	}
 
-	// Set meta keys
-	_ = a.db.PutKey("stul-meta/version", appVersion)
+	return nil
+}
+
+func (a *App) initializeComponents() error {
+	var err error
 
 	// Create logger and endpoints
 	a.httpServer, err = http.NewServer(a.db, logger)
 	if err != nil {
-		a.showFatalError(err, "Could not initialize http server")
-		return
+		return fmt.Errorf("could not initialize http server: %w", err)
 	}
 
 	// Create twitch client
 	a.twitchManager, err = twitch.NewManager(a.db, a.httpServer, logger)
 	if err != nil {
-		a.showFatalError(err, "Could not initialize twitch client")
-		return
+		return fmt.Errorf("could not initialize twitch client: %w", err)
 	}
 
 	// Initialize loyalty system
 	a.loyaltyManager, err = loyalty.NewManager(a.db, a.twitchManager, logger)
 	if err != nil {
-		a.showFatalError(err, "Could not initialize loyalty manager")
-		return
+		return fmt.Errorf("could not initialize loyalty manager: %w", err)
 	}
 
-	a.ready.Set(true)
-	runtime.EventsEmit(ctx, "ready", true)
-	logger.Info("Strimertul is ready")
+	return nil
+}
 
-	// Start redirecting logs to UI
-	go func() {
-		for entry := range incomingLogs {
-			runtime.EventsEmit(ctx, "log-event", entry)
-		}
-	}()
-
-	// Run HTTP server
-	if err := a.httpServer.Listen(); err != nil {
-		a.showFatalError(err, "HTTP server stopped")
-		return
+func (a *App) forwardLogs() {
+	for entry := range incomingLogs {
+		runtime.EventsEmit(a.ctx, "log-event", entry)
 	}
 }
 
