@@ -86,7 +86,11 @@ func parseType(typ reflect.Type) (out DataObject) {
 	}
 
 	out.Kind = getKind(typ.Kind())
-	if out.Kind == KindArray || out.Kind == KindDict {
+
+	switch out.Kind {
+	case KindStruct:
+		out.Keys = parseStruct(typ)
+	case KindArray, KindDict:
 		elem := parseType(typ.Elem())
 		out.Element = &elem
 		if out.Kind == KindDict {
@@ -94,19 +98,22 @@ func parseType(typ reflect.Type) (out DataObject) {
 			out.Key = &key
 		}
 	}
-	if out.Kind == KindStruct {
-		for index := 0; index < typ.NumField(); index++ {
-			field := typ.Field(index)
-			obj := parseType(field.Type)
-			if jsonName, ok := field.Tag.Lookup("json"); ok {
-				parts := strings.SplitN(jsonName, ",", 2)
-				obj.Name = parts[0]
-			} else {
-				obj.Name = field.Name
-			}
-			obj.Description = field.Tag.Get("desc")
-			out.Keys = append(out.Keys, obj)
-		}
-	}
+
 	return
+}
+
+func parseStruct(typ reflect.Type) (out []DataObject) {
+	for index := 0; index < typ.NumField(); index++ {
+		field := typ.Field(index)
+		obj := parseType(field.Type)
+		if jsonName, ok := field.Tag.Lookup("json"); ok {
+			parts := strings.SplitN(jsonName, ",", 2)
+			obj.Name = parts[0]
+		} else {
+			obj.Name = field.Name
+		}
+		obj.Description = field.Tag.Get("desc")
+		out = append(out, obj)
+	}
+	return out
 }

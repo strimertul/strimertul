@@ -87,11 +87,16 @@ type BotAlertsModule struct {
 
 	cancelAlertSub       database.CancelFunc
 	cancelTwitchEventSub database.CancelFunc
+
+	pendingMux  sync.Mutex
+	pendingSubs map[string]subMixedEvent
 }
 
 func SetupAlerts(bot *Bot) *BotAlertsModule {
 	mod := &BotAlertsModule{
-		bot: bot,
+		bot:         bot,
+		pendingMux:  sync.Mutex{},
+		pendingSubs: make(map[string]subMixedEvent),
 	}
 
 	// Load config from database
@@ -111,7 +116,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 	err, mod.cancelAlertSub = bot.api.db.SubscribeKey(BotAlertsKey, func(value string) {
 		err := json.UnmarshalFromString(value, &mod.Config)
 		if err != nil {
-			bot.logger.Debug("Error reloading timer config", zap.Error(err))
+			bot.logger.Warn("Error loading alert config", zap.Error(err))
 		} else {
 			bot.logger.Info("Reloaded alert config")
 		}
@@ -121,122 +126,11 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 		bot.logger.Error("Could not set-up bot alert reload subscription", zap.Error(err))
 	}
 
-	// Subscriptions are handled with a slight delay as info come from different events and must be aggregated
-	pendingSubs := make(map[string]subMixedEvent)
-	pendingMux := sync.Mutex{}
-	processPendingSub := func(user string) {
-		pendingMux.Lock()
-		defer pendingMux.Unlock()
-		sub, ok := pendingSubs[user]
-		defer delete(pendingSubs, user)
-		if !ok {
-			// Somehow it's gone? Return early
-			return
-		}
-		// One last check in case config changed
-		if !mod.Config.Subscription.Enabled {
-			return
-		}
-		// Assign random message
-		messageID := rand.Intn(len(mod.Config.Subscription.Messages))
-		tpl, ok := mod.templates[templateTypeSubscription][mod.Config.Subscription.Messages[messageID]]
-		// If template is broken, write it as is (soft fail, plus we raise attention I guess?)
-		if !ok {
-			mod.bot.WriteMessage(mod.Config.Subscription.Messages[messageID])
-			return
-		}
-		// Check for variations, either by streak or gifted
-		if sub.IsGift {
-			for _, variation := range mod.Config.Subscription.Variations {
-				if variation.IsGifted != nil && *variation.IsGifted {
-					// Get random template from variations
-					messageID = rand.Intn(len(variation.Messages))
-					// Make sure template is valid
-					if temp, ok := mod.templates[templateTypeSubscription][variation.Messages[messageID]]; ok {
-						tpl = temp
-						break
-					}
-				}
-			}
-		} else if sub.DurationMonths > 0 {
-			minMonths := -1
-			for _, variation := range mod.Config.Subscription.Variations {
-				if variation.MinStreak != nil && sub.DurationMonths >= *variation.MinStreak && sub.DurationMonths >= minMonths {
-					// Get random template from variations
-					messageID = rand.Intn(len(variation.Messages))
-					// Make sure template is valid
-					if temp, ok := mod.templates[templateTypeSubscription][variation.Messages[messageID]]; ok {
-						tpl = temp
-						minMonths = *variation.MinStreak
-					}
-				}
-			}
-		}
-		writeTemplate(bot, tpl, sub)
-	}
-	addPendingSub := func(ev any) {
-		switch sub := ev.(type) {
-		case helix.EventSubChannelSubscribeEvent:
-			pendingMux.Lock()
-			defer pendingMux.Unlock()
-			if ev, ok := pendingSubs[sub.UserID]; ok {
-				// Already pending, add extra data
-				ev.IsGift = sub.IsGift
-				pendingSubs[sub.UserID] = ev
-				return
-			}
-			pendingSubs[sub.UserID] = subMixedEvent{
-				UserID:               sub.UserID,
-				UserLogin:            sub.UserLogin,
-				UserName:             sub.UserName,
-				BroadcasterUserID:    sub.BroadcasterUserID,
-				BroadcasterUserLogin: sub.BroadcasterUserLogin,
-				BroadcasterUserName:  sub.BroadcasterUserName,
-				Tier:                 sub.Tier,
-				IsGift:               sub.IsGift,
-			}
-			go func() {
-				// Wait a bit to make sure we aggregate all events
-				time.Sleep(time.Second * 3)
-				processPendingSub(sub.UserID)
-			}()
-		case helix.EventSubChannelSubscriptionMessageEvent:
-			pendingMux.Lock()
-			defer pendingMux.Unlock()
-			if ev, ok := pendingSubs[sub.UserID]; ok {
-				// Already pending, add extra data
-				ev.StreakMonths = sub.StreakMonths
-				ev.DurationMonths = sub.DurationMonths
-				ev.CumulativeMonths = sub.CumulativeMonths
-				ev.Message = sub.Message
-				return
-			}
-			pendingSubs[sub.UserID] = subMixedEvent{
-				UserID:               sub.UserID,
-				UserLogin:            sub.UserLogin,
-				UserName:             sub.UserName,
-				BroadcasterUserID:    sub.BroadcasterUserID,
-				BroadcasterUserLogin: sub.BroadcasterUserLogin,
-				BroadcasterUserName:  sub.BroadcasterUserName,
-				Tier:                 sub.Tier,
-				StreakMonths:         sub.StreakMonths,
-				DurationMonths:       sub.DurationMonths,
-				CumulativeMonths:     sub.CumulativeMonths,
-				Message:              sub.Message,
-			}
-			go func() {
-				// Wait a bit to make sure we aggregate all events
-				time.Sleep(time.Second * 3)
-				processPendingSub(sub.UserID)
-			}()
-		}
-	}
-
 	err, mod.cancelTwitchEventSub = bot.api.db.SubscribeKey(EventSubEventKey, func(value string) {
 		var ev eventSubNotification
 		err := json.UnmarshalFromString(value, &ev)
 		if err != nil {
-			bot.logger.Debug("Error parsing webhook payload", zap.Error(err))
+			bot.logger.Warn("Error parsing webhook payload", zap.Error(err))
 			return
 		}
 		switch ev.Subscription.Type {
@@ -249,7 +143,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			var followEv helix.EventSubChannelFollowEvent
 			err := json.Unmarshal(ev.Event, &followEv)
 			if err != nil {
-				bot.logger.Debug("Error parsing follow event", zap.Error(err))
+				bot.logger.Warn("Error parsing follow event", zap.Error(err))
 				return
 			}
 			// Pick a random message
@@ -270,7 +164,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			var raidEv helix.EventSubChannelRaidEvent
 			err := json.Unmarshal(ev.Event, &raidEv)
 			if err != nil {
-				bot.logger.Debug("Error parsing raid event", zap.Error(err))
+				bot.logger.Warn("Error parsing raid event", zap.Error(err))
 				return
 			}
 			// Pick a random message from base set
@@ -306,7 +200,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			var cheerEv helix.EventSubChannelCheerEvent
 			err := json.Unmarshal(ev.Event, &cheerEv)
 			if err != nil {
-				bot.logger.Debug("Error parsing cheer event", zap.Error(err))
+				bot.logger.Warn("Error parsing cheer event", zap.Error(err))
 				return
 			}
 			// Pick a random message from base set
@@ -342,10 +236,10 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			var subEv helix.EventSubChannelSubscribeEvent
 			err := json.Unmarshal(ev.Event, &subEv)
 			if err != nil {
-				bot.logger.Debug("Error parsing new subscription event", zap.Error(err))
+				bot.logger.Warn("Error parsing new subscription event", zap.Error(err))
 				return
 			}
-			addPendingSub(subEv)
+			mod.addMixedEvent(subEv)
 		case helix.EventSubTypeChannelSubscriptionMessage:
 			// Only process if we care about subscriptions
 			if !mod.Config.Subscription.Enabled {
@@ -355,10 +249,10 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			var subEv helix.EventSubChannelSubscriptionMessageEvent
 			err := json.Unmarshal(ev.Event, &subEv)
 			if err != nil {
-				bot.logger.Debug("Error parsing returning subscription event", zap.Error(err))
+				bot.logger.Warn("Error parsing returning subscription event", zap.Error(err))
 				return
 			}
-			addPendingSub(subEv)
+			mod.addMixedEvent(subEv)
 		case helix.EventSubTypeChannelSubscriptionGift:
 			// Only process if we care about gifted subs
 			if !mod.Config.GiftSub.Enabled {
@@ -368,7 +262,7 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 			var giftEv helix.EventSubChannelSubscriptionGiftEvent
 			err := json.Unmarshal(ev.Event, &giftEv)
 			if err != nil {
-				bot.logger.Debug("Error parsing subscription gifted event", zap.Error(err))
+				bot.logger.Warn("Error parsing subscription gifted event", zap.Error(err))
 				return
 			}
 			// Pick a random message from base set
@@ -417,6 +311,120 @@ func SetupAlerts(bot *Bot) *BotAlertsModule {
 	bot.logger.Debug("Loaded bot alerts")
 
 	return mod
+}
+
+// Subscriptions are handled with a slight delay as info come from different events and must be aggregated
+func (m *BotAlertsModule) addMixedEvent(event any) {
+	switch sub := event.(type) {
+	case helix.EventSubChannelSubscribeEvent:
+		m.pendingMux.Lock()
+		defer m.pendingMux.Unlock()
+		if ev, ok := m.pendingSubs[sub.UserID]; ok {
+			// Already pending, add extra data
+			ev.IsGift = sub.IsGift
+			m.pendingSubs[sub.UserID] = ev
+			return
+		}
+		m.pendingSubs[sub.UserID] = subMixedEvent{
+			UserID:               sub.UserID,
+			UserLogin:            sub.UserLogin,
+			UserName:             sub.UserName,
+			BroadcasterUserID:    sub.BroadcasterUserID,
+			BroadcasterUserLogin: sub.BroadcasterUserLogin,
+			BroadcasterUserName:  sub.BroadcasterUserName,
+			Tier:                 sub.Tier,
+			IsGift:               sub.IsGift,
+		}
+		go func() {
+			// Wait a bit to make sure we aggregate all events
+			time.Sleep(time.Second * 3)
+			m.processPendingSub(sub.UserID)
+		}()
+	case helix.EventSubChannelSubscriptionMessageEvent:
+		m.pendingMux.Lock()
+		defer m.pendingMux.Unlock()
+		if ev, ok := m.pendingSubs[sub.UserID]; ok {
+			// Already pending, add extra data
+			ev.StreakMonths = sub.StreakMonths
+			ev.DurationMonths = sub.DurationMonths
+			ev.CumulativeMonths = sub.CumulativeMonths
+			ev.Message = sub.Message
+			return
+		}
+		m.pendingSubs[sub.UserID] = subMixedEvent{
+			UserID:               sub.UserID,
+			UserLogin:            sub.UserLogin,
+			UserName:             sub.UserName,
+			BroadcasterUserID:    sub.BroadcasterUserID,
+			BroadcasterUserLogin: sub.BroadcasterUserLogin,
+			BroadcasterUserName:  sub.BroadcasterUserName,
+			Tier:                 sub.Tier,
+			StreakMonths:         sub.StreakMonths,
+			DurationMonths:       sub.DurationMonths,
+			CumulativeMonths:     sub.CumulativeMonths,
+			Message:              sub.Message,
+		}
+		go func() {
+			// Wait a bit to make sure we aggregate all events
+			time.Sleep(time.Second * 3)
+			m.processPendingSub(sub.UserID)
+		}()
+	}
+}
+
+func (m *BotAlertsModule) processPendingSub(user string) {
+	m.pendingMux.Lock()
+	defer m.pendingMux.Unlock()
+	sub, ok := m.pendingSubs[user]
+	defer delete(m.pendingSubs, user)
+	if !ok {
+		// Somehow it's gone? Return early
+		return
+	}
+
+	// One last check in case config changed
+	if !m.Config.Subscription.Enabled {
+		return
+	}
+
+	// Assign random message
+	messageID := rand.Intn(len(m.Config.Subscription.Messages))
+	tpl, ok := m.templates[templateTypeSubscription][m.Config.Subscription.Messages[messageID]]
+
+	// If template is broken, write it as is (soft fail, plus we raise attention I guess?)
+	if !ok {
+		m.bot.WriteMessage(m.Config.Subscription.Messages[messageID])
+		return
+	}
+
+	// Check for variations, either by streak or gifted
+	if sub.IsGift {
+		for _, variation := range m.Config.Subscription.Variations {
+			if variation.IsGifted != nil && *variation.IsGifted {
+				// Get random template from variations
+				messageID = rand.Intn(len(variation.Messages))
+				// Make sure template is valid
+				if temp, ok := m.templates[templateTypeSubscription][variation.Messages[messageID]]; ok {
+					tpl = temp
+					break
+				}
+			}
+		}
+	} else if sub.DurationMonths > 0 {
+		minMonths := -1
+		for _, variation := range m.Config.Subscription.Variations {
+			if variation.MinStreak != nil && sub.DurationMonths >= *variation.MinStreak && sub.DurationMonths >= minMonths {
+				// Get random template from variations
+				messageID = rand.Intn(len(variation.Messages))
+				// Make sure template is valid
+				if temp, ok := m.templates[templateTypeSubscription][variation.Messages[messageID]]; ok {
+					tpl = temp
+					minMonths = *variation.MinStreak
+				}
+			}
+		}
+	}
+	writeTemplate(m.bot, tpl, sub)
 }
 
 func (m *BotAlertsModule) compileTemplates() {

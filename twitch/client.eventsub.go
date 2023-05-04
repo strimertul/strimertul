@@ -29,6 +29,23 @@ func (c *Client) eventSubLoop(userClient *helix.Client) {
 	}
 }
 
+func readLoop(connection *websocket.Conn, recv chan<- []byte, wsErr chan<- error) {
+	for {
+		messageType, messageData, err := connection.ReadMessage()
+		if err != nil {
+			wsErr <- err
+			close(recv)
+			close(wsErr)
+			return
+		}
+		if messageType != websocket.TextMessage {
+			continue
+		}
+
+		recv <- messageData
+	}
+}
+
 func (c *Client) connectWebsocket(url string, oldConnection *websocket.Conn, userClient *helix.Client) (string, *websocket.Conn, error) {
 	connection, _, err := websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
@@ -39,23 +56,7 @@ func (c *Client) connectWebsocket(url string, oldConnection *websocket.Conn, use
 	received := make(chan []byte, 10)
 	wsErr := make(chan error, 1)
 
-	readFromWS := func(connection *websocket.Conn, recv chan<- []byte, wsErr chan<- error) {
-		for {
-			messageType, messageData, err := connection.ReadMessage()
-			if err != nil {
-				wsErr <- err
-				close(recv)
-				close(wsErr)
-				return
-			}
-			if messageType != websocket.TextMessage {
-				continue
-			}
-
-			recv <- messageData
-		}
-	}
-	go readFromWS(connection, received, wsErr)
+	go readLoop(connection, received, wsErr)
 
 	for {
 		// Wait for next message or closing/error
@@ -75,43 +76,53 @@ func (c *Client) connectWebsocket(url string, oldConnection *websocket.Conn, use
 			continue
 		}
 
-		switch wsMessage.Metadata.MessageType {
-		case "session_keepalive":
-			// Nothing to do
-		case "session_welcome":
-			var welcomeData WelcomeMessagePayload
-			err = json.Unmarshal(wsMessage.Payload, &welcomeData)
-			if err != nil {
-				c.logger.Error("Error decoding EventSub message", zap.String("message-type", wsMessage.Metadata.MessageType), zap.Error(err))
-				break
-			}
-			c.logger.Info("Connection to EventSub websocket established", zap.String("session-id", welcomeData.Session.Id))
-
-			if oldConnection != nil {
-				utils.Close(oldConnection, c.logger)
-			}
-			// Add subscription to websocket session
-			err = c.addSubscriptionsForSession(userClient, welcomeData.Session.Id)
-			if err != nil {
-				c.logger.Error("Could not add subscriptions", zap.Error(err))
-				break
-			}
-		case "session_reconnect":
-			var reconnectData WelcomeMessagePayload
-			err = json.Unmarshal(wsMessage.Payload, &reconnectData)
-			if err != nil {
-				c.logger.Error("Error decoding EventSub message", zap.String("message-type", wsMessage.Metadata.MessageType), zap.Error(err))
-				break
-			}
-			c.logger.Info("EventSub websocket requested a reconnection", zap.String("session-id", reconnectData.Session.Id), zap.String("reconnect-url", reconnectData.Session.ReconnectUrl))
-
-			return reconnectData.Session.ReconnectUrl, connection, nil
-		case "notification":
-			go c.processEvent(wsMessage)
-		case "revocation":
-			// TODO idk what to do here
+		reconnectURL, err, done := c.processMessage(wsMessage, oldConnection, userClient)
+		if done {
+			return reconnectURL, connection, err
 		}
 	}
+}
+
+func (c *Client) processMessage(wsMessage EventSubWebsocketMessage, oldConnection *websocket.Conn, userClient *helix.Client) (string, error, bool) {
+	switch wsMessage.Metadata.MessageType {
+	case "session_keepalive":
+		// Nothing to do
+	case "session_welcome":
+		var welcomeData WelcomeMessagePayload
+		err := json.Unmarshal(wsMessage.Payload, &welcomeData)
+		if err != nil {
+			c.logger.Error("Error decoding EventSub message", zap.String("message-type", wsMessage.Metadata.MessageType), zap.Error(err))
+			break
+		}
+		c.logger.Info("Connection to EventSub websocket established", zap.String("session-id", welcomeData.Session.Id))
+
+		// We can only close the old connection once the new one has been established
+		if oldConnection != nil {
+			utils.Close(oldConnection, c.logger)
+		}
+
+		// Add subscription to websocket session
+		err = c.addSubscriptionsForSession(userClient, welcomeData.Session.Id)
+		if err != nil {
+			c.logger.Error("Could not add subscriptions", zap.Error(err))
+			break
+		}
+	case "session_reconnect":
+		var reconnectData WelcomeMessagePayload
+		err := json.Unmarshal(wsMessage.Payload, &reconnectData)
+		if err != nil {
+			c.logger.Error("Error decoding EventSub message", zap.String("message-type", wsMessage.Metadata.MessageType), zap.Error(err))
+			break
+		}
+		c.logger.Info("EventSub websocket requested a reconnection", zap.String("session-id", reconnectData.Session.Id), zap.String("reconnect-url", reconnectData.Session.ReconnectUrl))
+
+		return reconnectData.Session.ReconnectUrl, nil, true
+	case "notification":
+		go c.processEvent(wsMessage)
+	case "revocation":
+		// TODO idk what to do here
+	}
+	return "", nil, false
 }
 
 func (c *Client) processEvent(message EventSubWebsocketMessage) {

@@ -110,51 +110,55 @@ func (m *BotTimerModule) runTimers() {
 		activity := m.currentChatActivity()
 
 		// Reset timer
-		func() {
-			index := time.Now().Minute() % AverageMessageWindow
-			messages := m.messages.Get()
-			messages[index] = 0
-			m.messages.Set(messages)
-		}()
+		index := time.Now().Minute() % AverageMessageWindow
+		messages := m.messages.Get()
+		messages[index] = 0
+		m.messages.Set(messages)
 
 		// Run timers
-		func() {
-			now := time.Now()
-			for name, timer := range m.Config.Timers {
-				// Must be enabled
-				if !timer.Enabled {
-					continue
-				}
-				// Check if enough time has passed
-				lastTriggeredTime, ok := m.lastTrigger.GetKey(name)
-				if !ok {
-					// If it's the first time we're checking it, start the cooldown
-					lastTriggeredTime = time.Now()
-					m.lastTrigger.SetKey(name, lastTriggeredTime)
-				}
-				minDelay := timer.MinimumDelay
-				if minDelay < 60 {
-					minDelay = 60
-				}
-				if now.Sub(lastTriggeredTime) < time.Duration(minDelay)*time.Second {
-					continue
-				}
-				// Make sure chat activity is high enough
-				if activity < timer.MinimumChatActivity {
-					continue
-				}
-
-				// Pick a random message
-				message := timer.Messages[rand.Intn(len(timer.Messages))]
-
-				// Write message to chat
-				m.bot.WriteMessage(message)
-
-				// Update last trigger
-				m.lastTrigger.SetKey(name, now)
-			}
-		}()
+		for name, timer := range m.Config.Timers {
+			m.ProcessTimer(name, timer, activity)
+		}
 	}
+}
+
+func (m *BotTimerModule) ProcessTimer(name string, timer BotTimer, activity int) {
+	// Must be enabled
+	if !timer.Enabled {
+		return
+	}
+
+	// Check if enough time has passed
+	lastTriggeredTime, ok := m.lastTrigger.GetKey(name)
+	if !ok {
+		// If it's the first time we're checking it, start the cooldown
+		lastTriggeredTime = time.Now()
+		m.lastTrigger.SetKey(name, lastTriggeredTime)
+	}
+
+	minDelay := timer.MinimumDelay
+	if minDelay < 60 {
+		minDelay = 60
+	}
+
+	now := time.Now()
+	if now.Sub(lastTriggeredTime) < time.Duration(minDelay)*time.Second {
+		return
+	}
+
+	// Make sure chat activity is high enough
+	if activity < timer.MinimumChatActivity {
+		return
+	}
+
+	// Pick a random message
+	message := timer.Messages[rand.Intn(len(timer.Messages))]
+
+	// Write message to chat
+	m.bot.WriteMessage(message)
+
+	// Update last trigger
+	m.lastTrigger.SetKey(name, now)
 }
 
 func (m *BotTimerModule) Close() {
