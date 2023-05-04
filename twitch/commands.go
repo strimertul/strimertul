@@ -58,7 +58,40 @@ func cmdCustom(bot *Bot, cmd string, data BotCustomCommand, message irc.PrivateM
 		bot.logger.Error("Failed to execute custom command template", zap.Error(err))
 		return
 	}
-	bot.Client.Say(message.Channel, buf.String())
+
+	switch data.ResponseType {
+	case ResponseTypeDefault, ResponseTypeChat:
+		bot.Client.Say(message.Channel, buf.String())
+	case ResponseTypeReply:
+		bot.Client.Reply(message.Channel, message.ID, buf.String())
+	case ResponseTypeWhisper:
+		client, err := bot.api.GetUserClient(false)
+		reply, err := client.SendUserWhisper(&helix.SendUserWhisperParams{
+			FromUserID: bot.api.User.ID,
+			ToUserID:   message.User.ID,
+			Message:    buf.String(),
+		})
+		if reply.Error != "" {
+			bot.logger.Error("Failed to send whisper", zap.String("code", reply.Error), zap.String("message", reply.ErrorMessage))
+		}
+		if err != nil {
+			bot.logger.Error("Failed to send whisper", zap.Error(err))
+		}
+
+	case ResponseTypeAnnounce:
+		client, err := bot.api.GetUserClient(false)
+		reply, err := client.SendChatAnnouncement(&helix.SendChatAnnouncementParams{
+			BroadcasterID: bot.api.User.ID,
+			ModeratorID:   bot.api.User.ID,
+			Message:       buf.String(),
+		})
+		if reply.Error != "" {
+			bot.logger.Error("Failed to send announcement", zap.String("code", reply.Error), zap.String("message", reply.ErrorMessage))
+		}
+		if err != nil {
+			bot.logger.Error("Failed to send announcement", zap.Error(err))
+		}
+	}
 }
 
 func (b *Bot) setupFunctions() {

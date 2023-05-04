@@ -112,7 +112,13 @@
         "subscribers": "Abbonati",
         "vip": "VIP"
       },
-      "command-already-in-use": "Nome comando già in uso"
+      "command-already-in-use": "Nome comando già in uso",
+      "response-types": {
+        "announce": "Annuncio",
+        "chat": "Canale",
+        "reply": "Risposta",
+        "whisper": "Chat privata"
+      }
     },
     "bottimers": {
       "add-button": "Nuovo timer",

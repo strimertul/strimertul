@@ -44,6 +44,16 @@ const (
 	ChatActivityKey = "twitch/chat-activity"
 )
 
+type ResponseType string
+
+const (
+	ResponseTypeDefault  ResponseType = ""
+	ResponseTypeChat     ResponseType = "chat"
+	ResponseTypeWhisper  ResponseType = "whisper"
+	ResponseTypeReply    ResponseType = "reply"
+	ResponseTypeAnnounce ResponseType = "announce"
+)
+
 // BotCustomCommand is a definition of a custom command of the chatbot
 type BotCustomCommand struct {
 	// Command description
@@ -57,6 +67,9 @@ type BotCustomCommand struct {
 
 	// Is the command enabled?
 	Enabled bool `json:"enabled" desc:"Is the command enabled?"`
+
+	// How to respond to the user
+	ResponseType ResponseType `json:"response_type" desc:"How to respond to the user"`
 }
 
 const CustomCommandsKey = "twitch/bot-custom-commands"

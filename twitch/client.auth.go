@@ -22,7 +22,7 @@ func (c *Client) GetAuthorizationURL() string {
 	}
 	return c.API.GetAuthorizationURL(&helix.AuthorizationURLParams{
 		ResponseType: "code",
-		Scopes:       []string{"bits:read channel:read:subscriptions channel:read:redemptions channel:read:polls channel:read:predictions channel:read:hype_train user_read chat:read chat:edit channel:moderate whispers:read whispers:edit moderator:read:chatters moderator:read:followers"},
+		Scopes:       []string{"bits:read channel:read:subscriptions channel:read:redemptions channel:read:polls channel:read:predictions channel:read:hype_train user_read chat:read chat:edit channel:moderate whispers:read whispers:edit moderator:read:chatters moderator:read:followers user:manage:whispers moderator:manage:announcements"},
 	})
 }
 

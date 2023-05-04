@@ -80,4 +80,12 @@ var Enums = interfaces.EnumMap{
 			ALTStreamer,
 		},
 	},
+	"ResponseType": interfaces.Enum{
+		Values: []any{
+			ResponseTypeChat,
+			ResponseTypeReply,
+			ResponseTypeWhisper,
+			ResponseTypeAnnounce,
+		},
+	},
 }

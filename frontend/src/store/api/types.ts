@@ -34,10 +34,12 @@ export const accessLevels = [
 
 export type AccessLevelType = (typeof accessLevels)[number];
 
+export type ReplyType = 'chat' | 'reply' | 'whisper' | 'announce';
 export interface TwitchBotCustomCommand {
   description: string;
   access_level: AccessLevelType;
   response: string;
+  response_type: ReplyType;
   enabled: boolean;
 }
 

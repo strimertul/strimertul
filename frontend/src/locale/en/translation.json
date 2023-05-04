@@ -116,6 +116,12 @@
       "command-response-placeholder": "Hello {0}!",
       "command-acl": "Access level",
       "command-acl-help": "This specifies the minimum level, eg. if you choose VIPs, moderators and streamer can still use the command",
+      "response-types": {
+        "chat": "Message",
+        "reply": "Reply",
+        "whisper": "Whisper",
+        "announce": "Announcement"
+      },
       "acl": {
         "everyone": "Everyone",
         "subscribers": "Subscribers",

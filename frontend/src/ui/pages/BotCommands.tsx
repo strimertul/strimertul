@@ -7,6 +7,7 @@ import { modules } from '~/store/api/reducer';
 import {
   accessLevels,
   AccessLevelType,
+  ReplyType,
   TwitchBotCustomCommand,
 } from '~/store/api/types';
 import AlertContent from '../components/AlertContent';
@@ -23,6 +24,8 @@ import {
   InputBox,
   Label,
   MultiButton,
+  MultiToggle,
+  MultiToggleItem,
   NoneText,
   PageContainer,
   PageHeader,
@@ -185,11 +188,15 @@ function CommandDialog({
   const [commands] = useModule(modules.twitchBotCommands);
   const [commandName, setCommandName] = useState(name ?? '');
   const [description, setDescription] = useState(item?.description ?? '');
+  const [responseType, setResponseType] = useState(
+    item?.response_type ?? 'chat',
+  );
   const [response, setResponse] = useState(item?.response ?? '');
   const [accessLevel, setAccessLevel] = useState(
     item?.access_level ?? 'everyone',
   );
   const { t } = useTranslation();
+  const replyTypes: ReplyType[] = ['chat', 'reply', 'whisper', 'announce'];
 
   return (
     <DialogContent
@@ -207,6 +214,7 @@ function CommandDialog({
               ...item,
               description,
               response,
+              response_type: responseType,
               access_level: accessLevel,
             });
           }
@@ -248,6 +256,20 @@ function CommandDialog({
         <Field spacing="narrow" size="fullWidth">
           <Label htmlFor="command-response">
             {t('pages.botcommands.command-response')}
+            <MultiToggle
+              css={{ marginLeft: '0.5rem' }}
+              value={responseType}
+              type="single"
+              onValueChange={(newType) => {
+                setResponseType(newType as ReplyType);
+              }}
+            >
+              {replyTypes.map((replyType) => (
+                <MultiToggleItem size="small" key={replyType} value={replyType}>
+                  {t(`pages.botcommands.response-types.${replyType}`)}
+                </MultiToggleItem>
+              ))}
+            </MultiToggle>
           </Label>
           <Textarea
             value={response}
