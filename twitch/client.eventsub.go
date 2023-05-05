@@ -91,7 +91,7 @@ func (c *Client) processMessage(wsMessage EventSubWebsocketMessage, oldConnectio
 		var welcomeData WelcomeMessagePayload
 		err := json.Unmarshal(wsMessage.Payload, &welcomeData)
 		if err != nil {
-			c.logger.Error("Error decoding EventSub message", zap.String("message-type", wsMessage.Metadata.MessageType), zap.Error(err))
+			c.logger.Error("Error decoding EventSub welcome message", zap.String("message-type", wsMessage.Metadata.MessageType), zap.Error(err))
 			break
 		}
 		c.logger.Info("Connection to EventSub websocket established", zap.String("session-id", welcomeData.Session.Id))
@@ -111,7 +111,7 @@ func (c *Client) processMessage(wsMessage EventSubWebsocketMessage, oldConnectio
 		var reconnectData WelcomeMessagePayload
 		err := json.Unmarshal(wsMessage.Payload, &reconnectData)
 		if err != nil {
-			c.logger.Error("Error decoding EventSub message", zap.String("message-type", wsMessage.Metadata.MessageType), zap.Error(err))
+			c.logger.Error("Error decoding EventSub session reconnect parameters", zap.String("message-type", wsMessage.Metadata.MessageType), zap.Error(err))
 			break
 		}
 		c.logger.Info("EventSub websocket requested a reconnection", zap.String("session-id", reconnectData.Session.Id), zap.String("reconnect-url", reconnectData.Session.ReconnectUrl))
@@ -139,7 +139,7 @@ func (c *Client) processEvent(message EventSubWebsocketMessage) {
 	var notificationData NotificationMessagePayload
 	err := json.Unmarshal(message.Payload, &notificationData)
 	if err != nil {
-		c.logger.Error("Error decoding EventSub message", zap.String("message-type", message.Metadata.MessageType), zap.Error(err))
+		c.logger.Error("Error decoding EventSub notification payload", zap.String("message-type", message.Metadata.MessageType), zap.Error(err))
 	}
 	notificationData.Date = time.Now()
 
