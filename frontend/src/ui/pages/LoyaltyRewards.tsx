@@ -368,11 +368,11 @@ function RewardsPage() {
                     dialogReward.new &&
                     rewards.find((r) => r.id === e.target.value)
                   ) {
-                    (e.target as HTMLInputElement).setCustomValidity(
+                    e.target.setCustomValidity(
                       t('pages.loyalty-rewards.id-already-in-use'),
                     );
                   } else {
-                    (e.target as HTMLInputElement).setCustomValidity('');
+                    e.target.setCustomValidity('');
                   }
                 }}
               />
