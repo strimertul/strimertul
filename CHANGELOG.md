@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Custom chat commands can now be sent as replies, whispers and announcements. Due to some API shenanigans yet to be solved, the latter two will always be sent from your main account, not the bot account (if they are different)
 
+## [3.2.1] - 2023-05-17
+
+### Fixed
+
+- Fixed the eventsub connection to not use the now broken beta URL
+
 ## [3.2.0] - 2023-05-03
 
 ### Added
@@ -243,7 +249,8 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 
 - Stulbe integration for alerts
 
-[current]: https://github.com/strimertul/strimertul/compare/v3.2.0...HEAD
+[current]: https://github.com/strimertul/strimertul/compare/v3.2.1...HEAD
+[3.2.1]: https://github.com/strimertul/strimertul/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/strimertul/strimertul/compare/v3.1.5...v3.2.0
 [3.1.5]: https://github.com/strimertul/strimertul/compare/v3.1.4...v3.1.5
 [3.1.4]: https://github.com/strimertul/strimertul/compare/v3.1.3...v3.1.4
