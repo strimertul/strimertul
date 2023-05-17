@@ -16,7 +16,7 @@ require (
 	github.com/strimertul/kilovolt/v10 v10.0.0
 	github.com/strimertul/kv-pebble v1.2.2
 	github.com/urfave/cli/v2 v2.25.1
-	github.com/wailsapp/wails/v2 v2.4.1
+	github.com/wailsapp/wails/v2 v2.5.1
 	go.uber.org/zap v1.24.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
