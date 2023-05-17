@@ -4,6 +4,8 @@ import {
   yellowDark,
   grassDark,
   redDark,
+  crimsonDark,
+  amberDark,
   blackA,
 } from '@radix-ui/colors';
 import { globalCss, createStitches } from '@stitches/react';
@@ -14,7 +16,7 @@ export const globalStyles = globalCss({
   html: {
     margin: 0,
     padding: 0,
-    fontFamily: "'Intel', 'system-ui', sans-serif",
+    fontFamily: "'Inter', 'system-ui', sans-serif",
     '@supports (font-variation-settings: normal)': {
       fontFamily: "'Inter var', 'system-ui', sans-serif",
     },
@@ -39,6 +41,8 @@ export const { styled, theme } = createStitches({
       ...yellowDark,
       ...grassDark,
       ...redDark,
+      ...crimsonDark,
+      ...amberDark,
       ...blackA,
     },
     borderRadius: {

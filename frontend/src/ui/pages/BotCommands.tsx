@@ -78,6 +78,9 @@ const CommandName = styled('span', {
   },
 });
 const CommandDescription = styled('span', {
+  display: 'flex',
+  alignContent: 'baseline',
+  gap: '0.25rem',
   flex: 1,
 });
 const CommandActions = styled('div', {
@@ -94,6 +97,37 @@ const CommandText = styled('div', {
   backgroundColor: '$gray4',
   lineHeight: '1.2rem',
 });
+const CommandType = styled('div', {
+  fontFamily: 'Inter',
+  display: 'inline-flex',
+  backgroundColor: '$gray2',
+  fontSize: '8pt',
+  textTransform: 'uppercase',
+  alignItems: 'center',
+  padding: '0.2rem 0.3rem',
+  borderRadius: '0.4rem',
+  marginRight: '0.5rem',
+  height: '1.2rem',
+  variants: {
+    type: {
+      chat: {
+        display:'none'
+      },
+      whisper: {
+        backgroundColor: '$amber4',
+        color: '$amber9',
+      },
+      announce: {
+        backgroundColor: '$crimson4',
+        color: '$crimson11',
+      },
+      reply: {
+        backgroundColor: '$gray2',
+        color: '$gray12',
+      }
+    }
+  }
+})
 const ACLIndicator = styled('span', {
   fontFamily: 'Space Mono',
   fontSize: '10pt',
@@ -165,7 +199,8 @@ function CommandItem({
           </MultiButton>
         </CommandActions>
       </CommandHeader>
-      <CommandText>{item.response}</CommandText>
+      <CommandText>
+        <CommandType type={item.response_type}>{t(`pages.botcommands.response-types.${item.response_type}`)}</CommandType>{item.response}</CommandText>
     </CommandItemContainer>
   );
 }
