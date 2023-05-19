@@ -131,7 +131,8 @@
       },
       "remove-command-title": "Remove command {{name}}?",
       "no-commands": "Chatbot has no commands configured",
-      "command-already-in-use": "Command name already in use"
+      "command-already-in-use": "Command name already in use",
+      "command-invalid-format": "The response template contains errors"
     },
     "bottimers": {
       "title": "Bot timers",

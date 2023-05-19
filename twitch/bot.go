@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"git.sr.ht/~hamcha/containers/sync"
-	"github.com/Masterminds/sprig/v3"
 	irc "github.com/gempir/go-twitch-irc/v4"
 	"go.uber.org/zap"
 
@@ -251,7 +250,7 @@ func (b *Bot) handleWriteMessageRPC(value string) {
 func (b *Bot) updateTemplates() error {
 	b.customTemplates.Set(make(map[string]*template.Template))
 	for cmd, tmpl := range b.customCommands.Copy() {
-		tpl, err := template.New("").Funcs(sprig.TxtFuncMap()).Funcs(b.customFunctions).Parse(tmpl.Response)
+		tpl, err := b.MakeTemplate(tmpl.Response)
 		if err != nil {
 			return err
 		}

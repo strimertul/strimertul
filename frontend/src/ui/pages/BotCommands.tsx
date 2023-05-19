@@ -1,5 +1,5 @@
 import { PlusIcon } from '@radix-ui/react-icons';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useModule } from '~/lib/react';
 import { useAppDispatch } from '~/store';
@@ -35,6 +35,7 @@ import {
   TextBlock,
 } from '../theme';
 import { Alert, AlertTrigger } from '../theme/alert';
+import { TestCommandTemplate } from '@wailsapp/go/main/App';
 
 const CommandList = styled('div', { marginTop: '1rem' });
 const CommandItemContainer = styled('article', {
@@ -227,9 +228,11 @@ function CommandDialog({
     item?.response_type ?? 'chat',
   );
   const [response, setResponse] = useState(item?.response ?? '');
+  const responseRef = useRef<HTMLTextAreaElement>(null);
   const [accessLevel, setAccessLevel] = useState(
     item?.access_level ?? 'everyone',
   );
+  const [responseError, setResponseError] = useState<string | null>(null);
   const { t } = useTranslation();
   const replyTypes: ReplyType[] = ['chat', 'reply', 'whisper', 'announce'];
 
@@ -239,20 +242,29 @@ function CommandDialog({
       closeButton={true}
     >
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           if (!(e.target as HTMLFormElement).checkValidity()) {
             return;
           }
           e.preventDefault();
-          if (onSubmit) {
-            onSubmit(commandName, {
-              ...item,
-              description,
-              response,
-              response_type: responseType,
-              access_level: accessLevel,
-            });
+          try {
+            await TestCommandTemplate(response);
+            if (onSubmit) {
+              onSubmit(commandName, {
+                ...item,
+                description,
+                response,
+                response_type: responseType,
+                access_level: accessLevel,
+              });
+            }
+          } catch (e) {
+            setResponseError(e);
+            responseRef.current?.setCustomValidity(
+              t('pages.botcommands.command-invalid-format'),
+            );
           }
+          
         }}
       >
         <Field spacing="narrow" size="fullWidth">
@@ -309,12 +321,21 @@ function CommandDialog({
           <Textarea
             value={response}
             required={true}
-            onChange={(e) => setResponse(e.target.value)}
+            onChange={(e) => {
+              responseRef.current?.setCustomValidity('');
+              setResponse(e.target.value)
+            }}
             id="command-response"
+            ref={responseRef}
             placeholder={t('pages.botcommands.command-response-placeholder')}
           >
             {item?.response}
           </Textarea>
+          {responseError && (
+            <FieldNote css={{
+              color: '$red10'
+            }}>{responseError}</FieldNote>    
+          )}
         </Field>
         <Field spacing="narrow" size="fullWidth">
           <Label htmlFor="command-acl">

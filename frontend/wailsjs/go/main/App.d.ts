@@ -27,3 +27,7 @@ export function IsServerReady():Promise<boolean>;
 export function RestoreBackup(arg1:string):Promise<void>;
 
 export function SendCrashReport(arg1:string,arg2:string):Promise<string>;
+
+export function TestCommandTemplate(arg1:string):Promise<void>;
+
+export function TestTemplate(arg1:string,arg2:any):Promise<void>;

@@ -290,6 +290,18 @@ func (a *App) GetAppVersion() VersionInfo {
 	}
 }
 
+func (a *App) TestTemplate(message string, data any) error {
+	tpl, err := a.twitchManager.Client().Bot.MakeTemplate(message)
+	if err != nil {
+		return err
+	}
+	return tpl.Execute(io.Discard, data)
+}
+
+func (a *App) TestCommandTemplate(message string) error {
+	return a.TestTemplate(message, twitch.TestMessageData)
+}
+
 func (a *App) interactiveAuth(client kv.Client, message map[string]any) bool {
 	callbackID := fmt.Sprintf("auth-callback-%d", client.UID())
 	authResult := make(chan bool)

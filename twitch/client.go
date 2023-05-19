@@ -24,7 +24,7 @@ type Manager struct {
 }
 
 func NewManager(db *database.LocalDBClient, server *http.Server, logger *zap.Logger) (*Manager, error) {
-	// Get Twitch Config
+	// Get Twitch config
 	var config Config
 	if err := db.GetJSON(ConfigKey, &config); err != nil {
 		if !errors.Is(err, database.ErrEmptyKey) {
@@ -33,7 +33,7 @@ func NewManager(db *database.LocalDBClient, server *http.Server, logger *zap.Log
 		config.Enabled = false
 	}
 
-	// Get Twitch bot Config
+	// Get Twitch bot config
 	var botConfig BotConfig
 	if err := db.GetJSON(BotConfigKey, &botConfig); err != nil {
 		if !errors.Is(err, database.ErrEmptyKey) {

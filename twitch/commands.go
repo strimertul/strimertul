@@ -2,10 +2,12 @@ package twitch
 
 import (
 	"bytes"
+	"github.com/Masterminds/sprig/v3"
 	"math/rand"
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	irc "github.com/gempir/go-twitch-irc/v4"
 	"github.com/nicklaw5/helix/v2"
@@ -92,6 +94,51 @@ func cmdCustom(bot *Bot, cmd string, data BotCustomCommand, message irc.PrivateM
 			bot.logger.Error("Failed to send announcement", zap.Error(err))
 		}
 	}
+}
+
+func (b *Bot) MakeTemplate(message string) (*template.Template, error) {
+	return template.New("").Funcs(sprig.TxtFuncMap()).Funcs(b.customFunctions).Parse(message)
+}
+
+var TestMessageData = irc.PrivateMessage{
+	User: irc.User{
+		ID:          "603448316",
+		Name:        "ashkeelvt",
+		DisplayName: "AshKeelVT",
+		Color:       "#EC2B87",
+		Badges: map[string]int{
+			"subscriber":  0,
+			"moments":     1,
+			"broadcaster": 1,
+		},
+	},
+	Type: 1,
+	Tags: map[string]string{
+		"emotes":            "",
+		"first-msg":         "0",
+		"id":                "e6b80ab3-d068-4226-83b2-a991da9c0cc3",
+		"turbo":             "0",
+		"user-id":           "603448316",
+		"badges":            "broadcaster/1,subscriber/0,moments/1",
+		"color":             "#EC2B87",
+		"user-type":         "",
+		"room-id":           "603448316",
+		"tmi-sent-ts":       "1684345559394",
+		"flags":             "",
+		"mod":               "0",
+		"returning-chatter": "0",
+		"badge-info":        "subscriber/21",
+		"display-name":      "AshKeelVT",
+		"subscriber":        "1",
+	},
+	Message: "!test",
+	Channel: "ashkeelvt",
+	RoomID:  "603448316",
+	ID:      "e6b80ab3-d068-4226-83b2-a991da9c0cc3",
+	Time:    time.Now(),
+	Emotes:  nil,
+	Bits:    0,
+	Action:  false,
 }
 
 func (b *Bot) setupFunctions() {

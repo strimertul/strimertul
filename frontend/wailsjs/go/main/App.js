@@ -49,3 +49,11 @@ export function RestoreBackup(arg1) {
 export function SendCrashReport(arg1, arg2) {
   return window['go']['main']['App']['SendCrashReport'](arg1, arg2);
 }
+
+export function TestCommandTemplate(arg1) {
+  return window['go']['main']['App']['TestCommandTemplate'](arg1);
+}
+
+export function TestTemplate(arg1, arg2) {
+  return window['go']['main']['App']['TestTemplate'](arg1, arg2);
+}

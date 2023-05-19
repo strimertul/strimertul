@@ -118,7 +118,8 @@
         "chat": "Canale",
         "reply": "Risposta",
         "whisper": "Chat privata"
-      }
+      },
+      "command-invalid-format": "Il messaggio contiene errori"
     },
     "bottimers": {
       "add-button": "Nuovo timer",

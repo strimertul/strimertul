@@ -7,7 +7,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/Masterminds/sprig/v3"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix/v2"
 	"go.uber.org/zap"
@@ -474,7 +473,7 @@ func (m *BotAlertsModule) compileTemplates() {
 }
 
 func (m *BotAlertsModule) addTemplate(templateList templateCache, message string) {
-	tpl, err := template.New("").Funcs(m.bot.customFunctions).Funcs(sprig.TxtFuncMap()).Parse(message)
+	tpl, err := m.bot.MakeTemplate(message)
 	if err != nil {
 		m.bot.logger.Error("Error compiling alert template", zap.Error(err))
 		return
