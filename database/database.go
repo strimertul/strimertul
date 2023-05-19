@@ -24,7 +24,6 @@ var (
 type LocalDBClient struct {
 	client *kv.LocalClient
 	hub    *kv.Hub
-	logger *zap.Logger
 }
 
 type KvPair struct {
@@ -50,7 +49,6 @@ func NewLocalClient(hub *kv.Hub, logger *zap.Logger) (*LocalDBClient, error) {
 	return &LocalDBClient{
 		client: localClient,
 		hub:    hub,
-		logger: logger,
 	}, nil
 }
 

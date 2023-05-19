@@ -9,5 +9,7 @@ func MergeMap[T comparable, V any](a, b map[T]V) {
 }
 
 func MergeSyncMap[T comparable, V any](a, b *sync.Map[T, V]) {
-	b.Set(a.Copy())
+	merged := a.Copy()
+	MergeMap(merged, b.Copy())
+	a.Set(merged)
 }

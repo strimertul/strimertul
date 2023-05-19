@@ -14,6 +14,6 @@ func (f ByDate) Swap(i, j int) {
 
 func (f ByDate) Less(i, j int) bool {
 	firstInfo, _ := f[i].Info()
-	secondInfo, _ := f[i].Info()
+	secondInfo, _ := f[j].Info()
 	return firstInfo.ModTime().Before(secondInfo.ModTime())
 }
