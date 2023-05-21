@@ -148,8 +148,7 @@ func (mod *LocalDBClient) PutJSONBulk(kvs map[string]any) error {
 		}
 		encoded[k] = string(byt)
 	}
-	_, chn := mod.client.MakeRequest(kv.CmdWriteBulk, encoded)
-	_, err := getResponse(<-chn)
+	_, err := mod.makeRequest(kv.CmdWriteBulk, encoded)
 	return err
 }
 

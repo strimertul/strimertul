@@ -1,0 +1,21 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GOPRIVATE: git.sr.ht
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+      - name: Test
+        run: go test -v ./...
