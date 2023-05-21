@@ -1,4 +1,4 @@
-name: Build
+name: Test
 
 on:
   push:
@@ -9,7 +9,7 @@ env:
   GOPRIVATE: git.sr.ht
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

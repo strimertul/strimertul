@@ -11,7 +11,7 @@ env:
   GOPRIVATE: git.sr.ht
 
 jobs:
-  build:
+  release:
     strategy:
       fail-fast: false
       matrix:
