@@ -11,9 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Custom chat commands can now be sent as replies, whispers and announcements. Due to some API shenanigans yet to be solved, the latter two will always be sent from your main account, not the bot account (if they are different)
 
+### Changed
+
+- Chat command cooldown can now be tweaked in the bot settings screen. (This is not per-user o per-command just yet)
+
 ### Fixed
 
 - Fixed some minor bugs regarding backup file sorting and migration procedures
+- Fixed bot cooldown being unreliable due to depending on multiple time sources
 
 ## [3.2.1] - 2023-05-17
 
