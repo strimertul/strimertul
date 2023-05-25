@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed some minor bugs regarding backup file sorting and migration procedures
 - Fixed bot cooldown being unreliable due to depending on multiple time sources
+- Spaces at beginning of messages are now ignored for command checking (e.g. " !lurk" will match !lurk)
 
 ## [3.2.1] - 2023-05-17
 

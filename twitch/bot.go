@@ -147,10 +147,10 @@ func (b *Bot) onMessageHandler(message irc.PrivateMessage) {
 		return
 	}
 
-	lowercaseMessage := strings.ToLower(message.Message)
+	lowercaseMessage := strings.TrimSpace(strings.ToLower(message.Message))
 
 	// Check if it's a command
-	if strings.HasPrefix(message.Message, "!") {
+	if strings.HasPrefix(lowercaseMessage, "!") {
 		// Run through supported commands
 		for cmd, data := range b.commands.Copy() {
 			if !data.Enabled {
