@@ -326,7 +326,7 @@
       "app-client-secret": "Segreto client",
       "app-oauth-redirect-url": "Reindirizzamento URL OAuth",
       "bot-channel": "Canale Twitch",
-      "bot-chat-header": "Storico chat",
+      "bot-chat-header": "Impostazioni chat",
       "bot-chat-history": "Quanti messaggi tenere nello storico (0 per disabilitare)",
       "bot-info-header": "Informazioni account del bot",
       "bot-oauth": "Token di autorizzazione",
@@ -360,7 +360,8 @@
       },
       "test-button": "Test connessione",
       "test-failed": "Test fallito: \"{{0}}\". \nControlla ID e segreto client dell'app!",
-      "test-succeeded": "Test riuscito!"
+      "test-succeeded": "Test riuscito!",
+      "bot-chat-cooldown-tip": "Tempo minimo di attesa tra comandi (in secondi)"
     },
     "uiconfig": {
       "language": "Lingua",

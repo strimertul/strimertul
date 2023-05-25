@@ -34,7 +34,7 @@ func NewManager(db *database.LocalDBClient, server *http.Server, logger *zap.Log
 	}
 
 	// Get Twitch bot config
-	var botConfig BotConfig
+	botConfig := defaultBotConfig()
 	if err := db.GetJSON(BotConfigKey, &botConfig); err != nil {
 		if !errors.Is(err, database.ErrEmptyKey) {
 			return nil, fmt.Errorf("failed to get bot config: %w", err)
@@ -89,7 +89,7 @@ func NewManager(db *database.LocalDBClient, server *http.Server, logger *zap.Log
 
 	// Listen for bot config changes
 	err, cancelBotSub := db.SubscribeKey(BotConfigKey, func(value string) {
-		var newBotConfig BotConfig
+		newBotConfig := defaultBotConfig()
 		if err := json.UnmarshalFromString(value, &newBotConfig); err != nil {
 			logger.Error("Failed to decode bot config", zap.Error(err))
 			return

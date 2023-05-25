@@ -10,6 +10,7 @@ import {
   ReplyType,
   TwitchBotCustomCommand,
 } from '~/store/api/types';
+import { TestCommandTemplate } from '@wailsapp/go/main/App';
 import AlertContent from '../components/AlertContent';
 import DialogContent from '../components/DialogContent';
 import {
@@ -35,7 +36,6 @@ import {
   TextBlock,
 } from '../theme';
 import { Alert, AlertTrigger } from '../theme/alert';
-import { TestCommandTemplate } from '@wailsapp/go/main/App';
 
 const CommandList = styled('div', { marginTop: '1rem' });
 const CommandItemContainer = styled('article', {
@@ -112,7 +112,7 @@ const CommandType = styled('div', {
   variants: {
     type: {
       chat: {
-        display:'none'
+        display: 'none',
       },
       whisper: {
         backgroundColor: '$amber4',
@@ -125,10 +125,10 @@ const CommandType = styled('div', {
       reply: {
         backgroundColor: '$gray2',
         color: '$gray12',
-      }
-    }
-  }
-})
+      },
+    },
+  },
+});
 const ACLIndicator = styled('span', {
   fontFamily: 'Space Mono',
   fontSize: '10pt',
@@ -201,7 +201,11 @@ function CommandItem({
         </CommandActions>
       </CommandHeader>
       <CommandText>
-        <CommandType type={item.response_type}>{t(`pages.botcommands.response-types.${item.response_type}`)}</CommandType>{item.response}</CommandText>
+        <CommandType type={item.response_type ?? 'chat'}>
+          {t(`pages.botcommands.response-types.${item.response_type}`)}
+        </CommandType>
+        {item.response}
+      </CommandText>
     </CommandItemContainer>
   );
 }
@@ -242,29 +246,30 @@ function CommandDialog({
       closeButton={true}
     >
       <form
-        onSubmit={async (e) => {
+        onSubmit={(e) => {
           if (!(e.target as HTMLFormElement).checkValidity()) {
-            return;
+            return false;
           }
           e.preventDefault();
-          try {
-            await TestCommandTemplate(response);
-            if (onSubmit) {
-              onSubmit(commandName, {
-                ...item,
-                description,
-                response,
-                response_type: responseType,
-                access_level: accessLevel,
-              });
+          void (async () => {
+            try {
+              await TestCommandTemplate(response);
+              if (onSubmit) {
+                onSubmit(commandName, {
+                  ...item,
+                  description,
+                  response,
+                  response_type: responseType,
+                  access_level: accessLevel,
+                });
+              }
+            } catch (error: unknown) {
+              setResponseError(error as string);
+              responseRef.current?.setCustomValidity(
+                t('pages.botcommands.command-invalid-format'),
+              );
             }
-          } catch (e) {
-            setResponseError(e);
-            responseRef.current?.setCustomValidity(
-              t('pages.botcommands.command-invalid-format'),
-            );
-          }
-          
+          })();
         }}
       >
         <Field spacing="narrow" size="fullWidth">
@@ -323,7 +328,7 @@ function CommandDialog({
             required={true}
             onChange={(e) => {
               responseRef.current?.setCustomValidity('');
-              setResponse(e.target.value)
+              setResponse(e.target.value);
             }}
             id="command-response"
             ref={responseRef}
@@ -332,9 +337,13 @@ function CommandDialog({
             {item?.response}
           </Textarea>
           {responseError && (
-            <FieldNote css={{
-              color: '$red10'
-            }}>{responseError}</FieldNote>    
+            <FieldNote
+              css={{
+                color: '$red10',
+              }}
+            >
+              {responseError}
+            </FieldNote>
           )}
         </Field>
         <Field spacing="narrow" size="fullWidth">

@@ -191,6 +191,26 @@ function TwitchBotSettings() {
           }
         />
       </Field>
+      <Field size="fullWidth">
+        <Label htmlFor="bot-chat-history">
+          {t('pages.twitch-settings.bot-chat-cooldown-tip')}
+        </Label>
+        <InputBox
+          type="number"
+          id="bot-chat-history"
+          required={active}
+          disabled={disabled}
+          defaultValue={botConfig ? botConfig.command_cooldown ?? 2 : undefined}
+          onChange={(ev) =>
+            dispatch(
+              apiReducer.actions.twitchBotConfigChanged({
+                ...botConfig,
+                command_cooldown: parseInt(ev.target.value, 10),
+              }),
+            )
+          }
+        />
+      </Field>
       <SaveButton status={status} />
     </form>
   );

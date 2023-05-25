@@ -142,7 +142,7 @@ func (b *Bot) onMessageHandler(message irc.PrivateMessage) {
 	}
 
 	// Ignore messages for a while or twitch will get mad!
-	if message.Time.Before(b.lastMessage.Get().Add(time.Second * 2)) {
+	if time.Now().Before(b.lastMessage.Get().Add(time.Second * time.Duration(b.Config.CommandCooldown))) {
 		b.logger.Debug("Message received too soon, ignoring")
 		return
 	}
@@ -304,4 +304,10 @@ func getUserAccessLevel(user irc.User) AccessLevelType {
 	}
 
 	return ALTEveryone
+}
+
+func defaultBotConfig() BotConfig {
+	return BotConfig{
+		CommandCooldown: 2,
+	}
 }

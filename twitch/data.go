@@ -36,6 +36,9 @@ type BotConfig struct {
 
 	// How many messages to keep in twitch/chat-history
 	ChatHistory int `json:"chat_history" desc:"How many messages to keep in twitch/chat-history"`
+
+	// Global command cooldown in seconds
+	CommandCooldown int `json:"command_cooldown" desc:"Global command cooldown in seconds"`
 }
 
 const (

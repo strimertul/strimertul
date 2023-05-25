@@ -74,7 +74,7 @@
       "bot-oauth-note": "You can get this by logging in with the bot account and going here: <1>https://twitchapps.com/tmi/</1>",
       "bot-info-header": "Bot account info",
       "bot-settings-copy": "A bot can interact with chat messages and provide extra events for the platform (chat events, some notifications) but requires access to a Twitch account. You can use your own or make a new one (if enabled on your main account, you can re-use the same email for your second account!)",
-      "bot-chat-header": "Chat logging",
+      "bot-chat-header": "Chat settings",
       "bot-chat-history": "How many messages to keep in history (0 to disable)",
       "events": {
         "loading-data": "Querying user data from Twitch APIs…",
@@ -99,7 +99,8 @@
       "app-oauth-redirect-url": "OAuth Redirect URLs",
       "test-button": "Test connection",
       "test-failed": "Test failed: \"{{0}}\". Check your app client IDs and secret!",
-      "test-succeeded": "Test succeeded!"
+      "test-succeeded": "Test succeeded!",
+      "bot-chat-cooldown-tip": "Global chat cooldown for commands (in seconds)"
     },
     "botcommands": {
       "title": "Bot commands",

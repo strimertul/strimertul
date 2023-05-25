@@ -22,6 +22,7 @@ export interface TwitchBotConfig {
   oauth: string;
   channel: string;
   chat_history: number;
+  command_cooldown: number;
 }
 
 export const accessLevels = [
