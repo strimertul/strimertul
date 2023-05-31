@@ -24,9 +24,9 @@ import (
 
 	"github.com/strimertul/strimertul/database"
 	"github.com/strimertul/strimertul/docs"
-	"github.com/strimertul/strimertul/http"
 	"github.com/strimertul/strimertul/loyalty"
 	"github.com/strimertul/strimertul/twitch"
+	"github.com/strimertul/strimertul/webserver"
 )
 
 // App struct
@@ -41,7 +41,7 @@ type App struct {
 
 	db             *database.LocalDBClient
 	twitchManager  *twitch.Manager
-	httpServer     *http.Server
+	httpServer     *webserver.WebServer
 	loyaltyManager *loyalty.Manager
 }
 
@@ -153,7 +153,7 @@ func (a *App) initializeComponents() error {
 	var err error
 
 	// Create logger and endpoints
-	a.httpServer, err = http.NewServer(a.db, logger)
+	a.httpServer, err = webserver.NewServer(a.db, logger, webserver.DefaultServerFactory)
 	if err != nil {
 		return fmt.Errorf("could not initialize http server: %w", err)
 	}

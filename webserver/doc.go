@@ -1,8 +1,9 @@
-package http
+package webserver
 
 import (
-	"github.com/strimertul/strimertul/docs/interfaces"
 	"reflect"
+
+	"github.com/strimertul/strimertul/docs/interfaces"
 )
 
 // Documentation stuff, keep updated at all times

@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/strimertul/strimertul/database"
-	"github.com/strimertul/strimertul/http"
+	"github.com/strimertul/strimertul/webserver"
 )
 
 var json = jsoniter.ConfigFastest
@@ -23,7 +23,7 @@ type Manager struct {
 	cancelSubs func()
 }
 
-func NewManager(db *database.LocalDBClient, server *http.Server, logger *zap.Logger) (*Manager, error) {
+func NewManager(db *database.LocalDBClient, server *webserver.WebServer, logger *zap.Logger) (*Manager, error) {
 	// Get Twitch config
 	var config Config
 	if err := db.GetJSON(ConfigKey, &config); err != nil {
@@ -150,7 +150,7 @@ type Client struct {
 	User       helix.User
 	logger     *zap.Logger
 	eventCache *lru.Cache[string, time.Time]
-	server     *http.Server
+	server     *webserver.WebServer
 	ctx        context.Context
 	cancel     context.CancelFunc
 
@@ -173,7 +173,7 @@ func (c *Client) ensureRoute() {
 	}
 }
 
-func newClient(config Config, db *database.LocalDBClient, server *http.Server, logger *zap.Logger) (*Client, error) {
+func newClient(config Config, db *database.LocalDBClient, server *webserver.WebServer, logger *zap.Logger) (*Client, error) {
 	eventCache, err := lru.New[string, time.Time](128)
 	if err != nil {
 		return nil, fmt.Errorf("could not create LRU cache for events: %w", err)

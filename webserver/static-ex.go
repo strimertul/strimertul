@@ -1,6 +1,6 @@
 // FROM https://gist.github.com/lummie/91cd1c18b2e32fa9f316862221a6fd5c
 
-package http
+package webserver
 
 import (
 	"net/http"
@@ -13,7 +13,7 @@ func FileServerWithDefault(root http.FileSystem) http.Handler {
 	fs := http.FileServer(root)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//make sure the url path starts with /
+		// make sure the url path starts with /
 		upath := r.URL.Path
 		if !strings.HasPrefix(upath, "/") {
 			upath = "/" + upath

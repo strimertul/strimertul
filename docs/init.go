@@ -2,10 +2,10 @@ package docs
 
 import (
 	"github.com/strimertul/strimertul/docs/interfaces"
-	"github.com/strimertul/strimertul/http"
 	"github.com/strimertul/strimertul/loyalty"
 	"github.com/strimertul/strimertul/twitch"
 	"github.com/strimertul/strimertul/utils"
+	"github.com/strimertul/strimertul/webserver"
 )
 
 var (
@@ -30,5 +30,5 @@ func init() {
 	// Put all keys here
 	addKeys(twitch.Keys)
 	addKeys(loyalty.Keys)
-	addKeys(http.Keys)
+	addKeys(webserver.Keys)
 }

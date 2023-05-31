@@ -1,4 +1,4 @@
-package http
+package webserver
 
 import (
 	"context"
@@ -21,27 +21,29 @@ import (
 
 var json = jsoniter.ConfigFastest
 
-type Server struct {
+type WebServer struct {
 	Config          *sync.RWSync[ServerConfig]
 	db              *database.LocalDBClient
 	logger          *zap.Logger
-	server          *http.Server
+	server          Server
 	frontend        fs.FS
 	hub             *kv.Hub
 	mux             *http.ServeMux
 	requestedRoutes *sync.Map[string, http.Handler]
 	restart         *sync.RWSync[bool]
 	cancelConfigSub database.CancelFunc
+	factory         ServerFactory
 }
 
-func NewServer(db *database.LocalDBClient, logger *zap.Logger) (*Server, error) {
-	server := &Server{
+func NewServer(db *database.LocalDBClient, logger *zap.Logger, serverFactory ServerFactory) (*WebServer, error) {
+	server := &WebServer{
 		logger:          logger,
 		db:              db,
-		server:          &http.Server{},
+		server:          nil,
 		requestedRoutes: sync.NewMap[string, http.Handler](),
 		restart:         sync.NewRWSync(false),
 		Config:          sync.NewRWSync(ServerConfig{}),
+		factory:         serverFactory,
 	}
 
 	var config ServerConfig
@@ -86,19 +88,26 @@ type StatusData struct {
 	Bind string
 }
 
-func (s *Server) Close() error {
+func (s *WebServer) Close() error {
 	if s.cancelConfigSub != nil {
 		s.cancelConfigSub()
 	}
 
-	return s.server.Close()
+	if s.server != nil {
+		err := s.server.Close()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-func (s *Server) SetFrontend(files fs.FS) {
+func (s *WebServer) SetFrontend(files fs.FS) {
 	s.frontend = files
 }
 
-func (s *Server) makeMux() *http.ServeMux {
+func (s *WebServer) makeMux() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Register pprof
@@ -107,6 +116,7 @@ func (s *Server) makeMux() *http.ServeMux {
 	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	mux.HandleFunc("/health", healthFunc)
 
 	if s.frontend != nil {
 		mux.Handle("/ui/", http.StripPrefix("/ui/", FileServerWithDefault(http.FS(s.frontend))))
@@ -127,35 +137,50 @@ func (s *Server) makeMux() *http.ServeMux {
 	return mux
 }
 
-func (s *Server) RegisterRoute(route string, handler http.Handler) {
+func healthFunc(w http.ResponseWriter, _ *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, "OK")
+}
+
+func (s *WebServer) RegisterRoute(route string, handler http.Handler) {
 	s.requestedRoutes.SetKey(route, handler)
 	s.mux = s.makeMux()
 }
 
-func (s *Server) UnregisterRoute(route string) {
+func (s *WebServer) UnregisterRoute(route string) {
 	s.requestedRoutes.DeleteKey(route)
 	s.mux = s.makeMux()
 }
 
-func (s *Server) Listen() error {
+func (s *WebServer) Listen() error {
 	// Start HTTP server
 	exit := make(chan error)
 	go func() {
 		for {
+			// Read config and make http request mux
 			config := s.Config.Get()
 			s.logger.Info("Starting HTTP server", zap.String("bind", config.Bind))
 			s.mux = s.makeMux()
-			s.server = &http.Server{
-				Handler: s,
-				Addr:    config.Bind,
+
+			// Make HTTP server instance
+			var err error
+			s.server, err = s.factory(s, config.Bind)
+			if err != nil {
+				exit <- err
+				return
 			}
+
+			// Start HTTP server
 			s.logger.Info("HTTP server started", zap.String("bind", config.Bind))
-			err := s.server.ListenAndServe()
+			err = s.server.Start()
+
+			// If the server died, we need to see what to do
 			s.logger.Debug("HTTP server died", zap.Error(err))
 			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				exit <- err
 				return
 			}
+
 			// Are we trying to close or restart?
 			s.logger.Debug("HTTP server stopped", zap.Bool("restart", s.restart.Get()))
 			if s.restart.Get() {
@@ -171,7 +196,7 @@ func (s *Server) Listen() error {
 	return <-exit
 }
 
-func (s *Server) onConfigUpdate(value string) {
+func (s *WebServer) onConfigUpdate(value string) {
 	oldConfig := s.Config.Get()
 
 	var config ServerConfig
@@ -200,7 +225,7 @@ func (s *Server) onConfigUpdate(value string) {
 	}
 }
 
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (s *WebServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Redirect to /ui/ if root
 	if r.URL.Path == "/" {
 		http.Redirect(w, r, "/ui/", http.StatusFound)

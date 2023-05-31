@@ -1,16 +1,16 @@
 package database
 
 import (
-	jsoniter "github.com/json-iterator/go"
-	kv "github.com/strimertul/kilovolt/v10"
-	"go.uber.org/zap/zaptest"
 	"testing"
 	"time"
+
+	jsoniter "github.com/json-iterator/go"
+	kv "github.com/strimertul/kilovolt/v10"
 )
 
 func TestLocalDBClientPutKey(t *testing.T) {
-	client, store := createLocalClient(t)
-	defer cleanupClient(client)
+	client, store := CreateInMemoryLocalClient(t)
+	defer CleanupLocalClient(client)
 
 	// Store a key using the local client
 	key := "test"
@@ -31,8 +31,8 @@ func TestLocalDBClientPutKey(t *testing.T) {
 }
 
 func TestLocalDBClientPutJSON(t *testing.T) {
-	client, store := createLocalClient(t)
-	defer cleanupClient(client)
+	client, store := CreateInMemoryLocalClient(t)
+	defer CleanupLocalClient(client)
 
 	type test struct {
 		A string
@@ -72,8 +72,8 @@ func TestLocalDBClientPutJSON(t *testing.T) {
 }
 
 func TestLocalDBClientPutJSONBulk(t *testing.T) {
-	client, store := createLocalClient(t)
-	defer cleanupClient(client)
+	client, store := CreateInMemoryLocalClient(t)
+	defer CleanupLocalClient(client)
 
 	type test struct {
 		A string
@@ -131,8 +131,8 @@ func TestLocalDBClientPutJSONBulk(t *testing.T) {
 }
 
 func TestLocalDBClientGetKey(t *testing.T) {
-	client, store := createLocalClient(t)
-	defer cleanupClient(client)
+	client, store := CreateInMemoryLocalClient(t)
+	defer CleanupLocalClient(client)
 
 	// Store a key directly in the store
 	key := "test"
@@ -154,8 +154,8 @@ func TestLocalDBClientGetKey(t *testing.T) {
 }
 
 func TestLocalDBClientGetJSON(t *testing.T) {
-	client, store := createLocalClient(t)
-	defer cleanupClient(client)
+	client, store := CreateInMemoryLocalClient(t)
+	defer CleanupLocalClient(client)
 
 	type test struct {
 		A string
@@ -195,8 +195,8 @@ func TestLocalDBClientGetJSON(t *testing.T) {
 }
 
 func TestLocalDBClientGetAll(t *testing.T) {
-	client, store := createLocalClient(t)
-	defer cleanupClient(client)
+	client, store := CreateInMemoryLocalClient(t)
+	defer CleanupLocalClient(client)
 
 	// Store a bunch of keys directly in the store
 	keys := map[string]string{
@@ -231,8 +231,8 @@ func TestLocalDBClientGetAll(t *testing.T) {
 }
 
 func TestLocalDBClientRemoveKey(t *testing.T) {
-	client, store := createLocalClient(t)
-	defer cleanupClient(client)
+	client, store := CreateInMemoryLocalClient(t)
+	defer CleanupLocalClient(client)
 
 	// Store a key directly in the store
 	key := "test"
@@ -257,8 +257,8 @@ func TestLocalDBClientRemoveKey(t *testing.T) {
 }
 
 func TestLocalDBClientSubscribeKey(t *testing.T) {
-	client, _ := createLocalClient(t)
-	defer cleanupClient(client)
+	client, _ := CreateInMemoryLocalClient(t)
+	defer CleanupLocalClient(client)
 
 	// Subscribe to a key using the local client
 	key := "test"
@@ -288,8 +288,8 @@ func TestLocalDBClientSubscribeKey(t *testing.T) {
 }
 
 func TestLocalDBClientSubscribePrefix(t *testing.T) {
-	client, _ := createLocalClient(t)
-	defer cleanupClient(client)
+	client, _ := CreateInMemoryLocalClient(t)
+	defer CleanupLocalClient(client)
 
 	// Subscribe to a prefix using the local client
 	prefix := "test"
@@ -315,32 +315,5 @@ func TestLocalDBClientSubscribePrefix(t *testing.T) {
 		}
 	case <-time.After(time.Second * 2):
 		t.Fatal("expected value to be received")
-	}
-}
-
-func createLocalClient(t *testing.T) (*LocalDBClient, kv.Driver) {
-	logger := zaptest.NewLogger(t)
-
-	// Create in-memory store and hub
-	inmemStore := kv.MakeBackend()
-	hub, err := kv.NewHub(inmemStore, kv.HubOptions{}, logger)
-	if err != nil {
-		t.Fatal(err)
-	}
-	go hub.Run()
-
-	// Create local client
-	client, err := NewLocalClient(hub, logger)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return client, inmemStore
-}
-
-func cleanupClient(client *LocalDBClient) {
-	if client.hub != nil {
-		_ = client.Close()
-		client.hub.Close()
 	}
 }
