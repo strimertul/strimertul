@@ -29,8 +29,8 @@ type Bot struct {
 	customTemplates *sync.Map[string, *template.Template]
 	customFunctions template.FuncMap
 
-	OnConnect *utils.PubSub[BotConnectHandler]
-	OnMessage *utils.PubSub[BotMessageHandler]
+	OnConnect *utils.SyncList[BotConnectHandler]
+	OnMessage *utils.SyncList[BotMessageHandler]
 
 	cancelUpdateSub   database.CancelFunc
 	cancelWriteRPCSub database.CancelFunc
@@ -74,8 +74,8 @@ func newBot(api *Client, config BotConfig) *Bot {
 		customTemplates: sync.NewMap[string, *template.Template](),
 		chatHistory:     sync.NewSlice[irc.PrivateMessage](),
 
-		OnConnect: utils.NewPubSub[BotConnectHandler](),
-		OnMessage: utils.NewPubSub[BotMessageHandler](),
+		OnConnect: utils.NewSyncList[BotConnectHandler](),
+		OnMessage: utils.NewSyncList[BotMessageHandler](),
 	}
 
 	client.OnConnect(bot.onConnectHandler)
@@ -135,7 +135,7 @@ func (b *Bot) onPartHandler(message irc.UserPartMessage) {
 }
 
 func (b *Bot) onMessageHandler(message irc.PrivateMessage) {
-	for _, handler := range b.OnMessage.Subscribers() {
+	for _, handler := range b.OnMessage.Items() {
 		if handler != nil {
 			handler.HandleBotMessage(message)
 		}
@@ -207,7 +207,7 @@ func (b *Bot) onMessageHandler(message irc.PrivateMessage) {
 }
 
 func (b *Bot) onConnectHandler() {
-	for _, handler := range b.OnConnect.Subscribers() {
+	for _, handler := range b.OnConnect.Items() {
 		if handler != nil {
 			handler.HandleBotConnect()
 		}

@@ -60,7 +60,7 @@ func (m *Manager) SetupTwitch() {
 	})
 
 	// Setup message handler for tracking user activity
-	bot.OnMessage.Subscribe(m)
+	bot.OnMessage.Add(m)
 
 	// Setup handler for adding points over time
 	go func() {
@@ -157,7 +157,7 @@ func (m *Manager) StopTwitch() {
 		bot.RemoveCommand(commandContribute)
 
 		// Remove message handler
-		bot.OnMessage.Unsubscribe(m)
+		bot.OnMessage.Remove(m)
 	}
 }
 
