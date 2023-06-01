@@ -2,8 +2,12 @@ package webserver
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
+
+	"git.sr.ht/~hamcha/containers/sync"
 
 	"go.uber.org/zap/zaptest"
 
@@ -79,6 +83,66 @@ func TestListen(t *testing.T) {
 	case <-finished:
 	case <-time.After(time.Second * 2):
 		t.Fatal("Server did not shut down in time")
+	}
+}
+
+type testCustomHandler struct {
+	called *sync.Sync[bool]
+}
+
+func (t *testCustomHandler) ServeHTTP(http.ResponseWriter, *http.Request) {
+	t.called.Set(true)
+}
+
+func TestCustomRoute(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+	client, _ := database.CreateInMemoryLocalClient(t)
+	defer database.CleanupLocalClient(client)
+
+	// Create test server
+	server, err := NewServer(client, logger, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	server.makeMux()
+	testServer := httptest.NewServer(server)
+
+	// Register a custom route
+	handler := &testCustomHandler{called: sync.NewSync(false)}
+	server.RegisterRoute("/test", handler)
+
+	// Make a request to the custom route
+	httpClient := testServer.Client()
+	path := fmt.Sprintf("%s/test", testServer.URL)
+	resp, err := httpClient.Get(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != 200 {
+		t.Fatalf("Expected 200, got %d", resp.StatusCode)
+	}
+
+	// Make sure the handler was called
+	if !handler.called.Get() {
+		t.Fatal("Handler was not called with custom route")
+	}
+
+	// Reset the handler
+	handler.called.Set(false)
+
+	// Unregister the route
+	server.UnregisterRoute("/test")
+
+	// Make a request to the custom route again
+	resp, err = httpClient.Get(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != 404 {
+		t.Fatalf("Expected 404, got %d", resp.StatusCode)
+	}
+	if handler.called.Get() {
+		t.Fatal("Handler was called with unregistered route")
 	}
 }
 
