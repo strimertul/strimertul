@@ -63,9 +63,14 @@ var Keys = interfaces.KeyMap{
 		Description: "Configuration of chat bot timers",
 		Type:        reflect.TypeOf(BotTimersConfig{}),
 	},
-	WriteMessageRPC: interfaces.KeyDef{
-		Description: "Send plain text chat message",
+	WritePlainMessageRPC: interfaces.KeyDef{
+		Description: "Send plain text chat message (this will be deprecated or renamed someday, please use the other one!)",
 		Type:        reflect.TypeOf(""),
+		Tags:        []interfaces.KeyTag{interfaces.TagRPC},
+	},
+	WriteMessageRPC: interfaces.KeyDef{
+		Description: "Send chat message with extra options (as reply, whisper, etc)",
+		Type:        reflect.TypeOf(WriteMessageRequest{}),
 		Tags:        []interfaces.KeyTag{interfaces.TagRPC},
 	},
 }

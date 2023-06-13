@@ -6,6 +6,8 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/nicklaw5/helix/v2"
+
 	"git.sr.ht/~hamcha/containers/sync"
 	irc "github.com/gempir/go-twitch-irc/v4"
 	"go.uber.org/zap"
@@ -14,8 +16,23 @@ import (
 	"github.com/strimertul/strimertul/utils"
 )
 
+type IRCBot interface {
+	Join(channel ...string)
+
+	Connect() error
+	Disconnect() error
+
+	Say(channel, message string)
+	Reply(channel, messageID, message string)
+
+	OnConnect(handler func())
+	OnPrivateMessage(handler func(irc.PrivateMessage))
+	OnUserJoinMessage(handler func(message irc.UserJoinMessage))
+	OnUserPartMessage(handler func(message irc.UserPartMessage))
+}
+
 type Bot struct {
-	Client *irc.Client
+	Client IRCBot
 	Config BotConfig
 
 	api         *Client
@@ -32,8 +49,9 @@ type Bot struct {
 	OnConnect *utils.SyncList[BotConnectHandler]
 	OnMessage *utils.SyncList[BotMessageHandler]
 
-	cancelUpdateSub   database.CancelFunc
-	cancelWriteRPCSub database.CancelFunc
+	cancelUpdateSub        database.CancelFunc
+	cancelWritePlainRPCSub database.CancelFunc
+	cancelWriteRPCSub      database.CancelFunc
 
 	// Module specific vars
 	Timers *BotTimerModule
@@ -61,6 +79,10 @@ func newBot(api *Client, config BotConfig) *Bot {
 	// Create client
 	client := irc.NewClient(config.Username, config.Token)
 
+	return newBotWithClient(client, api, config)
+}
+
+func newBotWithClient(client IRCBot, api *Client, config BotConfig) *Bot {
 	bot := &Bot{
 		Client: client,
 		Config: config,
@@ -107,6 +129,10 @@ func newBot(api *Client, config BotConfig) *Bot {
 		bot.logger.Error("Failed to parse custom commands", zap.Error(err))
 	}
 	err, bot.cancelUpdateSub = api.db.SubscribeKey(CustomCommandsKey, bot.updateCommands)
+	if err != nil {
+		bot.logger.Error("Could not set-up bot command reload subscription", zap.Error(err))
+	}
+	err, bot.cancelWritePlainRPCSub = api.db.SubscribeKey(WritePlainMessageRPC, bot.handleWritePlainMessageRPC)
 	if err != nil {
 		bot.logger.Error("Could not set-up bot command reload subscription", zap.Error(err))
 	}
@@ -221,6 +247,9 @@ func (b *Bot) Close() error {
 	if b.cancelWriteRPCSub != nil {
 		b.cancelWriteRPCSub()
 	}
+	if b.cancelWritePlainRPCSub != nil {
+		b.cancelWritePlainRPCSub()
+	}
 	if b.Timers != nil {
 		b.Timers.Close()
 	}
@@ -243,8 +272,52 @@ func (b *Bot) updateCommands(value string) {
 	}
 }
 
-func (b *Bot) handleWriteMessageRPC(value string) {
+func (b *Bot) handleWritePlainMessageRPC(value string) {
 	b.Client.Say(b.Config.Channel, value)
+}
+
+func (b *Bot) handleWriteMessageRPC(value string) {
+	var request WriteMessageRequest
+	err := json.Unmarshal([]byte(value), &request)
+	if err != nil {
+		b.logger.Warn("Failed to decode write message request", zap.Error(err))
+		return
+	}
+	if request.ReplyTo != nil && *request.ReplyTo != "" {
+		b.Client.Reply(b.Config.Channel, *request.ReplyTo, request.Message)
+		return
+	}
+	if request.WhisperTo != nil && *request.WhisperTo != "" {
+		client, err := b.api.GetUserClient(false)
+		reply, err := client.SendUserWhisper(&helix.SendUserWhisperParams{
+			FromUserID: b.api.User.ID,
+			ToUserID:   *request.WhisperTo,
+			Message:    request.Message,
+		})
+		if reply.Error != "" {
+			b.logger.Error("Failed to send whisper", zap.String("code", reply.Error), zap.String("message", reply.ErrorMessage))
+		}
+		if err != nil {
+			b.logger.Error("Failed to send whisper", zap.Error(err))
+		}
+		return
+	}
+	if request.Announce {
+		client, err := b.api.GetUserClient(false)
+		reply, err := client.SendChatAnnouncement(&helix.SendChatAnnouncementParams{
+			BroadcasterID: b.api.User.ID,
+			ModeratorID:   b.api.User.ID,
+			Message:       request.Message,
+		})
+		if reply.Error != "" {
+			b.logger.Error("Failed to send announcement", zap.String("code", reply.Error), zap.String("message", reply.ErrorMessage))
+		}
+		if err != nil {
+			b.logger.Error("Failed to send announcement", zap.Error(err))
+		}
+		return
+	}
+	b.Client.Say(b.Config.Channel, request.Message)
 }
 
 func (b *Bot) updateTemplates() error {

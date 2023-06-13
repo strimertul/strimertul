@@ -77,7 +77,20 @@ type BotCustomCommand struct {
 
 const CustomCommandsKey = "twitch/bot-custom-commands"
 
-const WriteMessageRPC = "twitch/@send-chat-message"
+const (
+	// WritePlainMessageRPC is the old send command, will be renamed someday
+	WritePlainMessageRPC = "twitch/@send-chat-message"
+
+	WriteMessageRPC = "twitch/bot/@send-message"
+)
+
+// WriteMessageRequest is an RPC to send a chat message with extra options
+type WriteMessageRequest struct {
+	Message   string  `json:"message" desc:"Chat message to send"`
+	ReplyTo   *string `json:"reply_to" desc:"If specified, send as reply to a message ID"`
+	WhisperTo *string `json:"whisper_to" desc:"If specified, send as whisper to user ID"`
+	Announce  bool    `json:"announce" desc:"If true, send as announcement"`
+}
 
 const BotCounterPrefix = "twitch/bot-counters/"
 

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Custom chat commands can now be sent as replies, whispers and announcements. Due to some API shenanigans yet to be solved, the latter two will always be sent from your main account, not the bot account (if they are different)
+- Added a structured RPC `twitch/bot/@send-message` for sending messages as replies, announcements and whispers.
 
 ### Changed
 
