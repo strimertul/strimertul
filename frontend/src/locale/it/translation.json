@@ -143,7 +143,7 @@
       "live": "In onda!",
       "not-live": "Offline / Non in streaming",
       "twitch-status": "Stato stream Twitch",
-      "x-viewers": "{{count}} spettatori",
+      "x-viewers": "{{num}} spettatori",
       "twitch-events": {
         "anonymous": "Uno spettatore anonimo",
         "header": "Eventi recenti",

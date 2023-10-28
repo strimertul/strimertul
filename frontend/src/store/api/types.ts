@@ -151,6 +151,7 @@ export interface UISettings {
   onboardingDone: boolean;
   language: string;
   theme: string;
+  hideViewers: boolean;
 }
 
 export enum ConnectionStatus {

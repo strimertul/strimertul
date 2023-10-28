@@ -5,11 +5,13 @@ import {
   EventSubNotificationType,
   unwrapEvent,
 } from '~/lib/eventSub';
-import { useLiveKey } from '~/lib/react';
-import { useAppSelector } from '~/store';
+import { useLiveKey, useModule } from '~/lib/react';
+import { useAppDispatch, useAppSelector } from '~/store';
+import { modules } from '~/store/api/reducer';
 import { PageContainer, SectionHeader, styled, TextBlock } from '../theme';
 import BrowserLink from '../components/BrowserLink';
 import Scrollbar from '../components/utils/Scrollbar';
+import RevealLink from '../components/utils/RevealLink';
 
 interface StreamInfo {
   id: string;
@@ -370,6 +372,9 @@ function TwitchEventLog({ events }: { events: EventSubNotification[] }) {
 
 function TwitchStreamStatus({ info }: { info: StreamInfo }) {
   const { t } = useTranslation();
+  const [uiConfig, setUiConfig] = useModule(modules.uiConfig);
+  const dispatch = useAppDispatch();
+  console.log(uiConfig);
   return (
     <StreamBlock>
       <LiveIndicator
@@ -387,8 +392,15 @@ function TwitchStreamStatus({ info }: { info: StreamInfo }) {
       <StreamInfo>
         {info.game_name} -{' '}
         {t('pages.dashboard.x-viewers', {
-          count: info.viewer_count,
-        })}
+          num: uiConfig.hideViewers ? '...' : `${info.viewer_count}`,
+        })}{' '}
+        <RevealLink
+          value={!uiConfig.hideViewers}
+          setter={(newVal) => {
+            console.log(newVal);
+            void dispatch(setUiConfig({ ...uiConfig, hideViewers: !newVal }));
+          }}
+        />
       </StreamInfo>
     </StreamBlock>
   );

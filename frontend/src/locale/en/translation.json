@@ -259,7 +259,7 @@
     "dashboard": {
       "twitch-status": "Twitch stream status",
       "live": "Live!",
-      "x-viewers": "{{count}} viewers",
+      "x-viewers": "{{num}} viewers",
       "not-live": "Offline / Not streaming",
       "twitch-events": {
         "header": "Recent events",
