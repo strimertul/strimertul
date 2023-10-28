@@ -22,7 +22,9 @@ function DialogContent({
   closeButton,
 }: React.PropsWithChildren<DialogProps>) {
   return (
-    <DialogPrimitive.Portal>
+    <DialogPrimitive.Portal
+      container={document.getElementById('app-container')}
+    >
       <DialogOverlay />
       <DialogContainer>
         {title && (

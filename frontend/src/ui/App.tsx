@@ -45,7 +45,7 @@ import StrimertulPage from './pages/Strimertul';
 import TwitchSettingsPage from './pages/TwitchSettings';
 import UISettingsPage from './pages/UISettingsPage';
 import ExtensionsPage from './pages/Extensions';
-import { styled } from './theme';
+import { getTheme, lightMode, styled } from './theme';
 import Loading from './components/Loading';
 import InteractiveAuthDialog from './components/InteractiveAuthDialog';
 
@@ -133,6 +133,8 @@ const Container = styled('div', {
   flexDirection: 'row',
   overflow: 'hidden',
   height: '100vh',
+  backgroundColor: '$gray1',
+  color: '$gray12',
 });
 
 const PageContent = styled('main', {
@@ -234,8 +236,10 @@ export default function App(): JSX.Element {
 
   const showSidebar = location.pathname !== '/setup';
 
+  const theme = getTheme(uiConfig?.theme ?? 'dark');
+
   return (
-    <Container>
+    <Container id="app-container" className={theme}>
       <InteractiveAuthDialog />
       <LogViewer />
       {showSidebar ? <Sidebar sections={sections} /> : null}

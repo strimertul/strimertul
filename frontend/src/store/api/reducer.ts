@@ -416,7 +416,7 @@ export const useAuthBypass = createAsyncThunk<void, void, ThunkConfig>(
     const { api } = getState();
     const response = await api.client.send({ command: '_uid' });
     if ('ok' in response && response.ok && 'data' in response) {
-      const uid = response.data;
+      const uid = response.data as string;
       await AuthenticateKVClient(uid.toString());
       dispatch(
         apiReducer.actions.connectionStatusChanged(ConnectionStatus.Connected),

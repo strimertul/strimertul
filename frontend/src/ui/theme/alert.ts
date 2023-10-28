@@ -56,7 +56,7 @@ export const AlertContainer = styled(AlertDialogPrimitive.Content, {
 
 export const AlertTitle = styled(AlertDialogPrimitive.Title, {
   fontWeight: 'bold',
-  color: '$teal12',
+  color: '$gray12',
   fontSize: '15pt',
   borderBottom: '1px solid $teal6',
   margin: '-1rem',
@@ -75,7 +75,7 @@ export const AlertTitle = styled(AlertDialogPrimitive.Title, {
 
 export const AlertDescription = styled(AlertDialogPrimitive.Description, {
   margin: '10px 0 20px',
-  color: '$teal12',
+  color: '$gray12',
   fontSize: 15,
   lineHeight: 1.5,
   variants: {

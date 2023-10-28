@@ -314,7 +314,12 @@
       "title": "User interface settings",
       "language": "Language",
       "repeat-onboarding": "Repeat onboarding",
-      "partial-translation": "Partial translation"
+      "partial-translation": "Partial translation",
+      "themes": {
+        "dark": "Dark",
+        "light": "Light"
+      },
+      "theme": "Theme"
     },
     "extensions": {
       "title": "Extensions",

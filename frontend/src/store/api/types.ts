@@ -150,6 +150,7 @@ export interface UISettings {
   onboardingStatus: number;
   onboardingDone: boolean;
   language: string;
+  theme: string;
 }
 
 export enum ConnectionStatus {

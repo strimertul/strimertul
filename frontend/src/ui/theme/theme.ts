@@ -1,18 +1,24 @@
 import {
-  grayDark,
-  tealDark,
-  yellowDark,
-  grassDark,
-  redDark,
-  crimsonDark,
   amberDark,
   blackA,
+  crimson,
+  crimsonDark,
+  grass,
+  grassDark,
+  gray,
+  grayDark,
+  red,
+  redDark,
+  teal,
+  tealDark,
+  yellow,
+  yellowDark,
 } from '@radix-ui/colors';
-import { globalCss, createStitches } from '@stitches/react';
+import { createStitches, createTheme, globalCss } from '@stitches/react';
 
 export const globalStyles = globalCss({
   '*': { boxSizing: 'border-box' },
-  body: { margin: 0, padding: 0, backgroundColor: '$gray1', color: '$teal12' },
+  body: { margin: 0, padding: 0, backgroundColor: '$gray1', color: '$gray12' },
   html: {
     margin: 0,
     padding: 0,
@@ -56,3 +62,25 @@ export const { styled, theme } = createStitches({
     wide: '(min-width: 1024px)',
   },
 });
+
+export const lightMode = createTheme({
+  colors: {
+    ...gray,
+    ...teal,
+    ...yellow,
+    ...grass,
+    ...red,
+    ...crimson,
+    ...amberDark,
+    ...blackA,
+  },
+});
+
+export function getTheme(themeName: string) {
+  switch (themeName) {
+    case 'light':
+      return lightMode;
+    default:
+      return undefined;
+  }
+}

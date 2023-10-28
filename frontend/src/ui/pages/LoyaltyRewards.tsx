@@ -66,7 +66,7 @@ const RewardHeader = styled('header', {
   marginBottom: '0.4rem',
 });
 const RewardName = styled('span', {
-  color: '$teal12',
+  color: '$gray12',
   flex: 1,
   fontWeight: 'bold',
   variants: {

@@ -366,8 +366,13 @@
     "uiconfig": {
       "language": "Lingua",
       "partial-translation": "Traduzione parziale",
-      "repeat-onboarding": "Ripeti procedura iniziale",
-      "title": "Impostazioni interfaccia utente"
+      "repeat-onboarding": "Ripeti procudura di configurazione",
+      "title": "Impostazioni interfaccia utente",
+      "theme": "Tema",
+      "themes": {
+        "dark": "Scuro",
+        "light": "Chiaro"
+      }
     },
     "extensions": {
       "create": "Crea nuovo",

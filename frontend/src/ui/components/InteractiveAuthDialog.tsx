@@ -118,7 +118,7 @@ export default function InteractiveAuthDialog() {
       {requests.map(({ uid, info, callbackID }) => (
         <Dialog open={true} key={uid}>
           <DialogContent title={t('pages.interactive-auth.title')}>
-            <DialogDescription css={{ color: '$teal12' }}>
+            <DialogDescription css={{ color: '$gray12' }}>
               <TextBlock>{t('pages.interactive-auth.desc-1')}</TextBlock>
               <TextBlock css={{ fontWeight: 'bold', color: '$red11' }}>
                 {t('pages.interactive-auth.warn-1')}

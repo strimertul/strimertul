@@ -178,7 +178,7 @@ const StepName = styled('div', {
   variants: {
     status: {
       active: {
-        color: '$teal12',
+        color: '$gray12',
         display: 'inherit',
       },
     },

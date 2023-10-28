@@ -5,7 +5,7 @@ import {
   Indicator,
   RadioGroupProps as RootProps,
 } from '@radix-ui/react-radio-group';
-import { styled } from '~/ui/theme';
+import { lightMode, styled } from '~/ui/theme';
 
 export interface RadioGroupProps {
   values: {
@@ -37,9 +37,18 @@ const RadioItem = styled(Item, {
 
   '&:hover': {
     backgroundColor: '$teal12',
+
+    [`.${lightMode} &`]: {
+      backgroundColor: '$teal3',
+    },
   },
   '&:focus': {
     boxShadow: '0 0 0 2px $gray2',
+  },
+
+  [`.${lightMode} &`]: {
+    backgroundColor: '$gray2',
+    border: '2px solid $gray12',
   },
 });
 

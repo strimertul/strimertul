@@ -7,7 +7,7 @@ import { Link, useMatch, useResolvedPath } from 'react-router-dom';
 import logo from '~/assets/icon-logo.svg';
 
 import { useAppSelector } from '~/store';
-import { APPNAME, APPREPO } from '../theme';
+import { APPNAME, APPREPO, lightMode } from '../theme';
 import BrowserLink from './BrowserLink';
 import Scrollbar from './utils/Scrollbar';
 
@@ -27,9 +27,13 @@ interface SidebarProps {
 }
 
 const Container = styled('section', {
-  background: '$gray1',
+  background: '$gray2',
   maxWidth: '220px',
   borderRight: '1px solid $gray6',
+
+  [`.${lightMode} &`]: {
+    background: '$gray2',
+  },
 });
 
 const Header = styled('div', {
@@ -53,9 +57,9 @@ const AppLink = styled(Link, {
   userSelect: 'none',
   all: 'unset',
   cursor: 'pointer',
-  color: '$teal12',
+  color: '$gray12',
   '&:visited': {
-    color: '$teal12',
+    color: '$gray12',
   },
   display: 'flex',
   flexDirection: 'column',
@@ -121,6 +125,9 @@ const MenuLink = styled(Link, {
   padding: '0.6rem 1.6rem 0.6rem 1rem',
   fontSize: '0.9rem',
   fontWeight: '300',
+  [`.${lightMode} &`]: {
+    fontWeight: '400',
+  },
   variants: {
     status: {
       selected: {
@@ -130,7 +137,7 @@ const MenuLink = styled(Link, {
       clickable: {
         cursor: 'pointer',
         '&:hover': {
-          backgroundColor: '$teal4',
+          backgroundColor: '$gray3',
         },
       },
     },

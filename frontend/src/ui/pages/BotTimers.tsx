@@ -32,7 +32,7 @@ import { Alert, AlertTrigger } from '../theme/alert';
 
 const TimerList = styled('div', { marginTop: '1rem' });
 const TimerItemContainer = styled('article', {
-  backgroundColor: '$gray2',
+  backgroundColor: '$gray3',
   margin: '0.5rem 0',
   padding: '0.5rem',
   borderLeft: '5px solid $teal8',

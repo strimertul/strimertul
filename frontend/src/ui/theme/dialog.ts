@@ -1,6 +1,6 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { keyframes } from '@stitches/react';
-import { styled } from './theme';
+import { lightMode, styled } from './theme';
 
 export const Dialog = DialogPrimitive.Root;
 export const DialogTrigger = DialogPrimitive.Trigger;
@@ -27,6 +27,10 @@ export const DialogOverlay = styled(DialogPrimitive.Overlay, {
   inset: 0,
   '@media (prefers-reduced-motion: no-preference)': {
     animation: `${overlayShow()} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
+  },
+
+  [`.${lightMode} &`]: {
+    backgroundColor: '$blackA8',
   },
 });
 
@@ -76,7 +80,7 @@ export const DialogContainer = styled(DialogPrimitive.Content, {
 
 export const DialogTitle = styled(DialogPrimitive.Title, {
   fontWeight: 'bold',
-  color: '$teal12',
+  color: '$gray12',
   fontSize: '15pt',
   borderBottom: '1px solid $teal6',
   margin: '-1rem',

@@ -35,7 +35,7 @@ export default function UISettingsPage(): React.ReactElement {
         <PageTitle>{t('pages.uiconfig.title')}</PageTitle>
       </PageHeader>
       <Field size="fullWidth">
-        <Label htmlFor="bind">{t('pages.uiconfig.language')}</Label>
+        <Label>{t('pages.uiconfig.language')}</Label>
         <RadioGroup
           aria-label={t('pages.uiconfig.language')}
           defaultValue={i18n.resolvedLanguage}
@@ -57,6 +57,21 @@ export default function UISettingsPage(): React.ReactElement {
                 ) : null}
               </span>
             ),
+          }))}
+        />
+      </Field>
+      <Field size="fullWidth">
+        <Label>{t('pages.uiconfig.theme')}</Label>
+        <RadioGroup
+          aria-label={t('pages.uiconfig.theme')}
+          defaultValue="dark"
+          value={uiConfig?.theme ?? 'dark'}
+          onValueChange={(value) => {
+            void dispatch(setUiConfig({ ...uiConfig, theme: value }));
+          }}
+          values={['dark', 'light'].map((theme) => ({
+            id: theme,
+            label: t(`pages.uiconfig.themes.${theme}`),
           }))}
         />
       </Field>
