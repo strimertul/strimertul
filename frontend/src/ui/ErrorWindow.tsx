@@ -395,7 +395,6 @@ function ReportDialog({ open, onOpenChange, errorData }: ReportDialogProps) {
             style={waiting ? { opacity: 0.7 } : {}}
             onSubmit={(e) => {
               e.preventDefault();
-              console.log('test');
               let desc = errorDesc;
               if (contactEnabled && contactInfo) {
                 desc += `\n\nEmail contact: ${contactInfo}`;

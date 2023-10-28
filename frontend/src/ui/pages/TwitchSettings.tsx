@@ -242,7 +242,6 @@ function TwitchAPISettings() {
         );
         setTestResult({ open: true });
       } catch (e: unknown) {
-        console.log(e);
         setTestResult({ open: true, error: e as Error });
       }
     }

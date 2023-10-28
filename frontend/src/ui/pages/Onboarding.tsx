@@ -463,7 +463,6 @@ function TwitchEventsStep() {
 
   const finishStep = async () => {
     if ('id' in userStatus) {
-      console.log(authKeys);
       // Set bot config to sane defaults
       await dispatch(
         setTwitchConfig({

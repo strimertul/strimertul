@@ -374,7 +374,6 @@ function TwitchStreamStatus({ info }: { info: StreamInfo }) {
   const { t } = useTranslation();
   const [uiConfig, setUiConfig] = useModule(modules.uiConfig);
   const dispatch = useAppDispatch();
-  console.log(uiConfig);
   return (
     <StreamBlock>
       <LiveIndicator
@@ -397,7 +396,6 @@ function TwitchStreamStatus({ info }: { info: StreamInfo }) {
         <RevealLink
           value={!uiConfig.hideViewers}
           setter={(newVal) => {
-            console.log(newVal);
             void dispatch(setUiConfig({ ...uiConfig, hideViewers: !newVal }));
           }}
         />
