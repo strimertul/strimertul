@@ -76,6 +76,8 @@ export const lightMode = createTheme({
   },
 });
 
+export const themes = ['dark', 'light'];
+
 export function getTheme(themeName: string) {
   switch (themeName) {
     case 'light':

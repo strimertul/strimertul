@@ -13,6 +13,7 @@ import {
   PageHeader,
   PageTitle,
   styled,
+  themes,
 } from '../theme';
 
 const PartialWarning = styled('small', {
@@ -42,6 +43,7 @@ export default function UISettingsPage(): React.ReactElement {
           value={uiConfig?.language ?? i18n.resolvedLanguage}
           onValueChange={(value) => {
             void dispatch(setUiConfig({ ...uiConfig, language: value }));
+            localStorage.setItem('language', value);
           }}
           values={languages.map((lang) => ({
             id: lang.code,
@@ -68,8 +70,9 @@ export default function UISettingsPage(): React.ReactElement {
           value={uiConfig?.theme ?? 'dark'}
           onValueChange={(value) => {
             void dispatch(setUiConfig({ ...uiConfig, theme: value }));
+            localStorage.setItem('theme', value);
           }}
-          values={['dark', 'light'].map((theme) => ({
+          values={themes.map((theme) => ({
             id: theme,
             label: t(`pages.uiconfig.themes.${theme}`),
           }))}

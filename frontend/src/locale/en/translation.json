@@ -98,7 +98,7 @@
       "app-category": "Category",
       "app-oauth-redirect-url": "OAuth Redirect URLs",
       "test-button": "Test connection",
-      "test-failed": "Test failed: \"{{0}}\". Check your app client IDs and secret!",
+      "test-failed": "Test failed: \"{{error}}\". Check your app client IDs and secret!",
       "test-succeeded": "Test succeeded!",
       "bot-chat-cooldown-tip": "Global chat cooldown for commands (in seconds)"
     },

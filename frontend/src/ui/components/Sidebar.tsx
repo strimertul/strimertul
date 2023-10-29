@@ -144,6 +144,14 @@ const MenuLink = styled(Link, {
   },
 });
 
+const AppLogo = styled('img', {
+  height: '28px',
+  marginBottom: '-2px',
+  [`.${lightMode} &`]: {
+    filter: 'invert(1)',
+  },
+});
+
 function SidebarLink({ route: { title, url, icon } }: { route: Route }) {
   const { t } = useTranslation();
   const resolved = useResolvedPath(url);
@@ -254,10 +262,7 @@ export default function Sidebar({
         <Header>
           <AppLink to={'/about'} status={matchApp ? 'active' : 'default'}>
             <AppName>
-              <img
-                src={logo as string}
-                style={{ height: '28px', marginBottom: '-2px' }}
-              />
+              <AppLogo src={logo as string} />
               {APPNAME}
             </AppName>
             <VersionLabel>

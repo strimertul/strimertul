@@ -220,7 +220,11 @@ export default function App(): JSX.Element {
   // Sync UI changes on key change
   useEffect(() => {
     if (uiConfig?.language) {
-      void i18n.changeLanguage(uiConfig?.language ?? 'en');
+      void i18n.changeLanguage(uiConfig.language ?? 'en');
+      localStorage.setItem('language', uiConfig.language);
+    }
+    if (uiConfig?.theme) {
+      localStorage.setItem('theme', uiConfig.theme);
     }
     if (!uiConfig?.onboardingDone) {
       navigate('/setup');

@@ -357,9 +357,9 @@ function TwitchAPISettings() {
           variation={testResult.error ? 'danger' : 'default'}
           description={
             testResult.error
-              ? t('pages.twitch-settings.test-failed', [
-                  testResult.error.message,
-                ])
+              ? t('pages.twitch-settings.test-failed', {
+                  error: testResult.error.message,
+                })
               : t('pages.twitch-settings.test-succeeded')
           }
           actionText={t('form-actions.ok')}

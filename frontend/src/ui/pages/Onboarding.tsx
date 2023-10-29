@@ -31,6 +31,7 @@ import {
   Field,
   InputBox,
   Label,
+  lightMode,
   MultiToggle,
   MultiToggleItem,
   PageContainer,
@@ -38,6 +39,7 @@ import {
   SectionHeader,
   styled,
   TextBlock,
+  themes,
 } from '../theme';
 import { Alert } from '../theme/alert';
 
@@ -86,7 +88,7 @@ const HeroContainer = styled('div', {
   overflow: 'hidden',
 });
 
-const HeroLanguageSelector = styled('div', {
+const HeroSelector = styled('div', {
   top: '10px',
   left: '10px',
   display: 'flex',
@@ -95,7 +97,7 @@ const HeroLanguageSelector = styled('div', {
   zIndex: '10',
 });
 
-const LanguageItem = styled(MultiToggleItem, {
+const HeroSelectorItem = styled(MultiToggleItem, {
   fontSize: '1rem',
   padding: '5px 8px',
 });
@@ -161,6 +163,10 @@ const StepList = styled('nav', {
   flexWrap: 'wrap',
   flexDirection: 'row',
   justifyContent: 'flex-start',
+  [`.${lightMode} &`]: {
+    borderBottom: '1px solid $gray6',
+    backgroundColor: '$gray2',
+  },
 });
 
 const StepName = styled('div', {
@@ -180,6 +186,10 @@ const StepName = styled('div', {
       active: {
         color: '$gray12',
         display: 'inherit',
+
+        [`.${lightMode} &`]: {
+          fontWeight: '500',
+        },
       },
     },
     interaction: {
@@ -403,9 +413,9 @@ function TwitchIntegrationStep() {
           variation={testResult.error ? 'danger' : 'default'}
           description={
             testResult.error
-              ? t('pages.twitch-settings.test-failed', [
-                  testResult.error.message,
-                ])
+              ? t('pages.twitch-settings.test-failed', {
+                  error: testResult.error.message,
+                })
               : t('pages.twitch-settings.test-succeeded')
           }
           actionText={t('form-actions.ok')}
@@ -684,7 +694,7 @@ export default function OnboardingPage() {
       <TopBanner>
         {landing ? (
           <HeroContainer>
-            <HeroLanguageSelector>
+            <HeroSelector>
               <MultiToggle
                 value={uiConfig?.language ?? i18n.resolvedLanguage}
                 type="single"
@@ -692,10 +702,11 @@ export default function OnboardingPage() {
                   void dispatch(
                     setUiConfig({ ...uiConfig, language: newLang }),
                   );
+                  localStorage.setItem('language', newLang);
                 }}
               >
                 {languages.map((lang) => (
-                  <LanguageItem
+                  <HeroSelectorItem
                     key={lang.code}
                     aria-label={lang.name}
                     value={lang.code}
@@ -707,10 +718,29 @@ export default function OnboardingPage() {
                   >
                     {lang.name}
                     {lang.keys < maxKeys ? <ExclamationTriangleIcon /> : null}
-                  </LanguageItem>
+                  </HeroSelectorItem>
                 ))}
               </MultiToggle>
-            </HeroLanguageSelector>
+
+              <MultiToggle
+                value={uiConfig?.theme ?? 'dark'}
+                type="single"
+                onValueChange={(newTheme) => {
+                  void dispatch(setUiConfig({ ...uiConfig, theme: newTheme }));
+                  localStorage.setItem('theme', newTheme);
+                }}
+              >
+                {themes.map((theme) => (
+                  <HeroSelectorItem
+                    key={theme}
+                    value={theme}
+                    aria-label={t(`pages.uiconfig.themes.${theme}`)}
+                  >
+                    {t(`pages.uiconfig.themes.${theme}`)}
+                  </HeroSelectorItem>
+                ))}
+              </MultiToggle>
+            </HeroSelector>
             <HeroAnimation>{animationItems}</HeroAnimation>
             <HeroTitle>{t('pages.onboarding.welcome-header')}</HeroTitle>
             <HeroContent>

@@ -22,6 +22,7 @@ import {
   DialogActions,
   Field,
   FlexRow,
+  getTheme,
   InputBox,
   Label,
   MultiToggle,
@@ -43,6 +44,8 @@ const Container = styled('div', {
   overflow: 'hidden',
   height: '100vh',
   border: '2px solid $red10',
+  backgroundColor: '$gray1',
+  color: '$gray12',
 });
 
 const ErrorHeader = styled('h1', {
@@ -497,6 +500,7 @@ export default function ErrorWindow(): JSX.Element {
   const [recoveryDialogOpen, setRecoveryDialogOpen] = useState(false);
 
   useEffect(() => {
+    void i18n.changeLanguage(localStorage.getItem('language') ?? 'en');
     void GetLastLogs().then((appLogs) => {
       setLogs(appLogs.map(processEntry).reverse());
     });
@@ -509,9 +513,10 @@ export default function ErrorWindow(): JSX.Element {
   }, []);
 
   const fatal = logs.find((log) => log.level === 'error');
+  const theme = getTheme(localStorage.getItem('theme') ?? 'dark');
 
   return (
-    <Container>
+    <Container id="app-container" className={theme}>
       <ReportDialog
         open={reportDialogOpen}
         onOpenChange={setReportDialogOpen}
@@ -541,62 +546,64 @@ export default function ErrorWindow(): JSX.Element {
           ))}
         </MultiToggle>
       </LanguageSelector>
-      <PageContainer>
-        <Scrollbar vertical={true} viewport={{ maxHeight: '100vh' }}>
-          <PageHeader>
-            <TextBlock>{t('pages.crash.fatal-message')}</TextBlock>
-          </PageHeader>
-          {fatal ? (
-            <>
-              <ErrorHeader>{fatal.message}</ErrorHeader>
-              <ErrorDetails>
-                {Object.keys(fatal.data)
-                  .filter((key) => key.length > 1)
-                  .map((key) => (
-                    <Fragment key={key}>
-                      <ErrorDetailKey>{key}</ErrorDetailKey>
-                      <ErrorDetailValue>{fatal.data[key]}</ErrorDetailValue>
-                    </Fragment>
-                  ))}
-              </ErrorDetails>
-            </>
-          ) : null}
-          <SectionHeader>{t('pages.crash.action-header')}</SectionHeader>
-          <TextBlock>{t('pages.crash.action-submit-line')}</TextBlock>
-          <TextBlock>{t('pages.crash.action-recover-line')}</TextBlock>
-          <TextBlock>
-            <Trans
-              t={t}
-              i18nKey="pages.crash.action-log-line"
-              values={{
-                A: 'strimertul.log',
-                B: 'strimertul-panic.log',
-              }}
-              components={{
-                m: <Mono />,
-              }}
-            />
-          </TextBlock>
-          <FlexRow align="left" spacing={1} css={{ paddingTop: '0.5rem' }}>
-            <Button
-              variation={'danger'}
-              onClick={() => setReportDialogOpen(true)}
-            >
-              {t('pages.crash.button-report')}
-            </Button>
-            <Button onClick={() => setRecoveryDialogOpen(true)}>
-              {t('pages.crash.button-recovery')}
-            </Button>
-          </FlexRow>
+      <Scrollbar vertical={true} viewport={{ flex: '1', maxHeight: '100vh' }}>
+        <div style={{ width: '100vw' }}>
+          <PageContainer>
+            <PageHeader>
+              <TextBlock>{t('pages.crash.fatal-message')}</TextBlock>
+            </PageHeader>
+            {fatal ? (
+              <>
+                <ErrorHeader>{fatal.message}</ErrorHeader>
+                <ErrorDetails>
+                  {Object.keys(fatal.data)
+                    .filter((key) => key.length > 1)
+                    .map((key) => (
+                      <Fragment key={key}>
+                        <ErrorDetailKey>{key}</ErrorDetailKey>
+                        <ErrorDetailValue>{fatal.data[key]}</ErrorDetailValue>
+                      </Fragment>
+                    ))}
+                </ErrorDetails>
+              </>
+            ) : null}
+            <SectionHeader>{t('pages.crash.action-header')}</SectionHeader>
+            <TextBlock>{t('pages.crash.action-submit-line')}</TextBlock>
+            <TextBlock>{t('pages.crash.action-recover-line')}</TextBlock>
+            <TextBlock>
+              <Trans
+                t={t}
+                i18nKey="pages.crash.action-log-line"
+                values={{
+                  A: 'strimertul.log',
+                  B: 'strimertul-panic.log',
+                }}
+                components={{
+                  m: <Mono />,
+                }}
+              />
+            </TextBlock>
+            <FlexRow align="left" spacing={1} css={{ paddingTop: '0.5rem' }}>
+              <Button
+                variation={'danger'}
+                onClick={() => setReportDialogOpen(true)}
+              >
+                {t('pages.crash.button-report')}
+              </Button>
+              <Button onClick={() => setRecoveryDialogOpen(true)}>
+                {t('pages.crash.button-recovery')}
+              </Button>
+            </FlexRow>
 
-          <MiniHeader>{t('pages.crash.app-log-header')}</MiniHeader>
-          <LogContainer>
-            {logs.map((log) => (
-              <LogItem key={log.time.toString()} data={log} />
-            ))}
-          </LogContainer>
-        </Scrollbar>
-      </PageContainer>
+            <MiniHeader>{t('pages.crash.app-log-header')}</MiniHeader>
+            <LogContainer>
+              {logs.map((log) => (
+                <LogItem key={log.time.toString()} data={log} />
+              ))}
+            </LogContainer>
+          </PageContainer>
+        </div>
+      </Scrollbar>
     </Container>
   );
 }

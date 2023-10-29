@@ -117,7 +117,7 @@ func (a *App) startup(ctx context.Context) {
 	go a.forwardLogs()
 
 	// Run HTTP server
-	if err := a.httpServer.Listen(); err != nil {
+	if err = a.httpServer.Listen(); err != nil {
 		a.showFatalError(err, "HTTP server stopped")
 		return
 	}
