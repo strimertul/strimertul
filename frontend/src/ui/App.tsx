@@ -171,6 +171,11 @@ export default function App(): JSX.Element {
   // Fill application info
   useEffect(() => {
     void dispatch(initializeServerInfo());
+    // Load language from local storage until db is ready
+    const lang = localStorage.getItem('language');
+    if (lang) {
+      void i18n.changeLanguage(lang);
+    }
   }, []);
 
   // Get application logs
@@ -231,16 +236,20 @@ export default function App(): JSX.Element {
     }
   }, [ready, uiConfig]);
 
+  const theme = getTheme(
+    uiConfig?.theme ?? localStorage.getItem('theme') ?? 'dark',
+  );
+
   if (
     connected === ConnectionStatus.NotConnected ||
     connected === ConnectionStatus.AuthenticationNeeded
   ) {
-    return <Loading size="fullscreen" message={t('special.loading')} />;
+    return (
+      <Loading theme={theme} size="fullscreen" message={t('special.loading')} />
+    );
   }
 
   const showSidebar = location.pathname !== '/setup';
-
-  const theme = getTheme(uiConfig?.theme ?? 'dark');
 
   return (
     <Container id="app-container" className={theme}>
