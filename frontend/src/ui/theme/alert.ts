@@ -1,6 +1,6 @@
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 import { keyframes } from '@stitches/react';
-import { styled } from './theme';
+import { lightMode, styled } from './theme';
 
 export const Alert = AlertDialogPrimitive.Root;
 export const AlertTrigger = AlertDialogPrimitive.Trigger;
@@ -23,6 +23,9 @@ export const AlertOverlay = styled(AlertDialogPrimitive.Overlay, {
   inset: 0,
   '@media (prefers-reduced-motion: no-preference)': {
     animation: `${overlayShow()} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
+  },
+  [`.${lightMode} &`]: {
+    backgroundColor: '$blackA8',
   },
 });
 

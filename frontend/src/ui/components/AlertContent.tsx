@@ -38,7 +38,9 @@ function AlertContent({
   const { t } = useTranslation();
 
   return (
-    <AlertDialogPrimitive.Portal>
+    <AlertDialogPrimitive.Portal
+      container={document.getElementById('app-container')}
+    >
       <AlertOverlay />
       <AlertContainer variation={variation ?? 'default'}>
         {title && (

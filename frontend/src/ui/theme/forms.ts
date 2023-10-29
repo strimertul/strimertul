@@ -1,7 +1,7 @@
 import * as UnstyledLabel from '@radix-ui/react-label';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
-import { styled, theme } from './theme';
+import { lightMode, styled, theme } from './theme';
 import ControlledInput from '../components/forms/ControlledInput';
 import PasswordField from '../components/forms/PasswordField';
 
@@ -76,6 +76,12 @@ const inputStyles = {
       },
     },
   },
+  [`.${lightMode} &`]: {
+    border: '1px solid $gray7',
+    '&:disabled': {
+      borderColor: '$gray4',
+    },
+  },
 } as const;
 
 export const InputBox = styled('input', inputStyles);
@@ -105,6 +111,11 @@ export const Textarea = styled('textarea', {
   '&:invalid': {
     borderColor: '$red5',
   },
+  [`.${lightMode} &`]: {
+    '&:disabled': {
+      borderColor: '$gray4',
+    },
+  },
   variants: {
     border: {
       none: {
@@ -122,6 +133,35 @@ export const ButtonGroup = styled('div', {
 export const MultiButton = styled('div', {
   display: 'flex',
 });
+
+function buttonStyle(hueName: string) {
+  return {
+    border: `1px solid $${hueName}6`,
+    backgroundColor: `$${hueName}4`,
+    '&:not(:disabled)': {
+      '&:hover': {
+        backgroundColor: `$${hueName}5`,
+        borderColor: `$${hueName}8`,
+      },
+      '&:active': {
+        background: `$${hueName}6`,
+      },
+    },
+    [`.${lightMode} &`]: {
+      border: `1px solid $${hueName}10`,
+      backgroundColor: `$${hueName}10`,
+      color: `$${hueName}2`,
+      '&:not(:disabled)': {
+        '&:hover': {
+          backgroundColor: `$${hueName}11`,
+        },
+        '&:active': {
+          background: `$${hueName}11`,
+        },
+      },
+    },
+  };
+}
 
 const button = {
   all: 'unset',
@@ -150,6 +190,15 @@ const button = {
     border: '1px solid $gray4',
     backgroundColor: '$gray3',
     cursor: 'not-allowed',
+  },
+  [`.${lightMode} &`]: {
+    backgroundColor: '$gray2',
+    border: '1px solid $gray7',
+    '&:disabled': {
+      border: '1px solid $gray4',
+      backgroundColor: '$gray3',
+      cursor: 'not-allowed',
+    },
   },
   transition: 'all 0.2s',
   variants: {
@@ -194,71 +243,11 @@ const button = {
       },
     },
     variation: {
-      primary: {
-        border: '1px solid $teal6',
-        backgroundColor: '$teal4',
-        '&:not(:disabled)': {
-          '&:hover': {
-            backgroundColor: '$teal5',
-            borderColor: '$teal8',
-          },
-          '&:active': {
-            background: '$teal6',
-          },
-        },
-      },
-      success: {
-        border: '1px solid $grass6',
-        backgroundColor: '$grass4',
-        '&:not(:disabled)': {
-          '&:hover': {
-            backgroundColor: '$grass5',
-            borderColor: '$grass8',
-          },
-          '&:active': {
-            background: '$grass6',
-          },
-        },
-      },
-      error: {
-        border: '1px solid $red6',
-        backgroundColor: '$red4',
-        '&:not(:disabled)': {
-          '&:hover': {
-            backgroundColor: '$red5',
-            borderColor: '$red8',
-          },
-          '&:active': {
-            background: '$red6',
-          },
-        },
-      },
-      warning: {
-        border: '1px solid $yellow6',
-        backgroundColor: '$yellow4',
-        '&:not(:disabled)': {
-          '&:hover': {
-            backgroundColor: '$yellow5',
-            borderColor: '$yellow8',
-          },
-          '&:active': {
-            background: '$yellow6',
-          },
-        },
-      },
-      danger: {
-        border: '1px solid $red6',
-        backgroundColor: '$red4',
-        '&:not(:disabled)': {
-          '&:hover': {
-            backgroundColor: '$red5',
-            borderColor: '$red8',
-          },
-          '&:active': {
-            background: '$red6',
-          },
-        },
-      },
+      primary: buttonStyle('teal'),
+      success: buttonStyle('grass'),
+      error: buttonStyle('red'),
+      warning: buttonStyle('yellow'),
+      danger: buttonStyle('red'),
     },
   },
 } as const;
