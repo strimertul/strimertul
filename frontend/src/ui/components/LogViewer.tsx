@@ -14,6 +14,7 @@ import {
   IconButton,
   MultiToggle,
   MultiToggleItem,
+  lightMode,
   styled,
   theme,
 } from '../theme';
@@ -77,28 +78,83 @@ function formatTime(time: Date): string {
 }
 
 const LevelToggle = styled(MultiToggleItem, {
+  [`.${lightMode} &`]: {
+    border: '2px solid $gray4',
+    borderLeftWidth: '1px',
+    borderRightWidth: '1px',
+  },
+  color: '$gray8',
+  "&[data-state='on']": {
+    color: '$gray12',
+  },
   variants: {
     level: {
-      info: {},
+      info: {
+        backgroundColor: '$gray4',
+        [`.${lightMode} &`]: {
+          backgroundColor: '$gray2',
+        },
+        borderColor: '$gray6',
+        '&:not(:disabled)': {
+          '&:hover': {
+            backgroundColor: '$gray5',
+            borderColor: '$gray6',
+            [`.${lightMode} &`]: {
+              backgroundColor: '$gray2',
+            },
+          },
+          "&[data-state='on']": {
+            backgroundColor: '$gray8',
+            borderColor: '$gray6',
+            [`.${lightMode} &`]: {
+              backgroundColor: '$gray4',
+            },
+          },
+        },
+      },
       warn: {
         backgroundColor: '$yellow4',
+        [`.${lightMode} &`]: {
+          backgroundColor: '$yellow2',
+        },
+        borderColor: '$yellow6',
         '&:not(:disabled)': {
           '&:hover': {
             backgroundColor: '$yellow5',
+            borderColor: '$yellow5',
+            [`.${lightMode} &`]: {
+              backgroundColor: '$yellow2',
+            },
           },
           "&[data-state='on']": {
             backgroundColor: '$yellow8',
+            borderColor: '$yellow6',
+            [`.${lightMode} &`]: {
+              backgroundColor: '$yellow4',
+            },
           },
         },
       },
       error: {
         backgroundColor: '$red4',
+        [`.${lightMode} &`]: {
+          backgroundColor: '$red2',
+        },
+        borderColor: '$red6',
         '&:not(:disabled)': {
           '&:hover': {
             backgroundColor: '$red5',
+            borderColor: '$red5',
+            [`.${lightMode} &`]: {
+              backgroundColor: '$red2',
+            },
           },
           "&[data-state='on']": {
             backgroundColor: '$red8',
+            borderColor: '$red6',
+            [`.${lightMode} &`]: {
+              backgroundColor: '$red4',
+            },
           },
         },
       },
@@ -307,21 +363,26 @@ function LogDialog({ initialFilter }: LogDialogProps) {
   const { t } = useTranslation();
   const enabled = levels.filter((level) => filter[level]);
 
-  const count = logEntries.reduce((acc, entry) => {
-    if (entry.level in acc) {
-      acc[entry.level] += 1;
-    } else {
-      acc[entry.level] = 1;
-    }
-    return acc;
-  }, {} as Record<string, number>);
+  const count = logEntries.reduce(
+    (acc, entry) => {
+      if (entry.level in acc) {
+        acc[entry.level] += 1;
+      } else {
+        acc[entry.level] = 1;
+      }
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   const filtered = logEntries.filter(
     (entry) => entry.level in filter && filter[entry.level],
   );
 
   return (
-    <DialogPrimitive.Portal>
+    <DialogPrimitive.Portal
+      container={document.getElementById('app-container')}
+    >
       <DialogOverlay />
       <DialogContainer style={{ padding: '0.5rem' }}>
         <DialogTitle
@@ -385,14 +446,17 @@ function LogViewer() {
   const logEntries = useSelector((state: RootState) => state.logging.messages);
   const [activeDialog, setActiveDialog] = useState<LogLevel>(null);
 
-  const count = logEntries.reduce((acc, entry) => {
-    if (entry.level in acc) {
-      acc[entry.level] += 1;
-    } else {
-      acc[entry.level] = 1;
-    }
-    return acc;
-  }, {} as Record<string, number>);
+  const count = logEntries.reduce(
+    (acc, entry) => {
+      if (entry.level in acc) {
+        acc[entry.level] += 1;
+      } else {
+        acc[entry.level] = 1;
+      }
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   return (
     <div>
