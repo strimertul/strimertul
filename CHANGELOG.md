@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Chat command cooldown can now be tweaked in the bot settings screen. (This is not per-user o per-command just yet)
+- The UI is overall a bit darker, this is still being tweaked, let me know if you're having trouble with it
 
 ### Fixed
 
