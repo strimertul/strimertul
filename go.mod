@@ -13,7 +13,7 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/nicklaw5/helix/v2 v2.25.2
 	github.com/postfinance/single v0.0.2
-	github.com/strimertul/kilovolt/v10 v10.0.0
+	github.com/strimertul/kilovolt/v11 v11.0.0
 	github.com/strimertul/kv-pebble v1.2.2
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/wailsapp/wails/v2 v2.6.0
@@ -71,6 +71,7 @@ require (
 	github.com/samber/lo v1.38.1 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
+	github.com/strimertul/kilovolt/v10 v10.0.0 // indirect
 	github.com/tkrajina/go-reflector v0.5.6 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
@@ -84,4 +85,5 @@ require (
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
+	nhooyr.io/websocket v1.8.10 // indirect
 )

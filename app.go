@@ -13,7 +13,7 @@ import (
 	"runtime/debug"
 	"strconv"
 
-	kv "github.com/strimertul/kilovolt/v10"
+	kv "github.com/strimertul/kilovolt/v11"
 
 	"git.sr.ht/~hamcha/containers/sync"
 	"github.com/nicklaw5/helix/v2"

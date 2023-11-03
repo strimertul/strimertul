@@ -5,7 +5,7 @@ import (
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
-	kv "github.com/strimertul/kilovolt/v10"
+	kv "github.com/strimertul/kilovolt/v11"
 )
 
 func TestLocalDBClientPutKey(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	jsoniter "github.com/json-iterator/go"
-	kv "github.com/strimertul/kilovolt/v10"
+	kv "github.com/strimertul/kilovolt/v11"
 	"go.uber.org/zap"
 )
 

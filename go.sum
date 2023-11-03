@@ -157,6 +157,8 @@ github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/strimertul/kilovolt/v10 v10.0.0 h1:VGUFZ1/s4IDAYp9kqZQosoelRqXA/cN2JP41BgLc4yQ=
 github.com/strimertul/kilovolt/v10 v10.0.0/go.mod h1:lB+aF6VpoMfxkK+DFVzIB9yOW0nNaZOtFt395Cf+Hyk=
+github.com/strimertul/kilovolt/v11 v11.0.0 h1:vQc0vd5hz4oyX+/XEnGQvtgWmm75jcVmbbsQXPHoFvg=
+github.com/strimertul/kilovolt/v11 v11.0.0/go.mod h1:PjhGVWb74lB8dXSGWA7GmVSbZAoGV/WGGmjS2Zz/UBg=
 github.com/strimertul/kv-pebble v1.2.2 h1:/vV8a1gObO4os3gB3NT9GWAmWbi+VsSS7wvb6G+HOzM=
 github.com/strimertul/kv-pebble v1.2.2/go.mod h1:I6VvL0/UXW007BEEf1liHYKZcKqQypRt+9pxJkbmvZQ=
 github.com/tkrajina/go-reflector v0.5.6 h1:hKQ0gyocG7vgMD2M3dRlYN6WBBOmdoOzJ6njQSepKdE=
@@ -262,3 +264,5 @@ gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C
 gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
+nhooyr.io/websocket v1.8.10 h1:mv4p+MnGrLDcPlBoWsvPP7XCzTYMXP9F9eIGoKbgx7Q=
+nhooyr.io/websocket v1.8.10/go.mod h1:rN9OFWIUwuxg4fR5tELlYC04bXYowCP9GX47ivo2l+c=
