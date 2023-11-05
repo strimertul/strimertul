@@ -133,9 +133,10 @@ func cliMain(ctx *cli.Context) error {
 		AssetServer: &assetserver.Options{
 			Assets: frontend,
 		},
-		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
-		OnStartup:        app.startup,
-		OnShutdown:       app.stop,
+		EnableDefaultContextMenu: true,
+		BackgroundColour:         &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		OnStartup:                app.startup,
+		OnShutdown:               app.stop,
 		OnBeforeClose: func(ctx context.Context) (prevent bool) {
 			dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
 				Type:    runtime.QuestionDialog,
