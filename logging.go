@@ -32,7 +32,7 @@ func initLogger(level zapcore.Level) {
 		zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
 		zapcore.AddSync(&lumberjack.Logger{
 			Filename:   logFilename,
-			MaxSize:    500,
+			MaxSize:    20,
 			MaxBackups: 3,
 			MaxAge:     28,
 		}),
@@ -102,4 +102,11 @@ func (core *LogStorage) Write(entry zapcore.Entry, fields []zapcore.Field) error
 
 func (core *LogStorage) Sync() error {
 	return nil
+}
+
+func parseAsFields(fields map[string]any) (result []zapcore.Field) {
+	for k, v := range fields {
+		result = append(result, zap.Any(k, v))
+	}
+	return
 }
