@@ -6,11 +6,9 @@ import {
   ExtensionOptions,
   ExtensionRunOptions,
   ExtensionStatus,
-  LogMessage,
 } from '~/lib/extensions/types';
 import { ThunkConfig } from '..';
 import { HTTPConfig } from '../api/types';
-import loggingReducer from '../logging/reducer';
 
 interface ExtensionsState {
   ready: boolean;
