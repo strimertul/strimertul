@@ -97,7 +97,10 @@ func (p *PebbleDatabase) Backup(file io.Writer) error {
 	snapshot := p.db.NewSnapshot()
 	defer utils.Close(snapshot, p.logger)
 
-	iter := snapshot.NewIter(&pebble.IterOptions{})
+	iter, err := snapshot.NewIter(&pebble.IterOptions{})
+	if err != nil {
+		return err
+	}
 	defer utils.Close(iter, p.logger)
 
 	out := make(map[string]string)

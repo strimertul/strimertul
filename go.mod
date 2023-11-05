@@ -1,20 +1,20 @@
 module github.com/strimertul/strimertul
 
-go 1.20
+go 1.21
 
 require (
 	git.sr.ht/~hamcha/containers v0.3.2
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
-	github.com/cockroachdb/pebble v0.0.0-20230418161327-101876aa7088
+	github.com/cockroachdb/pebble v0.0.0-20231102162011-844f0582c2eb
 	github.com/gempir/go-twitch-irc/v4 v4.0.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/json-iterator/go v1.1.12
 	github.com/nicklaw5/helix/v2 v2.25.2
 	github.com/postfinance/single v0.0.2
-	github.com/strimertul/kilovolt/v11 v11.0.0
-	github.com/strimertul/kv-pebble v1.2.2
+	github.com/strimertul/kilovolt/v11 v11.0.1
+	github.com/strimertul/kv-pebble v1.2.3
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/wailsapp/wails/v2 v2.6.0
 	go.uber.org/zap v1.26.0
@@ -34,6 +34,7 @@ require (
 	github.com/cockroachdb/errors v1.11.1 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
+	github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.3 // indirect
 	github.com/getsentry/sentry-go v0.25.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
@@ -44,7 +45,7 @@ require (
 	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
-	github.com/klauspost/compress v1.17.1 // indirect
+	github.com/klauspost/compress v1.17.2 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/labstack/echo/v4 v4.11.2 // indirect
