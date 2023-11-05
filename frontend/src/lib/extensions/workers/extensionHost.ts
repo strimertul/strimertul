@@ -1,21 +1,23 @@
 import Kilovolt from '@strimertul/kilovolt-client';
-import * as ts from 'typescript';
+import ts from 'typescript';
 import {
   ExtensionHostCommand,
   ExtensionHostMessage,
   ExtensionStatus,
 } from '../types';
+import { SourceMapMappings, parseSourceMap } from '../sourceMap';
 
 const sendMessage = (
   message: ExtensionHostMessage,
   transfer?: Transferable[],
 ) => postMessage(message, transfer);
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-async function ExtensionFunction(kv: Kilovolt) {}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function, no-empty-function
+async function ExtensionFunction(_kv: Kilovolt) {}
 
 let extFn: typeof ExtensionFunction = null;
 let kv: Kilovolt;
+let name: string;
 
 let extensionStatus = ExtensionStatus.GettingReady;
 function setStatus(status: ExtensionStatus) {
@@ -26,14 +28,16 @@ function setStatus(status: ExtensionStatus) {
   });
 }
 
-function log(level: string) {
+function log(level: string, sourceMap: SourceMapMappings) {
   // eslint-disable-next-line func-names
   return function (...args: { toString(): string }[]) {
     const message = args.join(' ');
-    sendMessage({
-      kind: 'log',
+    void kv.putJSON('strimertul/@log', {
       level,
       message,
+      data: {
+        extension: name,
+      },
     });
   };
 }
@@ -61,6 +65,8 @@ onmessage = async (ev: MessageEvent<ExtensionHostCommand>) => {
   const cmd = ev.data;
   switch (cmd.kind) {
     case 'arguments': {
+      name = cmd.name;
+
       // Create Kilovolt instance
       kv = new Kilovolt(cmd.dependencies.kilovolt.address, {
         password: cmd.dependencies.kilovolt.password,
@@ -70,14 +76,19 @@ onmessage = async (ev: MessageEvent<ExtensionHostCommand>) => {
       try {
         // Transpile TS into JS
         const out = ts.transpileModule(cmd.source, {
-          compilerOptions: { module: ts.ModuleKind.ES2022 },
+          compilerOptions: {
+            module: ts.ModuleKind.ES2022,
+            sourceMap: true,
+          },
         });
 
+        const sourceMap = parseSourceMap(out.sourceMapText);
+
         // Replace console.* methods with something that logs to UI
-        console.log = log('info');
-        console.info = log('info');
-        console.warn = log('warn');
-        console.error = log('error');
+        console.log = log('info', sourceMap);
+        console.info = log('info', sourceMap);
+        console.warn = log('warn', sourceMap);
+        console.error = log('error', sourceMap);
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         extFn = ExtensionFunction.constructor('kv', out.outputText);

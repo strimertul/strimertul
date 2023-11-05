@@ -46,6 +46,7 @@ export class Extension extends EventTarget {
       kind: 'arguments',
       source: info.source,
       options: runOptions,
+      name: info.name,
       dependencies,
     });
   }
@@ -64,12 +65,9 @@ export class Extension extends EventTarget {
         if (msg.error instanceof Error) {
           this.workerError = msg.error;
         } else {
-          this.workerError = new Error(msg.error.toString());
+          this.workerError = new Error(JSON.stringify(msg.error));
         }
         this.status = ExtensionStatus.Error;
-        break;
-      case 'log':
-        this.dispatchEvent(new CustomEvent('log', { detail: msg }));
         break;
     }
   }

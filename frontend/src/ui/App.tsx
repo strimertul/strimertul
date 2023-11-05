@@ -45,7 +45,7 @@ import StrimertulPage from './pages/Strimertul';
 import TwitchSettingsPage from './pages/TwitchSettings';
 import UISettingsPage from './pages/UISettingsPage';
 import ExtensionsPage from './pages/Extensions';
-import { getTheme, lightMode, styled } from './theme';
+import { getTheme, styled } from './theme';
 import Loading from './components/Loading';
 import InteractiveAuthDialog from './components/InteractiveAuthDialog';
 

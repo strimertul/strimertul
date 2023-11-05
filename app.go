@@ -8,7 +8,7 @@ import (
 	"io"
 	"log"
 	"mime/multipart"
-	nethttp "net/http"
+	"net/http"
 	"os"
 	"runtime/debug"
 	"strconv"
@@ -21,6 +21,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/strimertul/strimertul/database"
 	"github.com/strimertul/strimertul/docs"
@@ -38,6 +39,7 @@ type App struct {
 	ready         *sync.RWSync[bool]
 	isFatalError  *sync.RWSync[bool]
 	backupOptions database.BackupOptions
+	cancelLogs    database.CancelFunc
 
 	db             *database.LocalDBClient
 	twitchManager  *twitch.Manager
@@ -107,13 +109,14 @@ func (a *App) startup(ctx context.Context) {
 	}
 
 	// Set meta keys
-	_ = a.db.PutKey("stul-meta/version", appVersion)
+	_ = a.db.PutKey("strimertul/version", appVersion)
 
 	a.ready.Set(true)
 	runtime.EventsEmit(ctx, "ready", true)
 	logger.Info("Strimertul is ready")
 
-	// Start redirecting logs to UI
+	// Add logs I/O to UI
+	_, a.cancelLogs = a.listenForLogs()
 	go a.forwardLogs()
 
 	// Run HTTP server
@@ -173,6 +176,29 @@ func (a *App) initializeComponents() error {
 	return nil
 }
 
+type ExternalLog struct {
+	Level   string         `json:"level"`
+	Message string         `json:"message"`
+	Data    map[string]any `json:"data"`
+}
+
+func (a *App) listenForLogs() (error, database.CancelFunc) {
+	return a.db.SubscribeKey("strimertul/@log", func(newValue string) {
+		var entry ExternalLog
+		if err := json.Unmarshal([]byte(newValue), &entry); err != nil {
+			return
+		}
+
+		level, err := zapcore.ParseLevel(entry.Level)
+		if err != nil {
+			level = zapcore.InfoLevel
+		}
+
+		fields := parseAsFields(entry.Data)
+		logger.Log(level, entry.Message, fields...)
+	})
+}
+
 func (a *App) forwardLogs() {
 	for entry := range incomingLogs {
 		runtime.EventsEmit(a.ctx, "log-event", entry)
@@ -180,6 +206,9 @@ func (a *App) forwardLogs() {
 }
 
 func (a *App) stop(context.Context) {
+	if a.cancelLogs != nil {
+		a.cancelLogs()
+	}
 	if a.lock != nil {
 		warnOnError(a.lock.Unlock(), "Could not remove lock file")
 	}
@@ -260,14 +289,14 @@ func (a *App) SendCrashReport(errorData string, info string) (string, error) {
 		return "", err
 	}
 
-	resp, err := nethttp.Post(crashReportURL, w.FormDataContentType(), &b)
+	resp, err := http.Post(crashReportURL, w.FormDataContentType(), &b)
 	if err != nil {
 		logger.Error("Could not send crash report", zap.Error(err))
 		return "", err
 	}
 
 	// Check the response
-	if resp.StatusCode != nethttp.StatusOK {
+	if resp.StatusCode != http.StatusOK {
 		byt, _ := io.ReadAll(resp.Body)
 		logger.Error("Crash report server returned error", zap.String("status", resp.Status), zap.String("response", string(byt)))
 		return "", fmt.Errorf("crash report server returned error: %s - %s", resp.Status, string(byt))

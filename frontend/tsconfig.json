@@ -10,7 +10,7 @@
     "baseUrl": ".",
     "paths": {
       "@wailsapp/*": ["./wailsjs/*"],
-      "~/*": ["./src/*"]
+      "~/*": ["./src/*"],
     }
   }
 }

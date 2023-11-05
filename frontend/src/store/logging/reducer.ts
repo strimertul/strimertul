@@ -46,9 +46,6 @@ const loggingReducer = createSlice({
     receivedEvent(state, { payload }: PayloadAction<main.LogEntry>) {
       state.messages.push(processEntry(payload));
     },
-    uiLogEvent(state, { payload }: PayloadAction<ProcessedLogEntry>) {
-      state.messages.push(payload);
-    },
     clearedEvents(state) {
       state.messages = [];
     },
