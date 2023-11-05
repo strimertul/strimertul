@@ -26,8 +26,10 @@ func addKeys(keyMap interfaces.KeyMap) {
 func init() {
 	// Put all enums here
 	utils.MergeMap(Enums, twitch.Enums)
+	utils.MergeMap(Enums, enums)
 
 	// Put all keys here
+	addKeys(strimertulKeys)
 	addKeys(twitch.Keys)
 	addKeys(loyalty.Keys)
 	addKeys(webserver.Keys)

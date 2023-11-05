@@ -109,7 +109,7 @@ func (a *App) startup(ctx context.Context) {
 	}
 
 	// Set meta keys
-	_ = a.db.PutKey("strimertul/version", appVersion)
+	_ = a.db.PutKey(docs.VersionKey, appVersion)
 
 	a.ready.Set(true)
 	runtime.EventsEmit(ctx, "ready", true)
@@ -176,20 +176,14 @@ func (a *App) initializeComponents() error {
 	return nil
 }
 
-type ExternalLog struct {
-	Level   string         `json:"level"`
-	Message string         `json:"message"`
-	Data    map[string]any `json:"data"`
-}
-
 func (a *App) listenForLogs() (error, database.CancelFunc) {
-	return a.db.SubscribeKey("strimertul/@log", func(newValue string) {
-		var entry ExternalLog
+	return a.db.SubscribeKey(docs.LogRPCKey, func(newValue string) {
+		var entry docs.ExternalLog
 		if err := json.Unmarshal([]byte(newValue), &entry); err != nil {
 			return
 		}
 
-		level, err := zapcore.ParseLevel(entry.Level)
+		level, err := zapcore.ParseLevel(string(entry.Level))
 		if err != nil {
 			level = zapcore.InfoLevel
 		}
