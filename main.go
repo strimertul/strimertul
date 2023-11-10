@@ -18,7 +18,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/strimertul/strimertul/utils"
+	"git.sr.ht/~ashkeel/strimertul/utils"
 )
 
 var json = jsoniter.ConfigFastest

@@ -1,9 +1,10 @@
 package utils
 
 import (
-	"git.sr.ht/~hamcha/containers/sync"
-	jsoniter "github.com/json-iterator/go"
 	"testing"
+
+	"git.sr.ht/~ashkeel/containers/sync"
+	jsoniter "github.com/json-iterator/go"
 )
 
 func TestLoadJSONToWrapped(t *testing.T) {

@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"git.sr.ht/~hamcha/containers/sync"
+	"git.sr.ht/~ashkeel/containers/sync"
 	jsoniter "github.com/json-iterator/go"
 )
 

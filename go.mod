@@ -1,9 +1,9 @@
-module github.com/strimertul/strimertul
+module git.sr.ht/~ashkeel/strimertul
 
 go 1.21
 
 require (
-	git.sr.ht/~hamcha/containers v0.3.2
+	git.sr.ht/~ashkeel/containers v0.3.6
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
 	github.com/cockroachdb/pebble v0.0.0-20231102162011-844f0582c2eb

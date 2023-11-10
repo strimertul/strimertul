@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/strimertul/strimertul/utils"
+	"git.sr.ht/~ashkeel/strimertul/utils"
 
-	"github.com/strimertul/strimertul/database"
+	"git.sr.ht/~ashkeel/strimertul/database"
 
 	"github.com/urfave/cli/v2"
 )

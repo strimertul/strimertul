@@ -1,8 +1,9 @@
 package utils
 
 import (
-	"git.sr.ht/~hamcha/containers/sync"
 	"testing"
+
+	"git.sr.ht/~ashkeel/containers/sync"
 )
 
 func TestMergeMap(t *testing.T) {

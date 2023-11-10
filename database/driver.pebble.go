@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/strimertul/strimertul/utils"
+	"git.sr.ht/~ashkeel/strimertul/utils"
 
 	"github.com/cockroachdb/pebble"
 	kv "github.com/strimertul/kilovolt/v11"

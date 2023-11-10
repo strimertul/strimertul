@@ -1,6 +1,6 @@
 package utils
 
-import "git.sr.ht/~hamcha/containers/sync"
+import "git.sr.ht/~ashkeel/containers/sync"
 
 func MergeMap[T comparable, V any](a, b map[T]V) {
 	for key, value := range b {

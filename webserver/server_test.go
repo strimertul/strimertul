@@ -7,11 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"git.sr.ht/~hamcha/containers/sync"
-
+	"git.sr.ht/~ashkeel/containers/sync"
 	"go.uber.org/zap/zaptest"
 
-	"github.com/strimertul/strimertul/database"
+	"git.sr.ht/~ashkeel/strimertul/database"
 )
 
 func TestNewServer(t *testing.T) {

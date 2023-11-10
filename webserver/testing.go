@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"git.sr.ht/~hamcha/containers/sync"
+	"git.sr.ht/~ashkeel/containers/sync"
 )
 
 type TestServer struct {

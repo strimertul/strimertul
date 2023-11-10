@@ -148,7 +148,7 @@ export default function StrimertulPage(): React.ReactElement {
             i18nKey="pages.strimertul.license-notice-strimertul"
             components={{
               license: (
-                <BrowserLink href="https://github.com/strimertul/strimertul/blob/master/LICENSE">
+                <BrowserLink href="https://git.sr.ht/~ashkeel/strimertul/tree/master/item/LICENSE">
                   GNU Affero General Public License v3.0
                 </BrowserLink>
               ),

@@ -8,9 +8,9 @@ import (
 
 	"github.com/nicklaw5/helix/v2"
 
-	"github.com/strimertul/strimertul/twitch"
+	"git.sr.ht/~ashkeel/strimertul/twitch"
 
-	"git.sr.ht/~hamcha/containers/sync"
+	"git.sr.ht/~ashkeel/containers/sync"
 	irc "github.com/gempir/go-twitch-irc/v4"
 	"go.uber.org/zap"
 )

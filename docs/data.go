@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/strimertul/strimertul/docs/interfaces"
+	"git.sr.ht/~ashkeel/strimertul/docs/interfaces"
 )
 
 type DataObject struct {

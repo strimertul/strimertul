@@ -3,11 +3,10 @@ package twitch
 import (
 	"testing"
 
-	"github.com/strimertul/strimertul/webserver"
-
 	"go.uber.org/zap/zaptest"
 
-	"github.com/strimertul/strimertul/database"
+	"git.sr.ht/~ashkeel/strimertul/database"
+	"git.sr.ht/~ashkeel/strimertul/webserver"
 )
 
 func TestNewClient(t *testing.T) {

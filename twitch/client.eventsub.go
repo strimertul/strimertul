@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/strimertul/strimertul/utils"
+	"git.sr.ht/~ashkeel/strimertul/utils"
 
 	"github.com/gorilla/websocket"
 	jsoniter "github.com/json-iterator/go"

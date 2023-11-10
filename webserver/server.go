@@ -11,12 +11,12 @@ import (
 	"net/http"
 	"net/http/pprof"
 
-	"git.sr.ht/~hamcha/containers/sync"
+	"git.sr.ht/~ashkeel/containers/sync"
 	jsoniter "github.com/json-iterator/go"
 	kv "github.com/strimertul/kilovolt/v11"
 	"go.uber.org/zap"
 
-	"github.com/strimertul/strimertul/database"
+	"git.sr.ht/~ashkeel/strimertul/database"
 )
 
 var json = jsoniter.ConfigFastest

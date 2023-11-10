@@ -3,9 +3,9 @@ package twitch
 import (
 	"reflect"
 
+	"git.sr.ht/~ashkeel/strimertul/docs/interfaces"
 	irc "github.com/gempir/go-twitch-irc/v4"
 	"github.com/nicklaw5/helix/v2"
-	"github.com/strimertul/strimertul/docs/interfaces"
 )
 
 // Documentation stuff, keep updated at all times

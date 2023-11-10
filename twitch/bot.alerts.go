@@ -11,7 +11,7 @@ import (
 	"github.com/nicklaw5/helix/v2"
 	"go.uber.org/zap"
 
-	"github.com/strimertul/strimertul/database"
+	"git.sr.ht/~ashkeel/strimertul/database"
 )
 
 const BotAlertsKey = "twitch/bot-modules/alerts/config"

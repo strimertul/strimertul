@@ -4,11 +4,11 @@ import (
 	"math/rand"
 	"time"
 
-	"git.sr.ht/~hamcha/containers/sync"
+	"git.sr.ht/~ashkeel/containers/sync"
 	irc "github.com/gempir/go-twitch-irc/v4"
 	"go.uber.org/zap"
 
-	"github.com/strimertul/strimertul/database"
+	"git.sr.ht/~ashkeel/strimertul/database"
 )
 
 const BotTimersKey = "twitch/bot-modules/timers/config"

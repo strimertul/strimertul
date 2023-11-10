@@ -1,16 +1,16 @@
 import {
+  ChatBubbleIcon,
   DiscordLogoIcon,
   EnvelopeClosedIcon,
-  GitHubLogoIcon,
 } from '@radix-ui/react-icons';
-import { ChannelList, Channel, ChannelLink } from '../../pages/Strimertul';
+import { ChannelList, Channel, ChannelLink } from '~/ui/pages/Strimertul';
 
 export const Channels = (
   <ChannelList>
     <Channel>
-      <ChannelLink href="https://github.com/strimertul/strimertul/issues">
-        <GitHubLogoIcon width={24} height={24} />
-        github.com/strimertul/strimertul/issues
+      <ChannelLink href="https://lists.sr.ht/~ashkeel/strimertul-devel">
+        <ChatBubbleIcon width={24} height={24} />
+        lists.sr.ht/~ashkeel/strimertul-devel
       </ChannelLink>
     </Channel>
     <Channel>

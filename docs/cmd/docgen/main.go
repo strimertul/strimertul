@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
+	"git.sr.ht/~ashkeel/strimertul/docs"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/strimertul/strimertul/docs"
 )
 
 func main() {

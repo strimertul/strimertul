@@ -1,5 +1,5 @@
-git.sr.ht/~hamcha/containers v0.3.2 h1:pAsygdTXsI3YW1d8SvimyB8KPspG2FB06AMbt/ELaIA=
-git.sr.ht/~hamcha/containers v0.3.2/go.mod h1:RiZphUpy9t6EnL4Gf6uzByM9QrBoqRCEPo7kz2wzbhE=
+git.sr.ht/~ashkeel/containers v0.3.6 h1:+umWlQGKhLxGQlaEUt/F6rBZGpeBd1T01fM3wro+qTY=
+git.sr.ht/~ashkeel/containers v0.3.6/go.mod h1:i2KocnJfRH0FwfgPi4nw7/ehYLEoLlP3iwdDoBeVdME=
 github.com/DataDog/zstd v1.5.5 h1:oWf5W7GtOLgp6bciQYDmhHHjdhYkALu6S/5Ni9ZgSvQ=
 github.com/DataDog/zstd v1.5.5/go.mod h1:g4AWEaM3yOg3HYfnJ3YIawPnVdXJh9QME85blwSAmyw=
 github.com/Masterminds/goutils v1.1.1 h1:5nUrii3FMTL5diU80unEVvNevw1nH4+ZV4DSLVJLSYI=

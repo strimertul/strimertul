@@ -5,13 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [current]
+## current
 
 ### Changed
 
 - Updated Kilovolt with a new websocket library
 
-## [3.3.0] - 2023-11-03
+## 3.3.0 - 2023-11-03
 
 ### Added
 
@@ -32,13 +32,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bot cooldown being unreliable due to depending on multiple time sources
 - Spaces at beginning of messages are now ignored for command checking (e.g. " !lurk" will match !lurk)
 
-## [3.2.1] - 2023-05-17
+## 3.2.1 - 2023-05-17
 
 ### Fixed
 
 - Fixed the eventsub connection to not use the now broken beta URL
 
-## [3.2.0] - 2023-05-03
+## 3.2.0 - 2023-05-03
 
 ### Added
 
@@ -56,14 +56,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The UPDATE AVAILABLE banner in prerelease builds now works properly by only appearing when a newer prerelease (or stable) version is available to download.
 - Numeric input boxes in the UI should now be less of a pain to use
 
-## [3.1.5] - 2023-03-31
+## 3.1.5 - 2023-03-31
 
 ### Fixed
 
 - Updated wails so the window should not flash "connection refused" when opened
 - The compiled binary now has the proper version and update notices should work again
 
-## [3.1.4] - 2023-03-31
+## 3.1.4 - 2023-03-31
 
 ### Fixed
 
@@ -71,7 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The loyalty points entry were assigned incorrectly upon startup, this has been fixed
 - Fixed having multiple messages for an alert use non-compiled templates
 
-## [3.1.3] - 2023-03-14
+## 3.1.3 - 2023-03-14
 
 ### Changed
 
@@ -82,13 +82,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed changing chat history breaking the database
 - Fixed panic on eventsub reconnections
 
-## [3.1.2] - 2023-03-05
+## 3.1.2 - 2023-03-05
 
 ### Fixed
 
 - Fixed some auth token shenanigans where a valid access token would not be generated when starting the app
 
-## [3.1.1] - 2023-02-23
+## 3.1.1 - 2023-02-23
 
 UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your user to make sure it has a necessary new permission for event notifications to work (even from 3.1.0).
 
@@ -96,7 +96,7 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 - Fixed issue where event notification would not work due to Twitch deprecating the `channel.follows` V1 topic
 - Fixed more database leaks
 
-## [3.1.0] - 2023-02-21
+## 3.1.0 - 2023-02-21
 
 UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your user to make sure it has a necessary new permission for the loyalty system to work.
 
@@ -123,7 +123,7 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 - Fixed bug where the loyalty config page had a wrong set interval on first load
 - Fixed the formatting of log data so long lines are still contained in the dialog instead of clipping offscreen
 
-## [3.0.0] - 2023-01-09
+## 3.0.0 - 2023-01-09
 
 ### Added
 
@@ -162,7 +162,7 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 - Badger has been removed as a possible database, see v3 release notes on migration procedures.
 - The link to Ash Keel's Twitter profile has been removed
 
-## [2.1.1] - 2022-03-24
+## 2.1.1 - 2022-03-24
 
 ### Added
 
@@ -172,7 +172,7 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 
 - Updated dependencies, most notably the Twitch IRC bot has been bumped to v3 and now includes emoji positions for easier embedding of them in chat overlays.
 
-## [2.1.0] - 2022-02-08
+## 2.1.0 - 2022-02-08
 
 ### Added
 
@@ -183,7 +183,7 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 
 - Fixed nasty sync bug that would make strimertul unresponsive when it would detect streaming on Twitch.
 
-## [2.0.0] - 2022-02-01
+## 2.0.0 - 2022-02-01
 
 ### Added
 
@@ -204,7 +204,7 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 - Twitch chat history doesn't have an explicit toggle anymore, they are always enabled unless the `chat_history` setting is set to 0.
 - Loyalty point migration from v1.2.0 and earlier has been removed. If you are somehow running such an old version of strimertul and using loyalty points, run any version of strimertul between v1.3.0 and v1.7.0 first to make sure all points are migrated to the new format.
 
-## [1.7.0] - 2021-12-07
+## 1.7.0 - 2021-12-07
 
 ### Added
 
@@ -220,31 +220,31 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 - Twitch bot: fixed command checking, previous matching only checked for prefix (eg. !verylong could be called by writing !verylonglongbaaah)
 - DB was not getting garbage collected, this is now fixed with a GC run every 15 minutes.
 
-## [1.6.3] - 2021-11-30
+## 1.6.3 - 2021-11-30
 
 ### Added
 
 - ACL on bot commands are now fully working and not a placeholder anymore!
 - ACL level "Subscriber" for Twitch subscribers
 
-## [1.6.2] - 2021-11-24
+## 1.6.2 - 2021-11-24
 
 ### Fixed
 
 - Fixed oversight in bot timer cooldown calculation that made them never start
 - Fixed timer configuration never getting applied when changed
 
-## [1.6.1] - 2021-11-24
+## 1.6.1 - 2021-11-24
 
 ### Changed
 
 - Twitch and Stulbe modules now reload/restart when their configuration changes instead of requiring strimertul to be closed and reopened manually.
 
-## [1.6.0] - 2021-11-21
+## 1.6.0 - 2021-11-21
 
 ### Added
 
-- KV Authentication using Kilovolt v6, check out [the authentication documentation](https://github.com/strimertul/kilovolt/blob/main/PROTOCOL.md#authentication) for more info.
+- KV Authentication using Kilovolt v6, check out [the authentication documentation](https://git.sr.ht/~ashkeel/kilovolt/tree/main/item/PROTOCOL.md#authentication) for more info.
 
 ### Changed
 
@@ -252,43 +252,20 @@ UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your 
 - The static server will react to configuration changes and auto-restart instead of requiring strimertul to be closed and reopened manually.
 - Added a couple buttons in the secret debug page to dump all keys and their content
 
-## [1.5.3] - 2021-11-12
+## 1.5.3 - 2021-11-12
 
 ### Added
 
 - Added KV RPC `twitch/@send-chat-message` for writing text messages to chat
 
-## [1.5.2] - 2021-11-05
+## 1.5.2 - 2021-11-05
 
 ### Added
 
 - Chat timers
 
-## [1.5.1] - 2021-10-05
+## 1.5.1 - 2021-10-05
 
 ### Added
 
 - Stulbe integration for alerts
-
-[current]: https://github.com/strimertul/strimertul/compare/v3.3.0...HEAD
-[3.3.0]: https://github.com/strimertul/strimertul/compare/v3.2.1...v3.3.0
-[3.2.1]: https://github.com/strimertul/strimertul/compare/v3.2.0...v3.2.1
-[3.2.0]: https://github.com/strimertul/strimertul/compare/v3.1.5...v3.2.0
-[3.1.5]: https://github.com/strimertul/strimertul/compare/v3.1.4...v3.1.5
-[3.1.4]: https://github.com/strimertul/strimertul/compare/v3.1.3...v3.1.4
-[3.1.3]: https://github.com/strimertul/strimertul/compare/v3.1.2...v3.1.3
-[3.1.2]: https://github.com/strimertul/strimertul/compare/v3.1.1...v3.1.2
-[3.1.1]: https://github.com/strimertul/strimertul/compare/v3.1.0...v3.1.1
-[3.1.0]: https://github.com/strimertul/strimertul/compare/v3.0.0...v3.1.0
-[3.0.0]: https://github.com/strimertul/strimertul/compare/v2.1.1...v3.0.0
-[2.1.1]: https://github.com/strimertul/strimertul/compare/v2.1.0...v2.1.1
-[2.1.0]: https://github.com/strimertul/strimertul/compare/v2.0.0...v2.1.0
-[2.0.0]: https://github.com/strimertul/strimertul/compare/v1.7.0...v2.0.0
-[1.7.0]: https://github.com/strimertul/strimertul/compare/v1.6.3...v1.7.0
-[1.6.3]: https://github.com/strimertul/strimertul/compare/v1.6.2...v1.6.3
-[1.6.2]: https://github.com/strimertul/strimertul/compare/v1.6.1...v1.6.2
-[1.6.1]: https://github.com/strimertul/strimertul/compare/v1.6.0...v1.6.1
-[1.6.0]: https://github.com/strimertul/strimertul/compare/v1.5.3...v1.6.0
-[1.5.3]: https://github.com/strimertul/strimertul/compare/v1.5.2...v1.5.3
-[1.5.2]: https://github.com/strimertul/strimertul/compare/v1.5.1...v1.5.2
-[1.5.1]: https://github.com/strimertul/strimertul/compare/v1.5.0...v1.5.1

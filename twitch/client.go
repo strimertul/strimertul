@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"time"
 
-	"git.sr.ht/~hamcha/containers/sync"
+	"git.sr.ht/~ashkeel/containers/sync"
 	lru "github.com/hashicorp/golang-lru/v2"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nicklaw5/helix/v2"
 	"go.uber.org/zap"
 
-	"github.com/strimertul/strimertul/database"
-	"github.com/strimertul/strimertul/webserver"
+	"git.sr.ht/~ashkeel/strimertul/database"
+	"git.sr.ht/~ashkeel/strimertul/webserver"
 )
 
 var json = jsoniter.ConfigFastest

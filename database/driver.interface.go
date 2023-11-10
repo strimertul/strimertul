@@ -10,7 +10,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
 
-	"github.com/strimertul/strimertul/utils"
+	"git.sr.ht/~ashkeel/strimertul/utils"
 )
 
 // DatabaseDriver is a driver wrapping a supported database

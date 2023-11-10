@@ -9,8 +9,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/strimertul/strimertul/database"
-	"github.com/strimertul/strimertul/utils"
+	"git.sr.ht/~ashkeel/strimertul/database"
+	"git.sr.ht/~ashkeel/strimertul/utils"
 )
 
 func BackupTask(driver database.DatabaseDriver, options database.BackupOptions) {

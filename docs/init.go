@@ -1,11 +1,11 @@
 package docs
 
 import (
-	"github.com/strimertul/strimertul/docs/interfaces"
-	"github.com/strimertul/strimertul/loyalty"
-	"github.com/strimertul/strimertul/twitch"
-	"github.com/strimertul/strimertul/utils"
-	"github.com/strimertul/strimertul/webserver"
+	"git.sr.ht/~ashkeel/strimertul/docs/interfaces"
+	"git.sr.ht/~ashkeel/strimertul/loyalty"
+	"git.sr.ht/~ashkeel/strimertul/twitch"
+	"git.sr.ht/~ashkeel/strimertul/utils"
+	"git.sr.ht/~ashkeel/strimertul/webserver"
 )
 
 var (

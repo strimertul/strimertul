@@ -4,7 +4,7 @@ import (
 	"os"
 	"time"
 
-	"git.sr.ht/~hamcha/containers/sync"
+	"git.sr.ht/~ashkeel/containers/sync"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

@@ -15,7 +15,7 @@ import (
 
 	kv "github.com/strimertul/kilovolt/v11"
 
-	"git.sr.ht/~hamcha/containers/sync"
+	"git.sr.ht/~ashkeel/containers/sync"
 	"github.com/nicklaw5/helix/v2"
 	"github.com/postfinance/single"
 	"github.com/urfave/cli/v2"
@@ -23,11 +23,11 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/strimertul/strimertul/database"
-	"github.com/strimertul/strimertul/docs"
-	"github.com/strimertul/strimertul/loyalty"
-	"github.com/strimertul/strimertul/twitch"
-	"github.com/strimertul/strimertul/webserver"
+	"git.sr.ht/~ashkeel/strimertul/database"
+	"git.sr.ht/~ashkeel/strimertul/docs"
+	"git.sr.ht/~ashkeel/strimertul/loyalty"
+	"git.sr.ht/~ashkeel/strimertul/twitch"
+	"git.sr.ht/~ashkeel/strimertul/webserver"
 )
 
 // App struct

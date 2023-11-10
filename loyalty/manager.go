@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/strimertul/strimertul/database"
-	"github.com/strimertul/strimertul/twitch"
-	"github.com/strimertul/strimertul/utils"
+	"git.sr.ht/~ashkeel/strimertul/database"
+	"git.sr.ht/~ashkeel/strimertul/twitch"
+	"git.sr.ht/~ashkeel/strimertul/utils"
 
-	"git.sr.ht/~hamcha/containers/sync"
+	"git.sr.ht/~ashkeel/containers/sync"
 	jsoniter "github.com/json-iterator/go"
 	"go.uber.org/zap"
 )
