@@ -1,3 +1,4 @@
+---
 kind: pipeline
 type: docker
 name: default
@@ -14,6 +15,8 @@ steps:
       - GOOS=linux GOARCH=amd64 CC=x86_64-linux-gnu-gcc wails build -ldflags "-X main.appVersion=$DRONE_TAG" -platform linux/amd64 -upx -o strimertul-amd64
       - GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc wails build -ldflags "-X main.appVersion=$DRONE_TAG" -m -nosyncgomod -skipbindings -s -platform linux/arm64 -upx -o strimertul-arm64
       - GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc wails build -ldflags "-X main.appVersion=$DRONE_TAG" -m -nosyncgomod -skipbindings -s -platform windows/amd64 -upx
+      - mkdir build/bin/$DRONE_TAG
+      - mv build/bin/strimertul* "build/bin/$DRONE_TAG/"
 
   - name: Upload
     image: plugins/s3
@@ -24,7 +27,12 @@ steps:
       secret_key:
         from_secret: minio_secret
       source: /drone/src/build/bin/**/*
-      target: /$DRONE_TAG/
+      target: /
       strip_prefix: /drone/src/build/bin/
       path_style: true
       endpoint: https://artifacts.fromouter.space
+---
+kind: signature
+hmac: 45d36e1a08310a432efef06ce722b64cebd15083c7eeb3fec751657244c5e8bd
+
+...
