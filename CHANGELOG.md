@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## current
 
+### Fixed
+
+- Fixed bug in 3.0.0 where kilovolt would not detect inexistant keys and break on new installs
+
 ### Changed
 
 - Updated Kilovolt with a new websocket library
@@ -93,6 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 UPGRADE NOTE: If upgrading from an earlier version, please re-authenticate your user to make sure it has a necessary new permission for event notifications to work (even from 3.1.0).
 
 ### Fixed
+
 - Fixed issue where event notification would not work due to Twitch deprecating the `channel.follows` V1 topic
 - Fixed more database leaks
 

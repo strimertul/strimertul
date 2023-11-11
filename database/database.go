@@ -109,6 +109,9 @@ func (mod *LocalDBClient) SubscribeKey(key string, fn func(string)) (err error, 
 func (mod *LocalDBClient) GetJSON(key string, dst any) error {
 	res, err := mod.GetKey(key)
 	if err != nil {
+		if errors.Is(err, kv.ErrorKeyNotFound) {
+			return ErrEmptyKey
+		}
 		return err
 	}
 	if res == "" {

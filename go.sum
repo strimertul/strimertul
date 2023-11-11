@@ -1,5 +1,7 @@
 git.sr.ht/~ashkeel/containers v0.3.6 h1:+umWlQGKhLxGQlaEUt/F6rBZGpeBd1T01fM3wro+qTY=
 git.sr.ht/~ashkeel/containers v0.3.6/go.mod h1:i2KocnJfRH0FwfgPi4nw7/ehYLEoLlP3iwdDoBeVdME=
+git.sr.ht/~ashkeel/kilovolt-driver-pebble v1.2.4 h1:8QdCTq8HOHEM4wCZVXlvnUJ8dogSnzZTNzsjkj0vE0Y=
+git.sr.ht/~ashkeel/kilovolt-driver-pebble v1.2.4/go.mod h1:VTObrB2pDpjT6JhcSwf4D5RWUy5udFPpAKrOgOXh6hs=
 github.com/DataDog/zstd v1.5.5 h1:oWf5W7GtOLgp6bciQYDmhHHjdhYkALu6S/5Ni9ZgSvQ=
 github.com/DataDog/zstd v1.5.5/go.mod h1:g4AWEaM3yOg3HYfnJ3YIawPnVdXJh9QME85blwSAmyw=
 github.com/Masterminds/goutils v1.1.1 h1:5nUrii3FMTL5diU80unEVvNevw1nH4+ZV4DSLVJLSYI=
@@ -163,12 +165,8 @@ github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
-github.com/strimertul/kilovolt/v10 v10.0.0 h1:VGUFZ1/s4IDAYp9kqZQosoelRqXA/cN2JP41BgLc4yQ=
-github.com/strimertul/kilovolt/v10 v10.0.0/go.mod h1:lB+aF6VpoMfxkK+DFVzIB9yOW0nNaZOtFt395Cf+Hyk=
 github.com/strimertul/kilovolt/v11 v11.0.1 h1:fV33Z3b168LeSROzzV0dZcI2Jptg3TvF2FbEGxfEVGI=
 github.com/strimertul/kilovolt/v11 v11.0.1/go.mod h1:PjhGVWb74lB8dXSGWA7GmVSbZAoGV/WGGmjS2Zz/UBg=
-github.com/strimertul/kv-pebble v1.2.3 h1:SnSuJUTJePSWbac5DQXy3Jl7f647jkqqzpQbwqdftCE=
-github.com/strimertul/kv-pebble v1.2.3/go.mod h1:OaPhe8OtIlZUmpOfmTKtDzAB/P/T0ngCtWCwp9Isa3U=
 github.com/tkrajina/go-reflector v0.5.6 h1:hKQ0gyocG7vgMD2M3dRlYN6WBBOmdoOzJ6njQSepKdE=
 github.com/tkrajina/go-reflector v0.5.6/go.mod h1:ECbqLgccecY5kPmPmXg1MrHW585yMcDkVl6IvJe64T4=
 github.com/urfave/cli/v2 v2.25.7 h1:VAzn5oq403l5pHjc4OhD54+XGO9cdKVL/7lDjF+iKUs=

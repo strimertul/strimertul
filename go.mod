@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	git.sr.ht/~ashkeel/containers v0.3.6
+	git.sr.ht/~ashkeel/kilovolt-driver-pebble v1.2.4
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
 	github.com/cockroachdb/pebble v0.0.0-20231102162011-844f0582c2eb
@@ -14,7 +15,6 @@ require (
 	github.com/nicklaw5/helix/v2 v2.25.2
 	github.com/postfinance/single v0.0.2
 	github.com/strimertul/kilovolt/v11 v11.0.1
-	github.com/strimertul/kv-pebble v1.2.3
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/wailsapp/wails/v2 v2.6.0
 	go.uber.org/zap v1.26.0
@@ -72,7 +72,6 @@ require (
 	github.com/samber/lo v1.38.1 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
-	github.com/strimertul/kilovolt/v10 v10.0.0 // indirect
 	github.com/tkrajina/go-reflector v0.5.6 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
