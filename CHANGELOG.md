@@ -7,13 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## current
 
-### Fixed
-
-- Fixed bug in 3.0.0 where kilovolt would not detect inexistant keys and break on new installs
-
 ### Changed
 
 - Updated Kilovolt with a new websocket library
+
+### Fixed
+
+- strimertul now builds on linux/arm64 
 
 ## 3.3.0 - 2023-11-03
 
