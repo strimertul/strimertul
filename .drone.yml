@@ -1,0 +1,30 @@
+kind: pipeline
+type: docker
+name: default
+trigger:
+  event:
+    - tag
+
+steps:
+  - name: Build
+    image: ghcr.io/abjrcode/cross-wails:v2.6.0
+    commands:
+      - apt-get update
+      - apt-get install -y upx
+      - GOOS=linux GOARCH=amd64 CC=x86_64-linux-gnu-gcc wails build -ldflags "-X main.appVersion=$DRONE_TAG" -platform linux/amd64 -upx -o strimertul-amd64
+      - GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc wails build -ldflags "-X main.appVersion=$DRONE_TAG" -m -nosyncgomod -skipbindings -s -platform linux/arm64 -upx -o strimertul-arm64
+      - GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc wails build -ldflags "-X main.appVersion=$DRONE_TAG" -m -nosyncgomod -skipbindings -s -platform windows/amd64 -upx
+
+  - name: Upload
+    image: plugins/s3
+    settings:
+      bucket: strimertul-builds
+      access_key:
+        from_secret: minio_access
+      secret_key:
+        from_secret: minio_secret
+      source: /drone/src/build/bin/**/*
+      target: /$DRONE_TAG/
+      strip_prefix: /drone/src/build/bin/
+      path_style: true
+      endpoint: https://artifacts.fromouter.space
