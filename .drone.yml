@@ -19,7 +19,7 @@ steps:
       - mv build/bin/strimertul* "build/bin/$DRONE_TAG/"
 
   - name: Upload
-    image: plugins/s3
+    image: plugins/s3:3a95878b0a25
     settings:
       bucket: strimertul-builds
       access_key:
@@ -33,6 +33,6 @@ steps:
       endpoint: https://artifacts.fromouter.space
 ---
 kind: signature
-hmac: 7d5db93588da76d49f91ee4b27d8855dbaf1911f147140fd4e30e1104e51326f
+hmac: 166f00f49037c11055eb8a1b82279125da7419ee09a8d899c77ff217519c7c8a
 
 ...
