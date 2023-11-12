@@ -201,6 +201,15 @@ function hasLatestOrBeta(current: string, latest: string): boolean {
   return parsedCurrent.prerelease > parsedLatest.prerelease;
 }
 
+interface VersionInfo {
+  name: string;
+  url: string;
+}
+interface UpdateInfo {
+  stable: VersionInfo;
+  latest: VersionInfo;
+}
+
 export default function Sidebar({
   sections,
 }: SidebarProps): React.ReactElement {
@@ -216,36 +225,9 @@ export default function Sidebar({
 
   async function fetchLastVersion() {
     try {
-      // For prerelease builds, use the list endpoint to get the latest prerelease
-      if (prerelease) {
-        const req = await fetch(
-          `https://api.github.com/repos/${APPREPO}/releases`,
-          {
-            headers: {
-              Accept: 'application/vnd.github.v3+json',
-            },
-          },
-        );
-        const data = (await req.json()) as { html_url: string; name: string }[];
-        setLastVersion({
-          url: data[0].html_url,
-          name: data[0].name,
-        });
-      } else {
-        const req = await fetch(
-          `https://api.github.com/repos/${APPREPO}/releases/latest`,
-          {
-            headers: {
-              Accept: 'application/vnd.github.v3+json',
-            },
-          },
-        );
-        const data = (await req.json()) as { html_url: string; name: string };
-        setLastVersion({
-          url: data.html_url,
-          name: data.name,
-        });
-      }
+      const req = await fetch('https://strimertul.stream/update.json');
+      const data = (await req.json()) as UpdateInfo;
+      setLastVersion(prerelease ? data.latest : data.stable);
     } catch (e) {
       // TODO Report error nicely
       console.warn('Failed checking upstream for latest version', e);
