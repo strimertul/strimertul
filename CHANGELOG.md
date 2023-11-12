@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## current
 
+## 3.3.1 - 2023-11-12
+
 ### Changed
 
 - Updated Kilovolt with a new websocket library
+- Releases have been moved so the update checker now uses a new endpoint
 
 ### Fixed
 
